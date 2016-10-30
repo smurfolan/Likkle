@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Likkle.DataModel", "Likkle.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Likkle.WebApi", "Likkle.WebApi\Likkle.WebApi.csproj", "{864E078D-9334-4259-B222-E90764E5F480}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Likkle.WebApi.Owin", "Likkle.WebApi.Owin\Likkle.WebApi.Owin.csproj", "{A4320DEA-5C3F-4537-A6DD-1120281F3041}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{864E078D-9334-4259-B222-E90764E5F480}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{864E078D-9334-4259-B222-E90764E5F480}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{864E078D-9334-4259-B222-E90764E5F480}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4320DEA-5C3F-4537-A6DD-1120281F3041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4320DEA-5C3F-4537-A6DD-1120281F3041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4320DEA-5C3F-4537-A6DD-1120281F3041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4320DEA-5C3F-4537-A6DD-1120281F3041}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

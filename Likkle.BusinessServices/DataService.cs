@@ -24,18 +24,20 @@ namespace Likkle.BusinessServices
 
         public IEnumerable<AreaDto> GetAllAreas()
         {
-            return this._unitOfWork.AreaRepository.GetAreas().Select(a => new AreaDto()
-            {
-                Id = a.Id,
-                Latitude = a.Latitude,
-                Longitude = a.Longitude,
-                Groups = a.Groups.Select(g => new GroupDto() {Id = g.Id, Name = g.Name})
-            }).ToList();
+            var allAreaEntities = this._unitOfWork.AreaRepository.GetAreas();
+
+            var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(allAreaEntities);
+
+            return areasAsDtos;
         }
 
         public AreaDto GetAreaById(Guid areaId)
         {
-            throw new NotImplementedException();
+            var area = this._unitOfWork.AreaRepository.GetAreaById(areaId);
+
+            var areaAsDto = this._mapper.Map<Area, AreaDto>(area);
+
+            return areaAsDto;
         }
 
         public IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId)
