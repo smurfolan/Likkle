@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
@@ -10,10 +11,15 @@ namespace Likkle.BusinessServices
     public class DataService : IDataService
     {
         private readonly LikkleUoW _unitOfWork;
+        private readonly IMapper _mapper;
 
         public DataService()
         {
             _unitOfWork = new LikkleUoW();
+            var mapperConfiguration = new MapperConfiguration(cfg => {
+                cfg.AddProfile<EntitiesMappingProfile>();
+            });
+            _mapper = mapperConfiguration.CreateMapper();
         }
 
         public IEnumerable<AreaDto> GetAllAreas()
