@@ -27,6 +27,21 @@ namespace Likkle.BusinessServices
             }).ToList();
         }
 
+        public AreaDto GetAreaById(Guid areaId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<AreaDto> GetAreas(double latitude, double longitude)
+        {
+            throw new NotImplementedException();
+        }
+
         public Guid InsertNewArea(AreaDto newArea)
         {
             var areaEntity = new Area()

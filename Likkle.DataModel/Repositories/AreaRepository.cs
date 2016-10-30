@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Device.Location;
+using System.Linq;
 
 namespace Likkle.DataModel.Repositories
 {
-    public class AreaRepository
+    public class AreaRepository : IAreaRepository
     {
         private LikkleDbContext _dbContext;
 
@@ -20,9 +22,48 @@ namespace Likkle.DataModel.Repositories
             return this._dbContext.Areas.Include(g => g.Groups);
         }
 
-        public void Save()
+        public Area GetAreaById(Guid areaId)
+        {
+            return this._dbContext.Areas.FirstOrDefault(a => a.Id == areaId);
+        }
+
+        public IEnumerable<Area> GetAreasForGroupId(Guid groupId)
+        {
+            return this._dbContext.Areas.Where(a => a.Groups.Any(g => g.Id == groupId));
+        }
+
+        public Guid InsertArea(Area area)
+        {
+            this._dbContext.Areas.Add(area);
+            this._dbContext.SaveChanges();
+
+            return area.Id;
+        }
+
+        public void DeleteArea(Guid areaId)
+        {
+            var areaToDelete = this._dbContext.Areas.FirstOrDefault(a => a.Id == areaId);
+            this._dbContext.Areas.Remove(areaToDelete);
+
+            this._dbContext.SaveChanges();
+        }
+
+        public void UpdateArea(Area area)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<Area> GetAreas(double latitude, double longitude)
+        {
+            var currentUserLocation = new GeoCoordinate(latitude, longitude);
+
+            return this._dbContext.Areas
+                .Where(x => currentUserLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
+        }
+
+        public void Save()
+        {
+            this._dbContext.SaveChanges();
         }
 
         public Guid Insert(Area newArea)

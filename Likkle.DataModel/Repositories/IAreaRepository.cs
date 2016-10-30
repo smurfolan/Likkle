@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Likkle.DataModel.Repositories
 {
     public interface IAreaRepository
     {
         IEnumerable<Area> GetAreas();
+        Area GetAreaById(Guid areaId);
+        IEnumerable<Area> GetAreasForGroupId(Guid groupId);
+
+        Guid InsertArea(Area area);
+        void DeleteArea(Guid areaId);
+        void UpdateArea(Area area);
+
+        IEnumerable<Area> GetAreas(double latitude, double longitude);
+
         void Save();
     }
 }

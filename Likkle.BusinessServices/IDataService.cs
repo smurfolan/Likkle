@@ -6,7 +6,13 @@ namespace Likkle.BusinessServices
 {
     public interface IDataService
     {
+        #region Area specific
         IEnumerable<AreaDto> GetAllAreas();
-        Guid InsertNewArea(AreaDto newArea);
+        AreaDto GetAreaById(Guid areaId);
+        IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId);
+        IEnumerable<AreaDto> GetAreas(double latitude, double longitude);
+
+        Guid InsertNewArea(AreaDto newArea);      
+        #endregion
     }
 }
