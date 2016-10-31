@@ -13,7 +13,7 @@ namespace Likkle.DataModel.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201610311942046_InitialCreate"; }
+            get { return "201610312108209_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

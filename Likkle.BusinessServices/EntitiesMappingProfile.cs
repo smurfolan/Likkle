@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 
 namespace Likkle.BusinessServices
@@ -10,6 +11,10 @@ namespace Likkle.BusinessServices
         {
             CreateMap<Area, AreaDto>();
             CreateMap<Group, GroupDto>();
+            CreateMap<User, UserDto>();
+            CreateMap<NewAreaRequest, Area>();
+            CreateMap<Language, LanguageDto>();
+            CreateMap<NotificationSetting, NotificationSettingDto>();
             //CreateMap<RadiusDto, Radius>();
             //CreateMap<Radius, RadiusDto>();
 

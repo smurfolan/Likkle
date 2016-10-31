@@ -54,9 +54,9 @@
     <Compile Include="Group.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="LikkleDbContext.cs" />
-    <Compile Include="Migrations\201610311942046_InitialCreate.cs" />
-    <Compile Include="Migrations\201610311942046_InitialCreate.Designer.cs">
-      <DependentUpon>201610311942046_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201610312108209_InitialCreate.cs" />
+    <Compile Include="Migrations\201610312108209_InitialCreate.Designer.cs">
+      <DependentUpon>201610312108209_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NotificationSetting.cs" />
@@ -78,8 +78,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201610311942046_InitialCreate.resx">
-      <DependentUpon>201610311942046_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201610312108209_InitialCreate.resx">
+      <DependentUpon>201610312108209_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,7 +4,7 @@ namespace Likkle.DataModel.Migrations
 {
     using System.Data.Entity.Migrations;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Likkle.DataModel.LikkleDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<LikkleDbContext>
     {
         public Configuration()
         {

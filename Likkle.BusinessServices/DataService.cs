@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -50,14 +51,21 @@ namespace Likkle.BusinessServices
             throw new NotImplementedException();
         }
 
-        public Guid InsertNewArea(AreaDto newArea)
+        public IEnumerable<UserDto> GetUsersFromArea(Guid areaId)
         {
-            var areaEntity = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = newArea.Latitude,
-                Longitude = newArea.Longitude
-            };
+            var users = this._unitOfWork.AreaRepository.GetAreas()
+                .Where(a => a.Id == areaId)
+                .SelectMany(ar => ar.Groups.SelectMany(gr => gr.Users));
+
+            var usersAsDtos = this._mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
+
+            return usersAsDtos;
+        }
+
+        public Guid InsertNewArea(NewAreaRequest newArea)
+        {
+            var areaEntity = this._mapper.Map<NewAreaRequest, Area>(newArea);
+            
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
         }
     }
