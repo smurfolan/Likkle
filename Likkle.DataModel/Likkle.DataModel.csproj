@@ -54,21 +54,9 @@
     <Compile Include="Group.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="LikkleDbContext.cs" />
-    <Compile Include="Migrations\201610300726421_InitialCreate.cs" />
-    <Compile Include="Migrations\201610300726421_InitialCreate.Designer.cs">
-      <DependentUpon>201610300726421_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201610300803217_InitialCreate1.cs" />
-    <Compile Include="Migrations\201610300803217_InitialCreate1.Designer.cs">
-      <DependentUpon>201610300803217_InitialCreate1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201610301053413_Added_Groups_And_Tags_Entities.cs" />
-    <Compile Include="Migrations\201610301053413_Added_Groups_And_Tags_Entities.Designer.cs">
-      <DependentUpon>201610301053413_Added_Groups_And_Tags_Entities.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201610301120071_User_Entity_Added_And_Automatic_Db_Seed.cs" />
-    <Compile Include="Migrations\201610301120071_User_Entity_Added_And_Automatic_Db_Seed.Designer.cs">
-      <DependentUpon>201610301120071_User_Entity_Added_And_Automatic_Db_Seed.cs</DependentUpon>
+    <Compile Include="Migrations\201610311942046_InitialCreate.cs" />
+    <Compile Include="Migrations\201610311942046_InitialCreate.Designer.cs">
+      <DependentUpon>201610311942046_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NotificationSetting.cs" />
@@ -84,24 +72,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201610300726421_InitialCreate.resx">
-      <DependentUpon>201610300726421_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610300803217_InitialCreate1.resx">
-      <DependentUpon>201610300803217_InitialCreate1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610301053413_Added_Groups_And_Tags_Entities.resx">
-      <DependentUpon>201610301053413_Added_Groups_And_Tags_Entities.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610301120071_User_Entity_Added_And_Automatic_Db_Seed.resx">
-      <DependentUpon>201610301120071_User_Entity_Added_And_Automatic_Db_Seed.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Likkle.BusinessEntities\Likkle.BusinessEntities.csproj">
       <Project>{897F5C77-CDA0-4644-85B1-20828134E843}</Project>
       <Name>Likkle.BusinessEntities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201610311942046_InitialCreate.resx">
+      <DependentUpon>201610311942046_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

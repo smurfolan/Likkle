@@ -27,7 +27,6 @@ namespace Likkle.DataModel
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 
         public virtual ICollection<Language> Languages { get; set; }
-
         public virtual NotificationSetting NotificationSettings { get; set; }
     }
 }

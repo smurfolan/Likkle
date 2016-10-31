@@ -15,7 +15,7 @@ namespace Likkle.DataModel
 
         // Navigation properties
         public virtual ICollection<Area> Areas { get; set; } 
-
+        public virtual ICollection<User> Users { get; set; } 
         public virtual ICollection<Tag> Tags { get; set; } 
     }
 }
