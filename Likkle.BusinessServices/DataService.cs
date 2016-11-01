@@ -23,6 +23,7 @@ namespace Likkle.BusinessServices
             _mapper = mapperConfiguration.CreateMapper();
         }
 
+        #region Area specific
         public IEnumerable<AreaDto> GetAllAreas()
         {
             var allAreaEntities = this._unitOfWork.AreaRepository.GetAreas();
@@ -68,5 +69,123 @@ namespace Likkle.BusinessServices
             
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
         }
+
+        #endregion
+
+        #region Group specific
+
+        public IEnumerable<GroupDto> GetGroups(double latitude, double longitude)
+        {
+            var result = this._unitOfWork.AreaRepository.GetAreas(latitude, longitude);
+
+            var groupsInsideAreas = result.SelectMany(ar => ar.Groups);
+
+            var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupDto>>(groupsInsideAreas);
+
+            return groupsAsDtos;
+        }
+
+        public Guid InsertNewGroup(StandaloneGroupRequestDto newGroup)
+        {
+            var newGroupEntity = this._mapper.Map<StandaloneGroupRequestDto, Group>(newGroup);
+
+            var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
+            newGroupEntity.Users.Add(user);
+
+            if (newGroup.TagIds != null && newGroup.TagIds.Any())
+            {
+                var tagsForGroup = this._unitOfWork.TagRepository.GetAllTags().Where(t => newGroup.TagIds.Contains(t.Id));
+                foreach (var tag in tagsForGroup)
+                {
+                    newGroupEntity.Tags.Add(tag);
+                }
+            }
+
+            if (newGroup.AreaIds != null && newGroup.AreaIds.Any())
+            {
+                var areasForGroup = this._unitOfWork.AreaRepository.GetAreas().Where(a => newGroup.AreaIds.Contains(a.Id));
+                foreach (var area in areasForGroup)
+                {
+                    newGroupEntity.Areas.Add(area);
+                }
+            }           
+
+            this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
+
+            this._unitOfWork.GroupRepository.Save();
+
+            return newGroupEntity.Id;
+        }
+
+        public Guid InserGroupAsNewArea(GroupAsNewAreaRequestDto newGroup)
+        {
+            // 1. Add new area
+            var areaEntity = new Area()
+            {
+                Latitude = newGroup.Latitude,
+                Longitude = newGroup.Longitude,
+                Radius = newGroup.Radius
+            };
+
+            var newAreaId = this._unitOfWork.AreaRepository.InsertArea(areaEntity);
+
+            this._unitOfWork.AreaRepository.Save();
+
+            // 2. Add new group
+            var newGroupEntity = this._mapper.Map<GroupAsNewAreaRequestDto, Group>(newGroup);
+
+            var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
+            newGroupEntity.Users.Add(user);
+
+            var newlyCreatedArea = this._unitOfWork.AreaRepository.GetAreaById(newAreaId);
+
+            newGroupEntity.Users.Add(user);
+            newGroupEntity.Areas.Add(newlyCreatedArea);
+
+            if (newGroup.TagIds != null && newGroup.TagIds.Any())
+            {
+                var tagsForGroup = this._unitOfWork.TagRepository.GetAllTags().Where(t => newGroup.TagIds.Contains(t.Id));
+                foreach (var tag in tagsForGroup)
+                {
+                    newGroupEntity.Tags.Add(tag);
+                }
+            }
+
+            if (newGroup.AreaIds != null && newGroup.AreaIds.Any())
+            {
+                var areasForGroup = this._unitOfWork.AreaRepository.GetAreas().Where(a => newGroup.AreaIds.Contains(a.Id));
+                foreach (var area in areasForGroup)
+                {
+                    newGroupEntity.Areas.Add(area);
+                }
+            }
+
+            this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
+
+            this._unitOfWork.GroupRepository.Save();
+
+            return newGroupEntity.Id;
+        }
+
+        public GroupDto GetGroupById(Guid groupId)
+        {
+            var group = this._unitOfWork.GroupRepository.GetGroupById(groupId);
+
+            var groupDto = this._mapper.Map<Group, GroupDto>(group);
+
+            return groupDto;
+        }
+
+        public IEnumerable<UserDto> GetUsersFromGroup(Guid groupId)
+        {
+            var users = this._unitOfWork.GroupRepository.GetGroupById(groupId).Users;
+
+            var userDtos = this._mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
+
+            return userDtos;
+        }
+
+        #endregion
+
     }
 }

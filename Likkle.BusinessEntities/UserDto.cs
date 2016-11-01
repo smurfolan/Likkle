@@ -20,8 +20,8 @@ namespace Likkle.BusinessEntities
         public DateTime BirthDate { get; set; }
         public string PhoneNumber { get; set; }
 
-        public virtual IEnumerable<GroupDto> Groups { get; set; }
-        public virtual IEnumerable<LanguageDto> Languages { get; set; }
-        public virtual NotificationSettingDto NotificationSettings { get; set; }
+        public IEnumerable<GroupDto> Groups { get; set; }
+        public IEnumerable<LanguageDto> Languages { get; set; }
+        public NotificationSettingDto NotificationSettings { get; set; }
     }
 }

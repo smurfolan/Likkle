@@ -17,5 +17,15 @@ namespace Likkle.BusinessServices
         Guid InsertNewArea(NewAreaRequest newArea);
 
         #endregion
+
+        #region Group specific
+
+        IEnumerable<GroupDto> GetGroups(double latitude, double longitude);
+        Guid InsertNewGroup(StandaloneGroupRequestDto newGroup);
+        Guid InserGroupAsNewArea(GroupAsNewAreaRequestDto newGroup);
+        GroupDto GetGroupById(Guid groupId);
+        IEnumerable<UserDto> GetUsersFromGroup(Guid groupId);
+
+        #endregion
     }
 }
