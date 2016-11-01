@@ -2,6 +2,7 @@
 using System.Web.Http;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
+using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
@@ -17,7 +18,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// Example: GET /api/v1/areas/{id:int}
+        /// Example: GET /api/v1/areas/{id:Guid}
         /// </summary>
         /// <param name="id">Id of the area.</param>
         /// <returns>Returns area by its id.</returns>
@@ -27,10 +28,17 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            try
+            {
+                var result = this._likkleDataService.GetAreaById(id);
 
-            var result = this._likkleDataService.GetAreaById(id);
-
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error while getting are by its id.", ex);
+                return InternalServerError();
+            }        
         }
 
         /// <summary>
@@ -54,13 +62,13 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                //BoongalooApiLogger.LogError("Error while getting groups around coordinates.", ex);
+                LikkleApiLogger.LogError("Error while getting groups around coordinates.", ex);
                 return InternalServerError();
             }
         }
 
         /// <summary>
-        /// Example: GET api/v1/areas/{id:int}/users
+        /// Example: GET api/v1/areas/{id:Guid}/users
         /// </summary>
         /// <param name="id">Id of the area.</param>
         /// <returns>All the users falling into specific area</returns>
@@ -75,7 +83,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                //BoongalooApiLogger.LogError("Error while getting users for area.", ex);
+                LikkleApiLogger.LogError("Error while getting users for area.", ex);
                 return InternalServerError();
             }
         }
@@ -100,7 +108,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                //BoongalooApiLogger.LogError("Error while creating new area.", ex);
+                LikkleApiLogger.LogError("Error while creating new area.", ex);
                 return InternalServerError();
             }
         }
