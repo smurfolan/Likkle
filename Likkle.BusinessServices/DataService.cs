@@ -85,12 +85,20 @@ namespace Likkle.BusinessServices
             return groupsAsDtos;
         }
 
+        // TODO: Extract common parts from InsertNewGroup and InserGroupAsNewArea
         public Guid InsertNewGroup(StandaloneGroupRequestDto newGroup)
         {
             var newGroupEntity = this._mapper.Map<StandaloneGroupRequestDto, Group>(newGroup);
+            newGroupEntity.Areas = new List<Area>();
+            newGroupEntity.Tags = new List<Tag>();
 
-            var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
-            newGroupEntity.Users.Add(user);
+            if (newGroup.UserId != Guid.Empty)
+            {
+                var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
+
+                if(user != null)
+                    newGroupEntity.Users.Add(user);
+            }     
 
             if (newGroup.TagIds != null && newGroup.TagIds.Any())
             {
@@ -134,12 +142,19 @@ namespace Likkle.BusinessServices
             // 2. Add new group
             var newGroupEntity = this._mapper.Map<GroupAsNewAreaRequestDto, Group>(newGroup);
 
-            var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
-            newGroupEntity.Users.Add(user);
+            newGroupEntity.Tags = new List<Tag>();
+            newGroupEntity.Areas = new List<Area>();
+
+            if (newGroup.UserId != Guid.Empty)
+            {
+                var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
+
+                if(user != null)
+                    newGroupEntity.Users.Add(user);
+            }           
 
             var newlyCreatedArea = this._unitOfWork.AreaRepository.GetAreaById(newAreaId);
 
-            newGroupEntity.Users.Add(user);
             newGroupEntity.Areas.Add(newlyCreatedArea);
 
             if (newGroup.TagIds != null && newGroup.TagIds.Any())
