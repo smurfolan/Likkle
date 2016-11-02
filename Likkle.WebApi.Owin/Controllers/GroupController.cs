@@ -6,6 +6,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
+    // TODO: Test all end points manually.
     [Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
