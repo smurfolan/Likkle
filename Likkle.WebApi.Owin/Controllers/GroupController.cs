@@ -40,9 +40,7 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 LikkleApiLogger.LogError("Error while getting group by id.", ex);
                 return InternalServerError();
-            }
-
-            
+            }  
         }
 
         /// <summary>

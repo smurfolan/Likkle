@@ -71,5 +71,26 @@
             <param name="UserIdNote">NOTE: 'userId':1 -> Supposed to be the id of the user. If you pass it, you automatically get subscribed to the group you created. Otherwise, you just create it without following it.</param>
             <returns>Uniqe identifier of the newly created group entity</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Get(System.Guid)">
+            <summary>
+            Example: GET /api/v1/users/{id:Guid}
+            </summary>
+            <param name="id">Unique identifier of a user</param>
+            <returns>Specific user by its id.</returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetUserByStsId(System.String)">
+            <summary>
+            Example: GET api/v1/users/{stsId:string}
+            </summary>
+            <param name="stsId">Base64 encoded STS id.</param>
+            <returns>If there's such user in the system - UserDto is returned, otherwise null.</returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Post(Likkle.BusinessEntities.RelateUserToGroupsDto)">
+            <summary>
+            Example: POST api/v1/users/ChangeGroupsSubscribtion
+            </summary>
+            <param name="userToGroupsModel">Body sample: {'userId':1, 'groupsUserSubscribes':[3, 105]}</param>
+            <returns>Http.OK if the operation was successful or Http.500 if there was an error.</returns>
+        </member>
     </members>
 </doc>

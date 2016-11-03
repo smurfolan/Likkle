@@ -19,6 +19,11 @@ namespace Likkle.DataModel.Repositories
             return this._dbContext.Users.FirstOrDefault(u => u.Id == userId);
         }
 
+        public User GetUserByStsId(string stsId)
+        {
+            return this._dbContext.Users.FirstOrDefault(u => u.IdsrvUniqueId == stsId);
+        }
+
         public void Save()
         {
             this._dbContext.SaveChanges();

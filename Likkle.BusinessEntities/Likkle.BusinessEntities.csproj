@@ -64,6 +64,7 @@
     <Compile Include="LanguageDto.cs" />
     <Compile Include="NotificationSettingDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelateUserToGroupsDto.cs" />
     <Compile Include="Requests\GroupAsNewAreaRequestDto.cs" />
     <Compile Include="Requests\NewAreaRequest.cs" />
     <Compile Include="Requests\StandaloneGroupRequestDto.cs" />

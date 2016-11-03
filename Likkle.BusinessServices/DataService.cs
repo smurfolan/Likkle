@@ -200,7 +200,30 @@ namespace Likkle.BusinessServices
             return userDtos;
         }
 
+
+
         #endregion
 
+        #region Group specific
+
+        public UserDto GetUserById(Guid userId)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            var userDto = this._mapper.Map<User, UserDto>(user);
+
+            return userDto;
+        }
+
+        public UserDto GetUserByStsId(string stsId)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserByStsId(stsId);
+
+            var userDto = this._mapper.Map<User, UserDto>(user);
+
+            return userDto;
+        }
+
+        #endregion
     }
 }

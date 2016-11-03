@@ -27,5 +27,12 @@ namespace Likkle.BusinessServices
         IEnumerable<UserDto> GetUsersFromGroup(Guid groupId);
 
         #endregion
+
+        #region User specific
+
+        UserDto GetUserById(Guid userId);
+        UserDto GetUserByStsId(string stsId);
+
+        #endregion
     }
 }
