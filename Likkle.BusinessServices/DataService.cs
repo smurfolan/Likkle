@@ -204,7 +204,7 @@ namespace Likkle.BusinessServices
 
         #endregion
 
-        #region Group specific
+        #region User specific
 
         public UserDto GetUserById(Guid userId)
         {
@@ -241,6 +241,57 @@ namespace Likkle.BusinessServices
             }
 
             this._unitOfWork.Save();
+        }
+
+        public IEnumerable<UserDto> GetAllUsers()
+        {
+            var allUserEntities = this._unitOfWork.UserRepository.GetAllUsers();
+
+            var userDtos = this._mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(allUserEntities);
+
+            return userDtos;
+        }
+
+        public Guid InsertNewUser(NewUserRequestDto newUser)
+        {
+            var userEntity = this._mapper.Map<NewUserRequestDto, User>(newUser);
+
+            // add groups
+            userEntity.Groups = new List<Group>();
+            var groupEntities =
+                this._unitOfWork.GroupRepository.GetGroups().Where(gr => newUser.GroupIds.Contains(gr.Id));
+            foreach (var groupEntity in groupEntities)
+            {
+                userEntity.Groups.Add(groupEntity);
+            }
+
+            // add languages
+            userEntity.Languages = new List<Language>();
+            var languageEntities =
+                this._unitOfWork.LanguageRepository.GetAlLanguages().Where(l => newUser.LanguageIds.Contains(l.Id));
+            foreach (var languageEntity in languageEntities)
+            {
+                userEntity.Languages.Add(languageEntity);
+            }
+
+            // add default notification settings
+            var newNotificationSettingEntity = new NotificationSetting()
+            {
+                AutomaticallySubscribeToAllGroupsWithTag = true,
+                AutomaticallySubscribeToAllGroups = false,
+                SubscribedTagIds = null
+            };
+
+            this._unitOfWork.NotificationSettingRepository.InsertNewSetting(newNotificationSettingEntity);
+
+            this._unitOfWork.Save();
+
+            userEntity.NotificationSettings = newNotificationSettingEntity;
+
+            var newUserId = this._unitOfWork.UserRepository.InsertNewUser(userEntity);
+            this._unitOfWork.Save();
+
+            return newUserId;
         }
 
         #endregion

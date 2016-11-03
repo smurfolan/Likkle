@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Likkle.DataModel.Repositories
 {
@@ -6,5 +7,7 @@ namespace Likkle.DataModel.Repositories
     {
         User GetUserById(Guid userId);
         User GetUserByStsId(string stsId);
+        IEnumerable<User> GetAllUsers();
+        Guid InsertNewUser(User newUser);
     }
 }

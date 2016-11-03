@@ -10,6 +10,8 @@ namespace Likkle.DataModel.UnitOfWork
         private GroupRepository groupRepository;
         private TagRepository tagRepository;
         private UserRepository userRepository;
+        private LanguageRepository languageRepository;
+        private NotificationSettingRepository notificationSettingRepository;
 
         public AreaRepository AreaRepository
         {
@@ -52,6 +54,28 @@ namespace Likkle.DataModel.UnitOfWork
                     return new UserRepository(_dbContext);
 
                 return userRepository;
+            }
+        }
+
+        public LanguageRepository LanguageRepository
+        {
+            get
+            {
+                if (languageRepository == null)
+                    return new LanguageRepository(_dbContext);
+
+                return languageRepository;
+            }
+        }
+
+        public NotificationSettingRepository NotificationSettingRepository
+        {
+            get
+            {
+                if (notificationSettingRepository == null)
+                    return new NotificationSettingRepository(_dbContext);
+
+                return notificationSettingRepository;
             }
         }
 

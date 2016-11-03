@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Web.Http;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -72,7 +74,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: POST api/v1/users/ChangeGroupsSubscribtion
         /// </summary>
-        /// <param name="userToGroupsModel">Body sample: {'userId':1, 'groupsUserSubscribes':[3, 105]}</param>
+        /// <param name="userToGroupsModel">Body sample: {'userId':'6dd49a88-525a-4db7-8d89-13922591f328', 'groupsUserSubscribes':['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4']}</param>
         /// <returns>Http.OK if the operation was successful or Http.500 if there was an error.</returns>
         [HttpPost]
         [Route("ChangeGroupsSubscribtion")]
@@ -89,6 +91,35 @@ namespace Likkle.WebApi.Owin.Controllers
             catch (Exception ex)
             {
                 LikkleApiLogger.LogError("Error while subscribing user to groups.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: POST api/v1/users
+        /// </summary>
+        /// <param name="newUser">Body sample: {'idsrvUniqueId' : 'https://boongaloocompanysts/identity78f100e9-9d90-4de8-9d7d', 'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'groupIds': ['72f3a2cf-a9ab-4f93-a581-7ae07e81wef4']}</param>
+        /// <returns>Http status code 201 if user was succesfuly created or 500 if error has occured.</returns>
+        [HttpPost]
+        [Route("")]
+        public IHttpActionResult Post([FromBody]NewUserRequestDto newUser)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                if (this._likkleDataService.GetAllUsers()
+                    .Any(x => x.IdsrvUniqueId == newUser.IdsrvUniqueId || x.Email == newUser.Email))
+                    return BadRequest();
+
+                var newlyCreatedUserId = this._likkleDataService.InsertNewUser(newUser);
+
+                return Created("Success", "api/v1/users/" + newlyCreatedUserId);
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error while inserting a new user.", ex);
                 return InternalServerError();
             }
         }

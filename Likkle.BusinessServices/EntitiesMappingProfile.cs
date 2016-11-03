@@ -17,6 +17,8 @@ namespace Likkle.BusinessServices
             CreateMap<NotificationSetting, NotificationSettingDto>();
             CreateMap<StandaloneGroupRequestDto, Group>();
             CreateMap<GroupAsNewAreaRequestDto, Group>();
+            CreateMap<NewUserRequestDto, User>();
+
             //CreateMap<RadiusDto, Radius>();
             //CreateMap<Radius, RadiusDto>();
 

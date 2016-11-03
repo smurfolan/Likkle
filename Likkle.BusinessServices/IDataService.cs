@@ -33,6 +33,8 @@ namespace Likkle.BusinessServices
         UserDto GetUserById(Guid userId);
         UserDto GetUserByStsId(string stsId);
         void RelateUserToGroups(RelateUserToGroupsDto newRelations);
+        IEnumerable<UserDto> GetAllUsers();
+        Guid InsertNewUser(NewUserRequestDto newUser);
 
         #endregion
     }

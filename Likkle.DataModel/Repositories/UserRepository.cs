@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Likkle.DataModel.Repositories
@@ -22,6 +23,20 @@ namespace Likkle.DataModel.Repositories
         public User GetUserByStsId(string stsId)
         {
             return this._dbContext.Users.FirstOrDefault(u => u.IdsrvUniqueId == stsId);
+        }
+
+
+        public IEnumerable<User> GetAllUsers()
+        {
+            return this._dbContext.Users;
+        }
+
+        public Guid InsertNewUser(User newUser)
+        {
+            this._dbContext.Users.Add(newUser);
+            this._dbContext.SaveChanges();
+
+            return newUser.Id;
         }
 
         public void Save()
