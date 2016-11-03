@@ -7,7 +7,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -83,8 +83,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                // TODO: Implement service part for this. Most likely we will have to remove all the previous subscribtions
-
+                this._likkleDataService.RelateUserToGroups(userToGroupsModel);
                 return Ok();
             }
             catch (Exception ex)

@@ -224,6 +224,25 @@ namespace Likkle.BusinessServices
             return userDto;
         }
 
+        public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(newRelations.UserId);
+
+            user.Groups.Clear();
+            user.Groups = new List<Group>();
+
+            var groupEntities =
+                this._unitOfWork.GroupRepository.GetGroups()
+                    .Where(gr => newRelations.GroupsUserSubscribes.Contains(gr.Id));
+
+            foreach (var groupEntity in groupEntities)
+            {
+                user.Groups.Add(groupEntity);
+            }
+
+            this._unitOfWork.Save();
+        }
+
         #endregion
     }
 }

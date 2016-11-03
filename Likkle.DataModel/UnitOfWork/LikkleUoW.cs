@@ -54,5 +54,10 @@ namespace Likkle.DataModel.UnitOfWork
                 return userRepository;
             }
         }
+
+        public void Save()
+        {
+            this._dbContext.SaveChanges();
+        }
     }
 }

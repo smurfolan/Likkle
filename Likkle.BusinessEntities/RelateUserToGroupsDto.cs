@@ -7,7 +7,7 @@ namespace Likkle.BusinessEntities
     public class RelateUserToGroupsDto
     {
         [Required]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
         public IEnumerable<Guid> GroupsUserSubscribes { get; set; }
