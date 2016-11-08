@@ -7,8 +7,6 @@ namespace Likkle.BusinessEntities.Requests
 {
     public class NewUserRequestDto
     {
-        public Guid Id { get; set; }
-
         [Required]
         public string IdsrvUniqueId { get; set; }
 

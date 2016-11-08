@@ -35,6 +35,10 @@ namespace Likkle.BusinessServices
         void RelateUserToGroups(RelateUserToGroupsDto newRelations);
         IEnumerable<UserDto> GetAllUsers();
         Guid InsertNewUser(NewUserRequestDto newUser);
+        void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo);
+        IEnumerable<Guid> GetUserSubscriptions(Guid uid);
+        void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings);
+        NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
 
         #endregion
     }

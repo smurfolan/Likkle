@@ -123,5 +123,104 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
+
+        /// <summary>
+        /// Example: PUT api/v1/users/{id:Guid}
+        /// </summary>
+        /// <param name="id">Unique identifier of the user that will be updated</param>
+        /// <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1']</param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id}")]
+        public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            try
+            {
+                this._likkleDataService.UpdateUserInfo(id, updateUserData);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error while updating user.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: GET api/v1/users/{id:Guid}/subscriptions
+        /// </summary>
+        /// <param name="id">Id of the user we want to get the subscribtions</param>
+        /// <returns>List of Guids which indicate the group ids to which the user is subscribed</returns>
+        [HttpGet]
+        [Route("{id}/subscriptions")]
+        public IHttpActionResult GetSubscriptions(Guid id)
+        {
+            try
+            {
+                var result = this._likkleDataService.GetUserSubscriptions(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error getting user subscribtions.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: PUT api/v1/users/{id:Guid}/UpdateNotifications
+        /// </summary>
+        /// <param name="id">Unique identifier of the user whose notification settings we are updating</param>
+        /// <param name="notifications">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id}/UpdateNotifications")]
+        public IHttpActionResult Put(Guid id, [FromBody] EditUserNotificationsRequestDto notifications)
+        {
+            // TODO: Add validation which asserts that AutomaticallySubscribeToAllGroups != AutomaticallySubscribeToAllGroupsWithTag
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            try
+            {
+                this._likkleDataService.UpdateUserNotificationSettings(id, notifications);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error updating user notification settings.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: api/v1/users/{id:Guid}/NotificationSettings
+        /// </summary>
+        /// <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
+        /// <returns>Latest notification settings set up by the user.</returns>
+        [HttpGet]
+        [Route("{id}/NotificationSettings")]
+        public IHttpActionResult GetNotificationSettings(Guid id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            try
+            {
+                var result = this._likkleDataService.GetNotificationSettingsForUserWithId(id);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                LikkleApiLogger.LogError("Error getting user notification settings.", ex);
+                return InternalServerError();
+            }
+        }
     }
 }

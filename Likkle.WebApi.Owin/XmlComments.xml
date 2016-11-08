@@ -99,5 +99,35 @@
             <param name="newUser">Body sample: {'idsrvUniqueId' : 'https://boongaloocompanysts/identity78f100e9-9d90-4de8-9d7d', 'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'groupIds': ['72f3a2cf-a9ab-4f93-a581-7ae07e81wef4']}</param>
             <returns>Http status code 201 if user was succesfuly created or 500 if error has occured.</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Put(System.Guid,Likkle.BusinessEntities.Requests.UpdateUserInfoRequestDto)">
+            <summary>
+            Example: PUT api/v1/users/{id:Guid}
+            </summary>
+            <param name="id">Unique identifier of the user that will be updated</param>
+            <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1']</param>
+            <returns></returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSubscriptions(System.Guid)">
+            <summary>
+            Example: GET api/v1/users/{id:Guid}/subscriptions
+            </summary>
+            <param name="id">Id of the user we want to get the subscribtions</param>
+            <returns>List of Guids which indicate the group ids to which the user is subscribed</returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Put(System.Guid,Likkle.BusinessEntities.Requests.EditUserNotificationsRequestDto)">
+            <summary>
+            Example: PUT api/v1/users/{id:Guid}/UpdateNotifications
+            </summary>
+            <param name="id">Unique identifier of the user whose notification settings we are updating</param>
+            <param name="notifications">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
+            <returns></returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetNotificationSettings(System.Guid)">
+            <summary>
+            Example: api/v1/users/{id:Guid}/NotificationSettings
+            </summary>
+            <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
+            <returns>Latest notification settings set up by the user.</returns>
+        </member>
     </members>
 </doc>

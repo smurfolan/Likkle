@@ -11,6 +11,6 @@ namespace Likkle.BusinessEntities
 
         public bool AutomaticallySubscribeToAllGroupsWithTag { get; set; }
 
-        public IEnumerable<int> SubscribedTagIds { get; set; }
+        public IEnumerable<Guid> SubscribedTagIds { get; set; }
     }
 }

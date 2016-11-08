@@ -16,9 +16,9 @@ namespace Likkle.DataModel
 
         public bool AutomaticallySubscribeToAllGroupsWithTag { get; set; }
 
-        public IEnumerable<int> SubscribedTagIds { get; set; }
-
         // Navigation properties
         public virtual User User { get; set; }
+
+        public virtual ICollection<Tag> Tags { get; set; }
     }
 }

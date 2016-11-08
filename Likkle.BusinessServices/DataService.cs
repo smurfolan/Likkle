@@ -278,8 +278,7 @@ namespace Likkle.BusinessServices
             var newNotificationSettingEntity = new NotificationSetting()
             {
                 AutomaticallySubscribeToAllGroupsWithTag = true,
-                AutomaticallySubscribeToAllGroups = false,
-                SubscribedTagIds = null
+                AutomaticallySubscribeToAllGroups = false
             };
 
             this._unitOfWork.NotificationSettingRepository.InsertNewSetting(newNotificationSettingEntity);
@@ -292,6 +291,76 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
 
             return newUserId;
+        }
+
+        public void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo)
+        {
+            var userEntity = this._unitOfWork.UserRepository.GetAllUsers().FirstOrDefault(u => u.Id == uid);
+
+            if(userEntity == null)
+                throw new ArgumentException("User not available in Database");
+
+            userEntity.About = updatedInfo.About;
+            userEntity.BirthDate = updatedInfo.BirthDate;
+            userEntity.Email = updatedInfo.Email;
+            userEntity.FirstName = updatedInfo.FirstName;
+            userEntity.LastName = updatedInfo.LastName;
+            userEntity.PhoneNumber = updatedInfo.PhoneNumber;
+
+            userEntity.Languages.Clear();
+
+            var languages =
+                this._unitOfWork.LanguageRepository.GetAlLanguages().Where(l => updatedInfo.LanguageIds.Contains(l.Id));
+
+            foreach (var language in languages)
+            {
+                userEntity.Languages.Add(language);
+            }
+
+            this._unitOfWork.Save();
+        }
+
+        public IEnumerable<Guid> GetUserSubscriptions(Guid uid)
+        {
+            return this._unitOfWork.UserRepository.GetUserById(uid).Groups.Select(gr => gr.Id);
+        }
+
+        public void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings)
+        {
+            var userNotificationSettings = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
+
+            if(userNotificationSettings == null)
+                throw new ArgumentException("There's no notification settings for the user");
+
+            userNotificationSettings.AutomaticallySubscribeToAllGroups =
+                edittedUserNotificationSettings.AutomaticallySubscribeToAllGroups;
+
+            userNotificationSettings.AutomaticallySubscribeToAllGroupsWithTag =
+                edittedUserNotificationSettings.AutomaticallySubscribeToAllGroupsWithTag;
+
+            userNotificationSettings.Tags.Clear();
+
+            var tagsForNotification = this._unitOfWork.TagRepository.GetAllTags()
+                .Where(t => edittedUserNotificationSettings.SubscribedTagIds.Contains(t.Id));
+
+            foreach (var tag in tagsForNotification)
+            {
+                userNotificationSettings.Tags.Add(tag);
+            }
+
+            this._unitOfWork.Save();
+        }
+
+        public NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid)
+        {
+            var notificationEntity = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
+
+            var notificationSettingDto =
+                this._mapper.Map<NotificationSetting, NotificationSettingDto>(notificationEntity);
+
+            notificationSettingDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);
+
+            return notificationSettingDto;
         }
 
         #endregion

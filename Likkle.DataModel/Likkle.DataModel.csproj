@@ -58,6 +58,10 @@
     <Compile Include="Migrations\201610312108209_InitialCreate.Designer.cs">
       <DependentUpon>201610312108209_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611081540394_Updated_NotificationSetting_Entity.cs" />
+    <Compile Include="Migrations\201611081540394_Updated_NotificationSetting_Entity.Designer.cs">
+      <DependentUpon>201611081540394_Updated_NotificationSetting_Entity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NotificationSetting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,6 +94,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201610312108209_InitialCreate.resx">
       <DependentUpon>201610312108209_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611081540394_Updated_NotificationSetting_Entity.resx">
+      <DependentUpon>201611081540394_Updated_NotificationSetting_Entity.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
