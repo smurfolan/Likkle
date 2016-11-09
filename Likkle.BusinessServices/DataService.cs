@@ -255,25 +255,32 @@ namespace Likkle.BusinessServices
         public Guid InsertNewUser(NewUserRequestDto newUser)
         {
             var userEntity = this._mapper.Map<NewUserRequestDto, User>(newUser);
+            userEntity.Id = Guid.NewGuid();
 
             // add groups
-            userEntity.Groups = new List<Group>();
-            var groupEntities =
-                this._unitOfWork.GroupRepository.GetGroups().Where(gr => newUser.GroupIds.Contains(gr.Id));
-            foreach (var groupEntity in groupEntities)
+            if (newUser.GroupIds != null && newUser.GroupIds.Any())
             {
-                userEntity.Groups.Add(groupEntity);
-            }
+                userEntity.Groups = new List<Group>();
+                var groupEntities =
+                    this._unitOfWork.GroupRepository.GetGroups().Where(gr => newUser.GroupIds.Contains(gr.Id));
+                foreach (var groupEntity in groupEntities)
+                {
+                    userEntity.Groups.Add(groupEntity);
+                }
+            }           
 
             // add languages
-            userEntity.Languages = new List<Language>();
-            var languageEntities =
-                this._unitOfWork.LanguageRepository.GetAlLanguages().Where(l => newUser.LanguageIds.Contains(l.Id));
-            foreach (var languageEntity in languageEntities)
+            if (newUser.LanguageIds != null && newUser.LanguageIds.Any())
             {
-                userEntity.Languages.Add(languageEntity);
+                userEntity.Languages = new List<Language>();
+                var languageEntities =
+                    this._unitOfWork.LanguageRepository.GetAlLanguages().Where(l => newUser.LanguageIds.Contains(l.Id));
+                foreach (var languageEntity in languageEntities)
+                {
+                    userEntity.Languages.Add(languageEntity);
+                }
             }
-
+            
             // add default notification settings
             var newNotificationSettingEntity = new NotificationSetting()
             {
@@ -281,16 +288,12 @@ namespace Likkle.BusinessServices
                 AutomaticallySubscribeToAllGroups = false
             };
 
-            this._unitOfWork.NotificationSettingRepository.InsertNewSetting(newNotificationSettingEntity);
-
-            this._unitOfWork.Save();
-
             userEntity.NotificationSettings = newNotificationSettingEntity;
 
-            var newUserId = this._unitOfWork.UserRepository.InsertNewUser(userEntity);
+            this._unitOfWork.UserRepository.InsertNewUser(userEntity);
             this._unitOfWork.Save();
 
-            return newUserId;
+            return userEntity.Id;
         }
 
         public void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo)

@@ -8,7 +8,7 @@ namespace Likkle.DataModel
     public class NotificationSetting
     {       
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [ForeignKey("User")]
         public Guid Id { get; set; }
 
@@ -17,6 +17,7 @@ namespace Likkle.DataModel
         public bool AutomaticallySubscribeToAllGroupsWithTag { get; set; }
 
         // Navigation properties
+        [Required]
         public virtual User User { get; set; }
 
         public virtual ICollection<Tag> Tags { get; set; }

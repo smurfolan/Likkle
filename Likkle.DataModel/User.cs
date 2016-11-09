@@ -9,7 +9,7 @@ namespace Likkle.DataModel
     public class User
     {     
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
         public string IdsrvUniqueId { get; set; }
@@ -26,7 +26,9 @@ namespace Likkle.DataModel
 
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 
+
         public virtual ICollection<Language> Languages { get; set; }
+        [Required]
         public virtual NotificationSetting NotificationSettings { get; set; }
     }
 }

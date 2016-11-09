@@ -9,7 +9,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -51,7 +51,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <param name="stsId">Base64 encoded STS id.</param>
         /// <returns>If there's such user in the system - UserDto is returned, otherwise null.</returns>
         [HttpGet]
-        [Route("{stsId}")]
+        [Route("bystsid/{stsId}")]
         public IHttpActionResult GetUserByStsId(string stsId)
         {
             try
