@@ -104,7 +104,7 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 var newAreaId = this._likkleDataService.InsertNewArea(area);
 
-                return Created("Success", "api/v1/areas/" + newAreaId);
+                return Created("api/v1/areas/" + newAreaId, "Success");
             }
             catch (Exception ex)
             {

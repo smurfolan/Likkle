@@ -9,6 +9,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
+    // TODO: Test all end points manually.
     //[Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
@@ -115,7 +116,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
                 var newlyCreatedUserId = this._likkleDataService.InsertNewUser(newUser);
 
-                return Created("Success", "api/v1/users/" + newlyCreatedUserId);
+                return Created("api/v1/users/" + newlyCreatedUserId, "Success");
             }
             catch (Exception ex)
             {

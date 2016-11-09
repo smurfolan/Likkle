@@ -105,7 +105,7 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var newGroupId = this._likkleDataService.InsertNewGroup(newGroup);
-                return Created("Success", "api/v1/groups/" + newGroupId);
+                return Created("api/v1/groups/" + newGroupId, "Success");
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 var newlyCreatedGroupId = this._likkleDataService.InserGroupAsNewArea(newGroup);
 
-                return Created("Success", "api/v1/groups/" + newlyCreatedGroupId);
+                return Created("api/v1/groups/" + newlyCreatedGroupId, "Success");
             }
             catch (Exception ex)
             {
