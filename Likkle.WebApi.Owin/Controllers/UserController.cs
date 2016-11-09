@@ -46,7 +46,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// Example: GET api/v1/users/{stsId:string}
+        /// Example: GET api/v1/users/bystsid/{stsId:string}
         /// </summary>
         /// <param name="stsId">Base64 encoded STS id.</param>
         /// <returns>If there's such user in the system - UserDto is returned, otherwise null.</returns>
