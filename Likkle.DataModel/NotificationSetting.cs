@@ -8,6 +8,7 @@ namespace Likkle.DataModel
     public class NotificationSetting
     {       
         [Key]
+        //For the User - NotificationSettin relation see: http://stackoverflow.com/questions/40506036/how-to-achieve-one-to-one-in-code-first-approach-if-we-have-auto-generated-ids/40515309#40515309
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [ForeignKey("User")]
         public Guid Id { get; set; }

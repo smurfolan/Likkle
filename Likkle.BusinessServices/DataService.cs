@@ -284,7 +284,7 @@ namespace Likkle.BusinessServices
             // add default notification settings
             var newNotificationSettingEntity = new NotificationSetting()
             {
-                AutomaticallySubscribeToAllGroupsWithTag = true,
+                AutomaticallySubscribeToAllGroupsWithTag = false,
                 AutomaticallySubscribeToAllGroups = false
             };
 
