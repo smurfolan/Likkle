@@ -346,7 +346,14 @@ namespace Likkle.BusinessServices
             var tagsForNotification = this._unitOfWork.TagRepository.GetAllTags()
                 .Where(t => edittedUserNotificationSettings.SubscribedTagIds.Contains(t.Id));
 
-            foreach (var tag in tagsForNotification)
+            var forNotification = tagsForNotification as Tag[] ?? tagsForNotification.ToArray();
+
+            if(edittedUserNotificationSettings.SubscribedTagIds != null 
+                && edittedUserNotificationSettings.SubscribedTagIds.Any()
+                && (forNotification.Count() != edittedUserNotificationSettings.SubscribedTagIds.Count()))
+                throw new ArgumentException("Some of the tags that were submitted are not available in our system.");
+
+            foreach (var tag in forNotification)
             {
                 userNotificationSettings.Tags.Add(tag);
             }

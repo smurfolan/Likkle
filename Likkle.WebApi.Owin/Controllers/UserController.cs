@@ -9,8 +9,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    // TODO: Test all end points manually.
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -75,7 +74,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: POST api/v1/users/ChangeGroupsSubscribtion
         /// </summary>
-        /// <param name="userToGroupsModel">Body sample: {'userId':'6dd49a88-525a-4db7-8d89-13922591f328', 'groupsUserSubscribes':['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4']}</param>
+        /// <param name="userToGroupsModel">Body sample: {'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b', 'groupsUserSubscribes':['7dbb6004-9302-44ca-9a3c-7175c91b0094', '72f3a2cf-a9ab-4f93-a581-7ae07e812ef4']}</param>
         /// <returns>Http.OK if the operation was successful or Http.500 if there was an error.</returns>
         [HttpPost]
         [Route("ChangeGroupsSubscribtion")]
