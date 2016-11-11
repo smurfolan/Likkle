@@ -12,8 +12,7 @@ namespace Likkle.BusinessEntities.Requests
 
         [Required]
         public IEnumerable<Guid> TagIds { get; set; }
-
-        public IEnumerable<Guid> AreaIds { get; set; }
+        
         public Guid UserId { get; set; }
 
         [Required]
