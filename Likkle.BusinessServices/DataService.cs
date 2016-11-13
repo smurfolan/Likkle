@@ -168,15 +168,6 @@ namespace Likkle.BusinessServices
                 }
             }
 
-            if (newGroup.AreaIds != null && newGroup.AreaIds.Any())
-            {
-                var areasForGroup = this._unitOfWork.AreaRepository.GetAreas().Where(a => newGroup.AreaIds.Contains(a.Id));
-                foreach (var area in areasForGroup)
-                {
-                    newGroupEntity.Areas.Add(area);
-                }
-            }
-
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 
             this._unitOfWork.GroupRepository.Save();
