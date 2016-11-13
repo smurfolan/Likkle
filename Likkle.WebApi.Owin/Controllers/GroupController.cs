@@ -6,8 +6,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    // TODO: Test all end points manually.
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
@@ -68,7 +67,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-        // TESTED
+
         /// <summary>
         /// Example: GET api/v1/groups/{id:Guid}/users
         /// </summary>
@@ -89,7 +88,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-        // TESTED
+
         /// <summary>
         /// Example: POST /api/v1/groups
         /// </summary>

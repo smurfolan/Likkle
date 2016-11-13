@@ -57,7 +57,7 @@ namespace Likkle.DataModel.Repositories
         {
             var currentUserLocation = new GeoCoordinate(latitude, longitude);
 
-            return this._dbContext.Areas
+            return this._dbContext.Areas.ToList()
                 .Where(x => currentUserLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
         }
 
