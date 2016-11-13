@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Device.Location;
 using System.Linq;
 using AutoMapper;
 using Likkle.BusinessEntities;
@@ -49,7 +50,14 @@ namespace Likkle.BusinessServices
 
         public IEnumerable<AreaDto> GetAreas(double latitude, double longitude)
         {
-            throw new NotImplementedException();
+            var currentLocation = new GeoCoordinate(latitude, longitude);
+
+            var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
+                .Where(x => currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
+
+            var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areaEntities);
+
+            return areasAsDtos;
         }
 
         public IEnumerable<UserDto> GetUsersFromArea(Guid areaId)
