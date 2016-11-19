@@ -10,11 +10,11 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
-        private readonly DataService _likkleDataService;
+        private readonly IDataService _likkleDataService;
 
-        public GroupController()
+        public GroupController(IDataService dataService)
         {
-            this._likkleDataService = new DataService();
+            this._likkleDataService = dataService;
         }
 
         /// <summary>

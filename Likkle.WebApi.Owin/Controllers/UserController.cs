@@ -13,11 +13,11 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
-        private readonly DataService _likkleDataService;
+        private readonly IDataService _likkleDataService;
 
-        public UserController()
+        public UserController(IDataService dataService)
         {
-            this._likkleDataService = new DataService();
+            this._likkleDataService = dataService;
         }
 
         /// <summary>

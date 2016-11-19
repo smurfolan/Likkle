@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using IdentityServer3.AccessTokenValidation;
+using Likkle.WebApi.Owin.DI;
+using Ninject.Web.Common.OwinHost;
+using Ninject.Web.WebApi.OwinHost;
 using Owin;
 
 namespace Likkle.WebApi.Owin
@@ -23,16 +26,8 @@ namespace Likkle.WebApi.Owin
 
             var config = WebApiConfig.Register();
 
-            app.UseWebApi(config);
-
-            InitAutoMapper();
-        }
-
-        private void InitAutoMapper()
-        {
-            // Here we have to make the mapping between entities and DTOs
-            //Mapper.Initialize(cfg => {
-            //});
+            app.UseNinjectMiddleware(() => NinjectConfig.CreateKernel.Value);
+            app.UseNinjectWebApi(config);
         }
     }
 }

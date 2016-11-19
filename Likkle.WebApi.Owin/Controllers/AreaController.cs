@@ -10,11 +10,11 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
-        private readonly DataService _likkleDataService;
+        private readonly IDataService _likkleDataService;
 
-        public AreaController()
+        public AreaController(IDataService dataService)
         {
-            this._likkleDataService = new DataService();
+            this._likkleDataService = dataService;
         }
 
         /// <summary>
