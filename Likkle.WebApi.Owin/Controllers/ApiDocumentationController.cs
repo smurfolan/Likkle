@@ -10,6 +10,13 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/documentation")]
     public class ApiDocumentationController : ApiController
     {
+        private readonly ILikkleApiLogger _apiLogger;
+
+        public ApiDocumentationController(ILikkleApiLogger logger)
+        {
+            this._apiLogger = logger;
+        }
+
         [HttpGet]
         [Route("")]
         public IHttpActionResult Get()
@@ -22,7 +29,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while generating api documentation", ex);
+                _apiLogger.LogError("Error while generating api documentation", ex);
                 return InternalServerError();
             }
 

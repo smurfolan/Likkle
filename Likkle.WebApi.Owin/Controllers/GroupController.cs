@@ -11,10 +11,14 @@ namespace Likkle.WebApi.Owin.Controllers
     public class GroupController : ApiController
     {
         private readonly IDataService _likkleDataService;
+        private readonly ILikkleApiLogger _apiLogger;
 
-        public GroupController(IDataService dataService)
+        public GroupController(
+            IDataService dataService,
+            ILikkleApiLogger logger)
         {
             this._likkleDataService = dataService;
+            this._apiLogger = logger;
         }
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting group by id.", ex);
+                _apiLogger.LogError("Error while getting group by id.", ex);
                 return InternalServerError();
             }  
         }
@@ -63,7 +67,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting groups around coordinates.", ex);
+                _apiLogger.LogError("Error while getting groups around coordinates.", ex);
                 return InternalServerError();
             }
         }
@@ -84,7 +88,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting users for group.", ex);
+                _apiLogger.LogError("Error while getting users for group.", ex);
                 return InternalServerError();
             }
         }
@@ -108,7 +112,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while inserting a new group.", ex);
+                _apiLogger.LogError("Error while inserting a new group.", ex);
                 return InternalServerError();
             }
         }
@@ -135,7 +139,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while creating new group.", ex);
+                _apiLogger.LogError("Error while creating new group.", ex);
                 return InternalServerError();
             }
         }

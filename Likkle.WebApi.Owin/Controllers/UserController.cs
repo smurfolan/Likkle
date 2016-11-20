@@ -14,10 +14,14 @@ namespace Likkle.WebApi.Owin.Controllers
     public class UserController : ApiController
     {
         private readonly IDataService _likkleDataService;
+        private readonly ILikkleApiLogger _apiLogger;
 
-        public UserController(IDataService dataService)
+        public UserController(
+            IDataService dataService, 
+            ILikkleApiLogger logger)
         {
             this._likkleDataService = dataService;
+            this._apiLogger = logger;
         }
 
         /// <summary>
@@ -40,7 +44,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting user by id.", ex);
+                _apiLogger.LogError("Error while getting user by id.", ex);
                 return InternalServerError();
             }
         }
@@ -65,7 +69,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting user by STS id.", ex);
+                _apiLogger.LogError("Error while getting user by STS id.", ex);
                 return InternalServerError();
             }
 
@@ -90,7 +94,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while subscribing user to groups.", ex);
+                _apiLogger.LogError("Error while subscribing user to groups.", ex);
                 return InternalServerError();
             }
         }
@@ -119,7 +123,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while inserting a new user.", ex);
+                _apiLogger.LogError("Error while inserting a new user.", ex);
                 return InternalServerError();
             }
         }
@@ -145,7 +149,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while updating user.", ex);
+                _apiLogger.LogError("Error while updating user.", ex);
                 return InternalServerError();
             }
         }
@@ -166,7 +170,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error getting user subscribtions.", ex);
+                _apiLogger.LogError("Error getting user subscribtions.", ex);
                 return InternalServerError();
             }
         }
@@ -193,7 +197,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error updating user notification settings.", ex);
+                _apiLogger.LogError("Error updating user notification settings.", ex);
                 return InternalServerError();
             }
         }
@@ -218,7 +222,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error getting user notification settings.", ex);
+                _apiLogger.LogError("Error getting user notification settings.", ex);
                 return InternalServerError();
             }
         }

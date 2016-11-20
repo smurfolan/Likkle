@@ -6,15 +6,19 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
         private readonly IDataService _likkleDataService;
+        private readonly ILikkleApiLogger _apiLogger;
 
-        public AreaController(IDataService dataService)
+        public AreaController(
+            IDataService dataService, 
+            ILikkleApiLogger logger)
         {
             this._likkleDataService = dataService;
+            this._apiLogger = logger;
         }
 
         /// <summary>
@@ -28,6 +32,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
             try
             {
                 var result = this._likkleDataService.GetAreaById(id);
@@ -36,7 +41,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting are by its id.", ex);
+                _apiLogger.LogError("Error while getting are by its id.", ex);
                 return InternalServerError();
             }        
         }
@@ -62,7 +67,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting groups around coordinates.", ex);
+                _apiLogger.LogError("Error while getting groups around coordinates.", ex);
                 return InternalServerError();
             }
         }
@@ -83,7 +88,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while getting users for area.", ex);
+                _apiLogger.LogError("Error while getting users for area.", ex);
                 return InternalServerError();
             }
         }
@@ -108,7 +113,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                LikkleApiLogger.LogError("Error while creating new area.", ex);
+                _apiLogger.LogError("Error while creating new area.", ex);
                 return InternalServerError();
             }
         }

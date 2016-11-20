@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using Likkle.BusinessServices;
+using Likkle.WebApi.Owin.Helpers;
 using Ninject;
 
 namespace Likkle.WebApi.Owin.DI
@@ -22,6 +23,7 @@ namespace Likkle.WebApi.Owin.DI
             // TODO - put in registrations here...
 
             kernel.Bind<IDataService>().To<DataService>();
+            kernel.Bind<ILikkleApiLogger>().To<LikkleApiLogger>().InSingletonScope();
         }
     }
 }
