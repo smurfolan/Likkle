@@ -6,7 +6,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
@@ -53,7 +53,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <param name="lon">Longitude</param>
         /// <returns>All the areas around coordinates.</returns>
         [HttpGet]
-        [Route("{lat:double}/{lon:double}")]
+        [Route("{lat:double}/{lon:double}/")]
         public IHttpActionResult Get(double lat, double lon)
         {
             if (!ModelState.IsValid)
