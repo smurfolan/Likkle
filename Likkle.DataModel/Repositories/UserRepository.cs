@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace Likkle.DataModel.Repositories
@@ -28,7 +29,7 @@ namespace Likkle.DataModel.Repositories
 
         public IEnumerable<User> GetAllUsers()
         {
-            return this._dbContext.Users;
+            return this._dbContext.Users.Include(u => u.NotificationSettings);
         }
 
         public Guid InsertNewUser(User newUser)

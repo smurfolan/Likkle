@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Device.Location;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
@@ -302,7 +303,7 @@ namespace Likkle.BusinessServices
         public void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo)
         {
             var userEntity = this._unitOfWork.UserRepository.GetAllUsers().FirstOrDefault(u => u.Id == uid);
-
+            
             if(userEntity == null)
                 throw new ArgumentException("User not available in Database");
 
