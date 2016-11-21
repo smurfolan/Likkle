@@ -66,6 +66,14 @@
     <Compile Include="Migrations\201611091538232_UpdatedRelation.Designer.cs">
       <DependentUpon>201611091538232_UpdatedRelation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611210922311_JungleBeats.cs" />
+    <Compile Include="Migrations\201611210922311_JungleBeats.Designer.cs">
+      <DependentUpon>201611210922311_JungleBeats.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611210924168_FreeBreeziou.cs" />
+    <Compile Include="Migrations\201611210924168_FreeBreeziou.Designer.cs">
+      <DependentUpon>201611210924168_FreeBreeziou.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NotificationSetting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -104,6 +112,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611091538232_UpdatedRelation.resx">
       <DependentUpon>201611091538232_UpdatedRelation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611210922311_JungleBeats.resx">
+      <DependentUpon>201611210922311_JungleBeats.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611210924168_FreeBreeziou.resx">
+      <DependentUpon>201611210924168_FreeBreeziou.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -14,6 +14,8 @@ namespace Likkle.DataModel
         public string Name { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Group> Groups { get; set; } 
+        public virtual ICollection<Group> Groups { get; set; }
+
+        public virtual ICollection<NotificationSetting> NotificationSettings { get; set; }
     }
 }

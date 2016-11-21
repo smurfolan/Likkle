@@ -213,6 +213,8 @@ namespace Likkle.BusinessServices
 
             var userDto = this._mapper.Map<User, UserDto>(user);
 
+            userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(userId);
+
             return userDto;
         }
 

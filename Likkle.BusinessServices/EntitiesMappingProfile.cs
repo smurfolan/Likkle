@@ -18,6 +18,7 @@ namespace Likkle.BusinessServices
             CreateMap<StandaloneGroupRequestDto, Group>();
             CreateMap<GroupAsNewAreaRequestDto, Group>();
             CreateMap<NewUserRequestDto, User>();
+            CreateMap<Tag, TagDto>();
         }
     }
 }
