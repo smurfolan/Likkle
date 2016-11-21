@@ -155,6 +155,7 @@ namespace Likkle.BusinessServices
 
             newGroupEntity.Tags = new List<Tag>();
             newGroupEntity.Areas = new List<Area>();
+            newGroupEntity.Users = new List<User>();
 
             if (newGroup.UserId != Guid.Empty)
             {
