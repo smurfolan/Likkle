@@ -22,7 +22,7 @@ namespace Likkle.BusinessEntities.Requests
         public string About { get; set; }
         public GenderEnum Gender { get; set; }
 
-        public DateTime BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
         public string PhoneNumber { get; set; }
 
         public IEnumerable<Guid> LanguageIds { get; set; }

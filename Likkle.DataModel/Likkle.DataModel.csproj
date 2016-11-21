@@ -74,6 +74,10 @@
     <Compile Include="Migrations\201611210924168_FreeBreeziou.Designer.cs">
       <DependentUpon>201611210924168_FreeBreeziou.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611211057171_MoreThatJustANumber.cs" />
+    <Compile Include="Migrations\201611211057171_MoreThatJustANumber.Designer.cs">
+      <DependentUpon>201611211057171_MoreThatJustANumber.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NotificationSetting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -118,6 +122,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611210924168_FreeBreeziou.resx">
       <DependentUpon>201611210924168_FreeBreeziou.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611211057171_MoreThatJustANumber.resx">
+      <DependentUpon>201611211057171_MoreThatJustANumber.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

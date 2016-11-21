@@ -21,7 +21,7 @@ namespace Likkle.DataModel
         public string About { get; set; }
         public GenderEnum Gender { get; set; }
 
-        public DateTime BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
         public string PhoneNumber { get; set; }
 
         // Navigation properties
