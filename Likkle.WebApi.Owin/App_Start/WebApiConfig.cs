@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Likkle.WebApi.Owin
@@ -33,6 +34,7 @@ namespace Likkle.WebApi.Owin
             var json = config.Formatters.JsonFormatter;
             json.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
             json.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            json.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; // Useful for circular references. When we use Automapper sometimes circular references happen and stackoverflow happens.
 
             return config;
         }

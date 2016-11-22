@@ -11,14 +11,14 @@ namespace Likkle.BusinessServices
         {
             CreateMap<Area, AreaDto>();
             CreateMap<Group, GroupDto>();
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserDto>().PreserveReferences(); // Useful for circular references
             CreateMap<NewAreaRequest, Area>();
             CreateMap<Language, LanguageDto>();
             CreateMap<NotificationSetting, NotificationSettingDto>();
             CreateMap<StandaloneGroupRequestDto, Group>();
             CreateMap<GroupAsNewAreaRequestDto, Group>();
             CreateMap<NewUserRequestDto, User>();
-            CreateMap<Tag, TagDto>();
+            CreateMap<Tag, TagDto>().PreserveReferences(); // Useful for circular references
         }
     }
 }
