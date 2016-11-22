@@ -102,7 +102,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: POST api/v1/users
         /// </summary>
-        /// <param name="newUser">Body sample: {'idsrvUniqueId' : 'https://boongaloocompanysts/identity78f100e9-9d90-4de8-9d7d', 'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'groupIds': ['72f3a2cf-a9ab-4f93-a581-7ae07e81wef4']}</param>
+        /// <param name="newUser">Body sample: {'idsrvUniqueId' : 'https://boongaloocompanysts/identity78f100e9-9d90-4de8-9d7d', 'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['e9260fb3-5183-4c3e-9bd2-c606d03b7bcb','05872235-365b-41f8-ab50-3913ffe9c601'], 'groupIds': ['22811e2c-8c9c-432b-aa8e-0a9668d8cb28']}</param>
         /// <returns>Http status code 201 if user was succesfuly created or 500 if error has occured.</returns>
         [HttpPost]
         [Route("")]
@@ -115,7 +115,7 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 if (this._likkleDataService.GetAllUsers()
                     .Any(x => x.IdsrvUniqueId == newUser.IdsrvUniqueId || x.Email == newUser.Email))
-                    return BadRequest();
+                    return BadRequest("User with the same email or STS id has been already added.");
 
                 var newlyCreatedUserId = this._likkleDataService.InsertNewUser(newUser);
 

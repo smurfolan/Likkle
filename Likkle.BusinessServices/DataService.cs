@@ -13,6 +13,8 @@ namespace Likkle.BusinessServices
 {
     public class DataService : IDataService
     {
+        private readonly string InitialDateString = "01/01/1753";
+
         private readonly LikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
 
@@ -261,6 +263,11 @@ namespace Likkle.BusinessServices
         {
             var userEntity = this._mapper.Map<NewUserRequestDto, User>(newUser);
             userEntity.Id = Guid.NewGuid();
+
+            var userBirthdate = DateTime.Parse(newUser.BirthDate.ToString());
+            var minDateForSql = DateTime.Parse(InitialDateString);
+            
+            userEntity.BirthDate = userBirthdate <= minDateForSql ? minDateForSql : newUser.BirthDate;
 
             // add groups
             if (newUser.GroupIds != null && newUser.GroupIds.Any())
