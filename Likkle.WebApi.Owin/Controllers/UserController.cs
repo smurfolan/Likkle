@@ -40,6 +40,9 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 var result = this._likkleDataService.GetUserById(id);
 
+                if (result == null)
+                    return NotFound();
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -64,6 +67,9 @@ namespace Likkle.WebApi.Owin.Controllers
                 var decodedString = Encoding.UTF8.GetString(data);
 
                 var result = this._likkleDataService.GetUserByStsId(decodedString);
+
+                if (result == null)
+                    return NotFound();
 
                 return Ok(result);
             }
@@ -217,6 +223,9 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._likkleDataService.GetNotificationSettingsForUserWithId(id);
+
+                if (result == null)
+                    return NotFound();
 
                 return Ok(result);
             }

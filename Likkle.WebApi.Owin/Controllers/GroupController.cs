@@ -37,6 +37,9 @@ namespace Likkle.WebApi.Owin.Controllers
             {
                 var result = this._likkleDataService.GetGroupById(id);
 
+                if (result == null)
+                    return NotFound();
+
                 return Ok(result);
             }
             catch (Exception ex)
