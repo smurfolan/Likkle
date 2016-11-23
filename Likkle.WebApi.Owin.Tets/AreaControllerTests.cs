@@ -51,23 +51,6 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Client_Gets_NotFound_If_Wrong_AreaId_Was_Passed()
-        {
-            // arrange
-            var mockedDataService = new Mock<IDataService>();
-            var areaController = new AreaController(
-                mockedDataService.Object, 
-                _apiLogger.Object);
-
-            // act
-            var actionResult = areaController.Get(Guid.NewGuid());
-            var contentResult = actionResult as OkNegotiatedContentResult<AreaDto>;
-
-            // assert
-            Assert.IsNull(contentResult.Content);
-        }
-
-        [TestMethod]
         public void Client_Gets_500_Error_When_DataService_Throws_Exception_And_Then_Error_Is_Logged()
         {
             // arrange
@@ -144,5 +127,27 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(contentResult);
             Assert.IsTrue(string.CompareOrdinal(contentResult.Location.ToString(), "api/v1/areas/" + newAreaId) == 0 );
         }
+
+        [TestMethod]
+        public void Client_Gets_NotFound_Response_If_Entity_Not_Available()
+        {
+            // arrange
+            var mockedDataService = new Mock<IDataService>();
+
+            mockedDataService.Setup(x => x.GetAreaById(It.IsAny<Guid>())).Returns((AreaDto) null);
+
+            var areaController = new AreaController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.Get(Guid.NewGuid());
+            var contentResult = actionResult as NotFoundResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.IsInstanceOfType(contentResult, typeof(NotFoundResult));
+        }
+
     }
 }
