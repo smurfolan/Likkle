@@ -11,5 +11,11 @@ namespace Likkle.BusinessEntities
 
         [Required]
         public IEnumerable<Guid> GroupsUserSubscribes { get; set; }
+
+        [Required]
+        public double Latitude { get; set; }
+
+        [Required]
+        public double Longitude { get; set; }
     }
 }

@@ -131,6 +131,7 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("AsNewArea")]
         public IHttpActionResult Post([FromBody] GroupAsNewAreaRequestDto newGroup)
         {
+            // TODO: Validate if really the passed groups belong to the passed coordinates
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

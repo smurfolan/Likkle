@@ -89,7 +89,7 @@
             <summary>
             Example: POST api/v1/users/ChangeGroupsSubscribtion
             </summary>
-            <param name="userToGroupsModel">Body sample: {'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b', 'groupsUserSubscribes':['7dbb6004-9302-44ca-9a3c-7175c91b0094', '72f3a2cf-a9ab-4f93-a581-7ae07e812ef4']}</param>
+            <param name="userToGroupsModel">Body sample: {'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b', 'latitude':42.657064, 'longitude':23.28539, 'groupsUserSubscribes':['7dbb6004-9302-44ca-9a3c-7175c91b0094', '72f3a2cf-a9ab-4f93-a581-7ae07e812ef4']}</param>
             <returns>Http.OK if the operation was successful or Http.500 if there was an error.</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Post(Likkle.BusinessEntities.Requests.NewUserRequestDto)">
@@ -107,12 +107,14 @@
             <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '0001-01-01T00:00:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1']}</param>
             <returns></returns>
         </member>
-        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSubscriptions(System.Guid)">
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSubscriptions(System.Guid,System.Double,System.Double)">
             <summary>
-            Example: GET api/v1/users/{id:Guid}/subscriptions
+            Example: GET api/v1/users/{id:Guid}/{lat:double}/{lon:double}/subscriptions
             </summary>
             <param name="id">Id of the user we want to get the subscribtions</param>
-            <returns>List of Guids which indicate the group ids to which the user is subscribed</returns>
+            <param name="lat">Latitude of the current user location</param>
+            <param name="lon">Longitude of the current user location</param>
+            <returns>List of Guids which indicate the group ids to which the user is subscribed and these specific groups are around current user location.</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Put(System.Guid,Likkle.BusinessEntities.Requests.EditUserNotificationsRequestDto)">
             <summary>
