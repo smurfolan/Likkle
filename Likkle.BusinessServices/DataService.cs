@@ -5,6 +5,7 @@ using System.Linq;
 using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -71,6 +72,32 @@ namespace Likkle.BusinessServices
             var usersAsDtos = this._mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
 
             return usersAsDtos;
+        }
+
+        public AreaMetadataResponseDto GetMetadataForArea(
+            double latitude, 
+            double longitude, 
+            Guid areaId)
+        {
+            var clickedArea = this.GetAreaById(areaId);
+            var clientLocation = new GeoCoordinate(latitude, longitude);
+            var areaCenterLocation = new GeoCoordinate(clickedArea.Latitude, clickedArea.Longitude);
+
+            // 1. Get the distance between lat/lon and area's center
+            var distance = clientLocation.GetDistanceTo(areaCenterLocation) - (double) clickedArea.Radius;
+            
+            // 2. Get total number of people in the area (all groups people)
+            var totalNumberOfParticipants = clickedArea.Groups.SelectMany(gr => gr.Users).Count();
+
+            // 3. Gather all the uniqe group tags from all the groups
+            var allTags = clickedArea.Groups.SelectMany(gr => gr.Tags).Select(t => t.Id).Distinct();
+            
+            return new AreaMetadataResponseDto()
+            {
+                DistanceTo = distance,
+                NumberOfParticipants = totalNumberOfParticipants,
+                TagIds = allTags
+            };
         }
 
         public Guid InsertNewArea(NewAreaRequest newArea)

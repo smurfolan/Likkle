@@ -11,6 +11,15 @@
             <param name="id">Id of the area.</param>
             <returns>Returns area by its id.</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.GetAreaMetadata(System.Double,System.Double,System.Guid)">
+            <summary>
+            Example: GET /api/v1/areas/metadatafor/{lat:double}/{lon:double}/{id:Guid}
+            </summary>
+            <param name="lat">User's current location latitude</param>
+            <param name="lon">User's current location longitude</param>
+            <param name="areaId">Id of the clicked area.</param>
+            <returns>Metadata related to the clicked on the map area. The distance is in meters.</returns>
+        </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.Get(System.Double,System.Double)">
             <summary>
             Example: GET /api/v1/areas/{lat:double}/{lon:double}/

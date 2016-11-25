@@ -149,5 +149,10 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsInstanceOfType(contentResult, typeof(NotFoundResult));
         }
 
+        [TestMethod]
+        public void Client_Gets_AreaMetadata()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

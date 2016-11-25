@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 
 namespace Likkle.BusinessServices
 {
@@ -13,6 +14,7 @@ namespace Likkle.BusinessServices
         IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId);
         IEnumerable<AreaDto> GetAreas(double latitude, double longitude);
         IEnumerable<UserDto> GetUsersFromArea(Guid areaId);
+        AreaMetadataResponseDto GetMetadataForArea(double latitude, double longitude, Guid areaId);
 
         Guid InsertNewArea(NewAreaRequest newArea);
 

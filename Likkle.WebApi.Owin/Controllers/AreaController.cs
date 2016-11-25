@@ -50,6 +50,30 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
+        /// Example: GET /api/v1/areas/metadatafor/{lat:double}/{lon:double}/{id:Guid}
+        /// </summary>
+        /// <param name="lat">User's current location latitude</param>
+        /// <param name="lon">User's current location longitude</param>
+        /// <param name="areaId">Id of the clicked area.</param>
+        /// <returns>Metadata related to the clicked on the map area. The distance is in meters.</returns>
+        [HttpGet]
+        [Route("metadatafor/{lat}/{lon}/{areaId}")]
+        public IHttpActionResult GetAreaMetadata(double lat, double lon, Guid areaId)
+        {
+            try
+            {
+                var result = this._likkleDataService.GetMetadataForArea(lat, lon, areaId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while getting metadata for area.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
         /// Example: GET /api/v1/areas/{lat:double}/{lon:double}/
         /// </summary>
         /// <param name="lat">Latitude</param>
