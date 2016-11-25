@@ -314,16 +314,23 @@ namespace Likkle.BusinessServices
 
             return userDtos;
         }
-
+        // TODO: To be seriously unit tested
         public Guid InsertNewUser(NewUserRequestDto newUser)
         {
             var userEntity = this._mapper.Map<NewUserRequestDto, User>(newUser);
             userEntity.Id = Guid.NewGuid();
 
-            var userBirthdate = DateTime.Parse(newUser.BirthDate.ToString());
-            var minDateForSql = DateTime.Parse(InitialDateString);
-            
-            userEntity.BirthDate = userBirthdate <= minDateForSql ? minDateForSql : newUser.BirthDate;
+            if (newUser.BirthDate != null)
+            {
+                var userBirthdate = DateTime.Parse(newUser.BirthDate.ToString());
+                var minDateForSql = DateTime.Parse(InitialDateString);
+
+                userEntity.BirthDate = userBirthdate <= minDateForSql ? minDateForSql : newUser.BirthDate;
+            }
+            else
+            {
+                userEntity.BirthDate = DateTime.Parse(InitialDateString);
+            }  
 
             // add groups
             if (newUser.GroupIds != null && newUser.GroupIds.Any())
