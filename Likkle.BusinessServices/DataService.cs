@@ -84,7 +84,11 @@ namespace Likkle.BusinessServices
             var areaCenterLocation = new GeoCoordinate(clickedArea.Latitude, clickedArea.Longitude);
 
             // 1. Get the distance between lat/lon and area's center
-            var distance = clientLocation.GetDistanceTo(areaCenterLocation) - (double) clickedArea.Radius;
+            var pointToAreaCenterDistance = clientLocation.GetDistanceTo(areaCenterLocation);
+
+            var distance = pointToAreaCenterDistance > (double) clickedArea.Radius 
+                ? pointToAreaCenterDistance - (double)clickedArea.Radius 
+                : pointToAreaCenterDistance;
             
             // 2. Get total number of people in the area (all groups people)
             var totalNumberOfParticipants = clickedArea.Groups.SelectMany(gr => gr.Users).Count();

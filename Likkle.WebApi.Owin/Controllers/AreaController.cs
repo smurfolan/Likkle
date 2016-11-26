@@ -60,6 +60,9 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("metadatafor/{lat}/{lon}/{areaId}")]
         public IHttpActionResult GetAreaMetadata(double lat, double lon, Guid areaId)
         {
+            if(Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
+                return BadRequest("Latitude and longitude values must be in the [-90, 90] range.");
+
             try
             {
                 var result = this._likkleDataService.GetMetadataForArea(lat, lon, areaId);
