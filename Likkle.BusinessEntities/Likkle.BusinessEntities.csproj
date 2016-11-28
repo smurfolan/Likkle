@@ -67,6 +67,7 @@
     <Compile Include="RelateUserToGroupsDto.cs" />
     <Compile Include="Requests\EditUserNotificationsRequestDto.cs" />
     <Compile Include="Requests\GroupAsNewAreaRequestDto.cs" />
+    <Compile Include="Requests\MultipleAreasMetadataRequestDto.cs" />
     <Compile Include="Requests\NewAreaRequest.cs" />
     <Compile Include="Requests\NewUserRequestDto.cs" />
     <Compile Include="Requests\StandaloneGroupRequestDto.cs" />

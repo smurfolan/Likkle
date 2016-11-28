@@ -15,6 +15,7 @@ namespace Likkle.BusinessServices
         IEnumerable<AreaDto> GetAreas(double latitude, double longitude);
         IEnumerable<UserDto> GetUsersFromArea(Guid areaId);
         AreaMetadataResponseDto GetMetadataForArea(double latitude, double longitude, Guid areaId);
+        IEnumerable<AreaMetadataResponseDto> GetMultipleAreasMetadata(MultipleAreasMetadataRequestDto areas);
 
         Guid InsertNewArea(NewAreaRequest newArea);
 
@@ -42,6 +43,6 @@ namespace Likkle.BusinessServices
         void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings);
         NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
 
-        #endregion
+        #endregion     
     }
 }

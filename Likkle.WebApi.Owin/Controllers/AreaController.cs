@@ -76,6 +76,29 @@ namespace Likkle.WebApi.Owin.Controllers
             }
         }
 
+        //TODO: Since it is not a good practice to use POST request for getting data, consider optimizing this for GET.
+        /// <summary>
+        /// EXAMPLE: POST /api/v1/areas/batchmetadata/
+        /// </summary>
+        /// <param name="areas">Body sample: {'latitude': 11.111, 'longitude': 22.222, areaIds: ['9ee28efe-55f5-45fb-9aa1-600aa8b08114', 'b75ea52f-2b2b-4415-b385-6696cd7b0824']}</param>
+        /// <returns>List of metadata for each area that has a contact with the lat/lon point.</returns>
+        [HttpPost]
+        [Route("batchmetadata")]
+        public IHttpActionResult GetMultipleAreasMetadata([FromBody]MultipleAreasMetadataRequestDto areas)
+        {
+            try
+            {
+                var result = this._likkleDataService.GetMultipleAreasMetadata(areas);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while getting metadata for multiple areas.", ex);
+                return InternalServerError();
+            }
+        }
+
         /// <summary>
         /// Example: GET /api/v1/areas/{lat:double}/{lon:double}/
         /// </summary>

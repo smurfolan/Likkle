@@ -83,26 +83,24 @@ namespace Likkle.BusinessServices
             var clientLocation = new GeoCoordinate(latitude, longitude);
             var areaCenterLocation = new GeoCoordinate(clickedArea.Latitude, clickedArea.Longitude);
 
-            // 1. Get the distance between lat/lon and area's center
-            var pointToAreaCenterDistance = clientLocation.GetDistanceTo(areaCenterLocation);
-
-            var distance = pointToAreaCenterDistance > (double) clickedArea.Radius 
-                ? pointToAreaCenterDistance - (double)clickedArea.Radius 
-                : pointToAreaCenterDistance;
-            
-            // 2. Get total number of people in the area (all groups people)
-            var totalNumberOfParticipants = clickedArea.Groups.SelectMany(gr => gr.Users).Count();
-
-            // 3. Gather all the uniqe group tags from all the groups
-            var allTags = clickedArea.Groups.SelectMany(gr => gr.Tags).Select(t => t.Id).Distinct();
-            
-            return new AreaMetadataResponseDto()
-            {
-                DistanceTo = distance,
-                NumberOfParticipants = totalNumberOfParticipants,
-                TagIds = allTags
-            };
+            return GetAreaMetadata(clientLocation, areaCenterLocation, clickedArea);
         }
+
+        public IEnumerable<AreaMetadataResponseDto> GetMultipleAreasMetadata(MultipleAreasMetadataRequestDto areas)
+        {
+            var areaEntities = this._unitOfWork.AreaRepository.GetAreas().Where(a => areas.AreaIds.Contains(a.Id));
+
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areaEntities);
+
+            var areaEntitiesAsMetadataList =
+                areaDtos.Select(
+                    a =>
+                        GetAreaMetadata(new GeoCoordinate(areas.Latitude, areas.Longitude),
+                            new GeoCoordinate(a.Latitude, a.Longitude), a));
+
+            return areaEntitiesAsMetadataList;
+        }
+
 
         public Guid InsertNewArea(NewAreaRequest newArea)
         {
@@ -456,6 +454,34 @@ namespace Likkle.BusinessServices
             return notificationSettingDto;
         }
 
+        #endregion
+
+        #region Private methods
+        private static AreaMetadataResponseDto GetAreaMetadata(
+            GeoCoordinate clientLocation,
+            GeoCoordinate areaCenterLocation,
+            AreaDto clickedArea)
+        {
+            // 1. Get the distance between lat/lon and area's center
+            var pointToAreaCenterDistance = clientLocation.GetDistanceTo(areaCenterLocation);
+
+            var distance = pointToAreaCenterDistance > (double)clickedArea.Radius
+                ? pointToAreaCenterDistance - (double)clickedArea.Radius
+                : pointToAreaCenterDistance;
+
+            // 2. Get total number of people in the area (all groups people)
+            var totalNumberOfParticipants = clickedArea.Groups.SelectMany(gr => gr.Users).Count();
+
+            // 3. Gather all the uniqe group tags from all the groups
+            var allTags = clickedArea.Groups.SelectMany(gr => gr.Tags).Select(t => t.Id).Distinct();
+
+            return new AreaMetadataResponseDto()
+            {
+                DistanceTo = distance,
+                NumberOfParticipants = totalNumberOfParticipants,
+                TagIds = allTags
+            };
+        }
         #endregion
     }
 }
