@@ -113,13 +113,13 @@ namespace Likkle.BusinessServices
 
         #region Group specific
 
-        public IEnumerable<GroupDto> GetGroups(double latitude, double longitude)
+        public IEnumerable<GroupMetadataResponseDto> GetGroups(double latitude, double longitude)
         {
             var result = this._unitOfWork.AreaRepository.GetAreas(latitude, longitude);
 
             var groupsInsideAreas = result.SelectMany(ar => ar.Groups).Distinct();
 
-            var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupDto>>(groupsInsideAreas);
+            var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupMetadataResponseDto>>(groupsInsideAreas);
 
             return groupsAsDtos;
         }

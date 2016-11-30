@@ -73,6 +73,7 @@
     <Compile Include="Requests\StandaloneGroupRequestDto.cs" />
     <Compile Include="Requests\UpdateUserInfoRequestDto.cs" />
     <Compile Include="Responses\AreaMetadataResponseDto.cs" />
+    <Compile Include="Responses\GroupMetadataResponseDto.cs" />
     <Compile Include="TagDto.cs" />
     <Compile Include="UserDto.cs" />
   </ItemGroup>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web.Http.Results;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Controllers;
 using Likkle.WebApi.Owin.Helpers;
@@ -77,9 +78,9 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupDtoResultId = Guid.NewGuid();
 
-            mockedDataService.Setup(x => x.GetGroups(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<GroupDto>()
+            mockedDataService.Setup(x => x.GetGroups(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<GroupMetadataResponseDto>()
             {
-                new GroupDto()
+                new GroupMetadataResponseDto()
                 {
                     Id = groupDtoResultId
                 }
@@ -91,7 +92,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             // act
             var actionResult = groupController.Get(23, 23);
-            var contentResult = actionResult as OkNegotiatedContentResult<IEnumerable<GroupDto>>;
+            var contentResult = actionResult as OkNegotiatedContentResult<IEnumerable<GroupMetadataResponseDto>>;
 
 
             // assert

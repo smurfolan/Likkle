@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 using Likkle.DataModel;
 
 namespace Likkle.BusinessServices
@@ -19,6 +21,10 @@ namespace Likkle.BusinessServices
             CreateMap<GroupAsNewAreaRequestDto, Group>();
             CreateMap<NewUserRequestDto, User>();
             CreateMap<Tag, TagDto>().PreserveReferences(); // Useful for circular references
+            CreateMap<Group, GroupMetadataResponseDto>()
+                .ForMember(dest => dest.NumberOfUsers, opts => opts.MapFrom(src => src.Users.Count))
+                .ForMember(dest => dest.TagIds, opts => opts.MapFrom(src => src.Tags.Select(t => t.Id)));
+            
         }
     }
 }
