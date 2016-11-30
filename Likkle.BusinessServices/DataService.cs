@@ -117,7 +117,7 @@ namespace Likkle.BusinessServices
         {
             var result = this._unitOfWork.AreaRepository.GetAreas(latitude, longitude);
 
-            var groupsInsideAreas = result.SelectMany(ar => ar.Groups);
+            var groupsInsideAreas = result.SelectMany(ar => ar.Groups).Distinct();
 
             var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupDto>>(groupsInsideAreas);
 
