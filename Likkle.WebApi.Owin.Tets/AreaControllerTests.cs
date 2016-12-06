@@ -5,6 +5,7 @@ using System.Web.Http.Results;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Controllers;
 using Likkle.WebApi.Owin.Helpers;
@@ -78,9 +79,9 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaDtoResultId = Guid.NewGuid();
 
-            mockedDataService.Setup(x => x.GetAreas(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<AreaDto>()
+            mockedDataService.Setup(x => x.GetAreas(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<AreaForLocationResponseDto>()
             {
-                new AreaDto()
+                new AreaForLocationResponseDto()
                 {
                     Id = areaDtoResultId
                 }
@@ -92,7 +93,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             //
             var actionResult = areaController.Get(23, 23);
-            var contentResult = actionResult as OkNegotiatedContentResult<IEnumerable<AreaDto>>;
+            var contentResult = actionResult as OkNegotiatedContentResult<IEnumerable<AreaForLocationResponseDto>>;
 
             Assert.IsNotNull(contentResult);
             Assert.IsNotNull(contentResult.Content);
