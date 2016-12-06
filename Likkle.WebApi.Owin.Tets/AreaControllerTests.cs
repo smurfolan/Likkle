@@ -153,6 +153,31 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void Client_Gets_AreaMetadata()
         {
+            // arrange
+            var mockedDataService = new Mock<IDataService>();
+
+            mockedDataService.Setup(x => x.GetMetadataForArea(
+                It.IsAny<double>(), 
+                It.IsAny<double>(), 
+                It.IsAny<Guid>())).Returns(new AreaMetadataResponseDto());
+
+            var areaController = new AreaController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.GetAreaMetadata(-91, 91, Guid.NewGuid());
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual(contentResult.Message, "Latitude and longitude values must be in the [-90, 90] range.");
+            Assert.IsInstanceOfType(contentResult, typeof(BadRequestErrorMessageResult));
+        }
+
+        [TestMethod]
+        public void Client_Gets_Multiple_Areas_Metadata()
+        {
             throw new NotImplementedException();
         }
     }

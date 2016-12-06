@@ -9,7 +9,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -159,7 +159,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-        // TODO: Add aditional arguments latitude/longitude to indicate subscriptions around what spot are needed. We don't need all available.
+
         // TODO: Manually test this!!!
         /// <summary>
         /// Example: GET api/v1/users/{id:Guid}/around/{lat:double}/{lon:double}/subscriptions
