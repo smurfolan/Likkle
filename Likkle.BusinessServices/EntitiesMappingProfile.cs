@@ -14,6 +14,7 @@ namespace Likkle.BusinessServices
             CreateMap<Area, AreaDto>();
             CreateMap<Group, GroupDto>();
             CreateMap<User, UserDto>().PreserveReferences(); // Useful for circular references
+            CreateMap<UpdateUserInfoRequestDto, User>();
             CreateMap<NewAreaRequest, Area>();
             CreateMap<Language, LanguageDto>();
             CreateMap<NotificationSetting, NotificationSettingDto>();

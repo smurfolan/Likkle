@@ -380,14 +380,12 @@ namespace Likkle.BusinessServices
             if(userEntity == null)
                 throw new ArgumentException("User not available in Database");
 
-            userEntity.About = updatedInfo.About;
-            userEntity.BirthDate = updatedInfo.BirthDate;
-            userEntity.Email = updatedInfo.Email;
-            userEntity.FirstName = updatedInfo.FirstName;
-            userEntity.LastName = updatedInfo.LastName;
-            userEntity.PhoneNumber = updatedInfo.PhoneNumber;
-
-            userEntity.Languages.Clear();
+            userEntity = this._mapper.Map<UpdateUserInfoRequestDto, User>(updatedInfo);
+            
+            if (userEntity.Languages != null)
+                userEntity.Languages.Clear();
+            else
+                userEntity.Languages = new List<Language>();
 
             var languages =
                 this._unitOfWork.LanguageRepository.GetAlLanguages().Where(l => updatedInfo.LanguageIds.Contains(l.Id));
