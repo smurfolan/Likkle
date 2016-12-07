@@ -51,14 +51,14 @@ namespace Likkle.BusinessServices
             throw new NotImplementedException();
         }
 
-        public IEnumerable<AreaDto> GetAreas(double latitude, double longitude)
+        public IEnumerable<AreaForLocationResponseDto> GetAreas(double latitude, double longitude)
         {
             var currentLocation = new GeoCoordinate(latitude, longitude);
 
             var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
                 .Where(x => currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
 
-            var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areaEntities);
+            var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaForLocationResponseDto>>(areaEntities);
 
             return areasAsDtos;
         }

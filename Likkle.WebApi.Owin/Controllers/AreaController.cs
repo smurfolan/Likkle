@@ -170,6 +170,5 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-
     }
 }
