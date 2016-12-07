@@ -75,6 +75,7 @@
     <Compile Include="Responses\AreaForLocationResponseDto.cs" />
     <Compile Include="Responses\AreaMetadataResponseDto.cs" />
     <Compile Include="Responses\GroupMetadataResponseDto.cs" />
+    <Compile Include="Responses\UserInfoResponseDto.cs" />
     <Compile Include="TagDto.cs" />
     <Compile Include="UserDto.cs" />
   </ItemGroup>

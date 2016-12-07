@@ -239,22 +239,22 @@ namespace Likkle.BusinessServices
 
         #region User specific
 
-        public UserDto GetUserById(Guid userId)
+        public UserInfoResponseDto GetUserById(Guid userId)
         {
             var user = this._unitOfWork.UserRepository.GetUserById(userId);
 
-            var userDto = this._mapper.Map<User, UserDto>(user);
+            var userDto = this._mapper.Map<User, UserInfoResponseDto>(user);
 
             userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(userId);
 
             return userDto;
         }
 
-        public UserDto GetUserByStsId(string stsId)
+        public UserInfoResponseDto GetUserByStsId(string stsId)
         {
             var user = this._unitOfWork.UserRepository.GetUserByStsId(stsId);
 
-            var userDto = this._mapper.Map<User, UserDto>(user);
+            var userDto = this._mapper.Map<User, UserInfoResponseDto>(user);
 
             return userDto;
         }

@@ -9,7 +9,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
