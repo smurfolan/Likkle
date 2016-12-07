@@ -379,9 +379,9 @@ namespace Likkle.BusinessServices
             
             if(userEntity == null)
                 throw new ArgumentException("User not available in Database");
-
-            userEntity = this._mapper.Map<UpdateUserInfoRequestDto, User>(updatedInfo);
             
+            this._mapper.Map<UpdateUserInfoRequestDto, User>(updatedInfo, userEntity);
+
             if (userEntity.Languages != null)
                 userEntity.Languages.Clear();
             else
