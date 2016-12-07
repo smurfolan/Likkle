@@ -126,6 +126,33 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
+        /// Example: GET api/v1/areas/{lat:double}/{lon:double}/{rad:int}
+        /// </summary>
+        /// <param name="lat">Latitude of the center of the screen</param>
+        /// <param name="lon">Longitude of the center of the screen</param>
+        /// <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
+        /// <returns>All areas in a radius around point.</returns>
+        [HttpGet]
+        [Route("{lat:double}/{lon:double}/{rad:int}")]
+        public IHttpActionResult Get(double lat, double lon, int rad)
+        {
+            if (Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
+                return BadRequest("Latitude and longitude values must be in the [-90, 90] range.");
+
+            try
+            {
+                var result = this._likkleDataService.GetAreas(lat, lon, rad*1000);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while getting areas in radius around coordinates", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
         /// Example: GET api/v1/areas/{id:Guid}/users
         /// </summary>
         /// <param name="id">Id of the area.</param>

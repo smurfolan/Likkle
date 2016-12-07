@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Device.Location;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
@@ -63,6 +64,18 @@ namespace Likkle.BusinessServices
             return areasAsDtos;
         }
 
+        public IEnumerable<AreaForLocationResponseDto> GetAreas(double lat, double lon, int rad)
+        {
+            var currentLocation = new GeoCoordinate(lat, lon);
+
+            var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
+                .Where(a => currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= rad);
+
+            var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaForLocationResponseDto>>(areaEntities);
+
+            return areasAsDtos;
+        }
+
         public IEnumerable<UserDto> GetUsersFromArea(Guid areaId)
         {
             var users = this._unitOfWork.AreaRepository.GetAreas()
@@ -100,7 +113,6 @@ namespace Likkle.BusinessServices
 
             return areaEntitiesAsMetadataList;
         }
-
 
         public Guid InsertNewArea(NewAreaRequest newArea)
         {
