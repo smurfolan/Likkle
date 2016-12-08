@@ -35,6 +35,15 @@
             <param name="lon">Longitude</param>
             <returns>All the areas around coordinates.</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.Get(System.Double,System.Double,System.Int32)">
+            <summary>
+            Example: GET api/v1/areas/{lat:double}/{lon:double}/{rad:int}
+            </summary>
+            <param name="lat">Latitude of the center of the screen</param>
+            <param name="lon">Longitude of the center of the screen</param>
+            <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
+            <returns>All areas in a radius around point.</returns>
+        </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.GetUsers(System.Guid)">
             <summary>
             Example: GET api/v1/areas/{id:Guid}/users
