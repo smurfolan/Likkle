@@ -52,6 +52,9 @@
   <ItemGroup>
     <Compile Include="Area.cs" />
     <Compile Include="Group.cs" />
+    <Compile Include="TestingPurposes\FakeDbSet.cs" />
+    <Compile Include="TestingPurposes\FakeLikkleDbContext.cs" />
+    <Compile Include="TestingPurposes\ILikkleDbContext.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="LikkleDbContext.cs" />
     <Compile Include="Migrations\201610312108209_InitialCreate.cs" />

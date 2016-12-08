@@ -2,7 +2,8 @@
 
 namespace Likkle.DataModel
 {
-    public class LikkleDbContext : DbContext
+    // TODO: Implement FakeLIkkleDbContext
+    public class LikkleDbContext : DbContext, ILikkleDbContext
     {
         public IDbSet<Area> Areas { get; set; }
         public IDbSet<Group> Groups { get; set; }

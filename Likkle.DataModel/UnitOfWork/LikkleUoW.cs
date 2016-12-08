@@ -4,6 +4,7 @@ namespace Likkle.DataModel.UnitOfWork
 {
     public class LikkleUoW
     {
+        // TODO: Make this injectable
         private readonly LikkleDbContext _dbContext = new LikkleDbContext();
 
         private AreaRepository areaRepository;
