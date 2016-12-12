@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Device.Location;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
@@ -16,16 +15,15 @@ namespace Likkle.BusinessServices
     {
         private readonly string InitialDateString = "01/01/1753";
 
-        private readonly LikkleUoW _unitOfWork;
+        private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
 
-        public DataService()
+        public DataService(
+            ILikkleUoW uow, 
+            IConfigurationProvider configurationProvider)
         {
-            _unitOfWork = new LikkleUoW();
-            var mapperConfiguration = new MapperConfiguration(cfg => {
-                cfg.AddProfile<EntitiesMappingProfile>();
-            });
-            _mapper = mapperConfiguration.CreateMapper();
+            this._unitOfWork = uow;
+            _mapper = configurationProvider.CreateMapper();
         }
 
         #region Area specific

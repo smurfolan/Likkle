@@ -45,6 +45,10 @@
     <DocumentationFile>XmlComments.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=5.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.5.1.1\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
@@ -224,6 +228,10 @@
     <ProjectReference Include="..\Likkle.BusinessServices\Likkle.BusinessServices.csproj">
       <Project>{9468D542-C1AF-40C4-9FDB-A4E77FA07161}</Project>
       <Name>Likkle.BusinessServices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Likkle.DataModel\Likkle.DataModel.csproj">
+      <Project>{12EC8683-4D5F-41C4-8B2A-93F2F0C56FA4}</Project>
+      <Name>Likkle.DataModel</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

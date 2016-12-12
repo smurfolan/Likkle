@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Reflection;
+using AutoMapper;
 using Likkle.BusinessServices;
+using Likkle.DataModel;
+using Likkle.DataModel.UnitOfWork;
 using Likkle.WebApi.Owin.Helpers;
 using Ninject;
 
@@ -22,8 +25,17 @@ namespace Likkle.WebApi.Owin.DI
         {
             // TODO - put in registrations here...
 
-            kernel.Bind<IDataService>().To<DataService>();
+            
             kernel.Bind<ILikkleApiLogger>().To<LikkleApiLogger>().InSingletonScope();
+
+            kernel.Bind<ILikkleDbContext>().To<LikkleDbContext>();
+            kernel.Bind<ILikkleUoW>().To<LikkleUoW>();
+            kernel.Bind<IDataService>().To<DataService>();
+
+            var mapperConfiguration = new MapperConfiguration(cfg => {
+                cfg.AddProfile<EntitiesMappingProfile>();
+            });
+            kernel.Bind<IConfigurationProvider>().ToConstant(mapperConfiguration);
         }
     }
 }

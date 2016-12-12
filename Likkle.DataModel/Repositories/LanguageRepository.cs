@@ -4,11 +4,11 @@ namespace Likkle.DataModel.Repositories
 {
     public class LanguageRepository : ILanguageRepository
     {
-        private LikkleDbContext _dbContext;
+        private ILikkleDbContext _dbContext;
 
         private bool _disposed = false;
 
-        public LanguageRepository(LikkleDbContext dbContext)
+        public LanguageRepository(ILikkleDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

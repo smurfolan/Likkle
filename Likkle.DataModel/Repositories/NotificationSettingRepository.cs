@@ -4,11 +4,11 @@ namespace Likkle.DataModel.Repositories
 {
     public class NotificationSettingRepository : INotificationSettingRepository
     {
-        private LikkleDbContext _dbContext;
+        private ILikkleDbContext _dbContext;
 
         private bool _disposed = false;
 
-        public NotificationSettingRepository(LikkleDbContext dbContext)
+        public NotificationSettingRepository(ILikkleDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

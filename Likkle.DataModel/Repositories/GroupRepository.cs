@@ -6,11 +6,11 @@ namespace Likkle.DataModel.Repositories
 {
     public class GroupRepository : IGroupRepository
     {
-        private LikkleDbContext _dbContext;
+        private ILikkleDbContext _dbContext;
 
         private bool _disposed = false;
 
-        public GroupRepository(LikkleDbContext dbContext)
+        public GroupRepository(ILikkleDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

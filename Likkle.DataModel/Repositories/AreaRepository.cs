@@ -8,11 +8,11 @@ namespace Likkle.DataModel.Repositories
 {
     public class AreaRepository : IAreaRepository
     {
-        private LikkleDbContext _dbContext;
+        private ILikkleDbContext _dbContext;
 
         private bool _disposed = false;
 
-        public AreaRepository(LikkleDbContext dbContext)
+        public AreaRepository(ILikkleDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

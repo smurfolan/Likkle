@@ -7,11 +7,11 @@ namespace Likkle.DataModel.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private LikkleDbContext _dbContext;
+        private ILikkleDbContext _dbContext;
 
         private bool _disposed = false;
 
-        public UserRepository(LikkleDbContext dbContext)
+        public UserRepository(ILikkleDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

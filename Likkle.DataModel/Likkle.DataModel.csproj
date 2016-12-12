@@ -97,6 +97,7 @@
     <Compile Include="Repositories\TagRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Tag.cs" />
+    <Compile Include="UnitOfWork\ILikkleUoW.cs" />
     <Compile Include="UnitOfWork\LikkleUoW.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
