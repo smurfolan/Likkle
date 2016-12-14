@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
+using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
@@ -20,9 +23,15 @@ namespace Likkle.WebApi.Owin.Tets
 
         public DataServiceTests()
         {
+            var fakeDbContext = new FakeLikkleDbContext();
+
             this._mockedLikkleUoW = new Mock<ILikkleUoW>();
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository)
-                .Returns(new AreaRepository(new FakeLikkleDbContext()));
+                .Returns(new AreaRepository(fakeDbContext));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository)
+                .Returns(new UserRepository(fakeDbContext));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository)
+                .Returns(new GroupRepository(fakeDbContext));
 
 
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
@@ -38,21 +47,57 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_All_Areas()
+        public void We_Can_Relate_User_To_Groups()
         {
             // arrange
-            this._dataService.InsertNewArea(new NewAreaRequest()
+
+            var currentlyWorkingLat = 10;
+            var currentlyWorkingLon = currentlyWorkingLat;
+
+            var group1 = Guid.NewGuid();
+            var group2 = Guid.NewGuid();
+
+            // 1. Add user
+            var newUserId = this._dataService.InsertNewUser(new NewUserRequestDto()
             {
-                Latitude = 12,
-                Longitude = 12,
-                Radius = RadiusRangeEnum.FiftyMeters
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
             });
 
+            // 2. Add groups that have specific coordinates and assign them to user
+            // This means that in a specific x, y area this user subscribes these groups
+
+            // 3. Create RelateUserToGroupsDto(Id = newUserId) request with coordinates x, y and groups in the same area
+            // This means we are trying to change user's the groups in a specific x,y region
+            var relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = newUserId,
+                Latitude = currentlyWorkingLat,
+                Longitude = currentlyWorkingLon,
+                GroupsUserSubscribes = new List<Guid>()
+                {
+                    group1, group2
+                }
+            };
             // act
-            var areas = this._dataService.GetAllAreas();
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+
+            var userSubscribtionsAroundCoordintes = this._dataService
+                .GetUserSubscriptions(newUserId, currentlyWorkingLat, currentlyWorkingLon);
+
+
+            // Assume our user has no groups he subscribes in this area
+            // After applying step 3 we assume that the user now subscribes 2 groups
+
+            // After that we make another RelateUserToGroupsDto request that passes one of the current user groups and some other
+            // Assert that the old one is still there and the new ones are added
+
+            // After that we make a request that is for the same coordinates but with completely new groups
+            // Assert non of the old groups is still there
 
             // assert
-            Assert.AreEqual(1, areas.Count());
         }
     }
 }
