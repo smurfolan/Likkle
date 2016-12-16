@@ -6,6 +6,7 @@ using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
+using Likkle.DataModel;
 using Likkle.DataModel.Repositories;
 using Likkle.DataModel.TestingPurposes;
 using Likkle.DataModel.UnitOfWork;
@@ -23,15 +24,21 @@ namespace Likkle.WebApi.Owin.Tets
 
         public DataServiceTests()
         {
-            var fakeDbContext = new FakeLikkleDbContext();
+            var fakeDbContext = new FakeLikkleDbContext().Seed();
 
             this._mockedLikkleUoW = new Mock<ILikkleUoW>();
+
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository)
                 .Returns(new AreaRepository(fakeDbContext));
+
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository)
                 .Returns(new UserRepository(fakeDbContext));
+
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository)
                 .Returns(new GroupRepository(fakeDbContext));
+
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository)
+                .Returns(new TagRepository(fakeDbContext));
 
 
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
@@ -56,6 +63,28 @@ namespace Likkle.WebApi.Owin.Tets
 
             var group1 = Guid.NewGuid();
             var group2 = Guid.NewGuid();
+
+            // 0. Add new area
+            var newAreaId = this._dataService.InsertNewArea(new NewAreaRequest()
+            {
+                Longitude = 10,
+                Latitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters
+            });
+
+            // 0.5 Add groups
+            var firstGroupId = this._dataService.InsertNewGroup(new StandaloneGroupRequestDto()
+            {
+                AreaIds = new List<Guid>()
+                {
+                    newAreaId
+                },
+                Name = "Group1",
+                TagIds = new List<Guid>()
+                {
+
+                }
+            });
 
             // 1. Add user
             var newUserId = this._dataService.InsertNewUser(new NewUserRequestDto()

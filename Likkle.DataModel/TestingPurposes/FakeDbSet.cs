@@ -25,6 +25,19 @@ namespace Likkle.DataModel.TestingPurposes
 
         public T Add(T item)
         {
+            item.GetType().GetProperty("Id").SetValue(item, Guid.NewGuid(), null);
+
+            _data.Add(item);
+            return item;
+        }
+
+        /// <summary>
+        /// Adds the predefined values that have id already set up.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public T AddPredefined(T item)
+        {
             _data.Add(item);
             return item;
         }
