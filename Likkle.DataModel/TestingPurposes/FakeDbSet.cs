@@ -25,7 +25,10 @@ namespace Likkle.DataModel.TestingPurposes
 
         public T Add(T item)
         {
-            item.GetType().GetProperty("Id").SetValue(item, Guid.NewGuid(), null);
+            var idProperty = item.GetType().GetProperty("Id");
+
+            if (idProperty.GetValue(item) == null)
+                idProperty.SetValue(item, Guid.NewGuid(), null);
 
             _data.Add(item);
             return item;

@@ -268,7 +268,7 @@ namespace Likkle.BusinessServices
 
             return userDto;
         }
-        // TODO: To be seriously unit tested
+
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
         {
             var user = this._unitOfWork.UserRepository.GetUserById(newRelations.UserId);

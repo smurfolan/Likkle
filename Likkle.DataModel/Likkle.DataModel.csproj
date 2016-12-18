@@ -54,7 +54,6 @@
     <Compile Include="Group.cs" />
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
     <Compile Include="TestingPurposes\FakeLikkleDbContext.cs" />
-    <Compile Include="TestingPurposes\IIdentifiable.cs" />
     <Compile Include="TestingPurposes\ILikkleDbContext.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="LikkleDbContext.cs" />

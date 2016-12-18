@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Likkle.BusinessEntities;
-using Likkle.BusinessEntities.Enums;
-using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
 using Likkle.DataModel;
 using Likkle.DataModel.Repositories;
@@ -40,7 +38,6 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.TagRepository)
                 .Returns(new TagRepository(fakeDbContext));
 
-
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
             var mapConfiguration = new MapperConfiguration(cfg => {
@@ -57,76 +54,119 @@ namespace Likkle.WebApi.Owin.Tets
         public void We_Can_Relate_User_To_Groups()
         {
             // arrange
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
 
-            var currentlyWorkingLat = 10;
-            var currentlyWorkingLon = currentlyWorkingLat;
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>()};
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>()};
 
-            var group1 = Guid.NewGuid();
-            var group2 = Guid.NewGuid();
-
-            // 0. Add new area
-            var newAreaId = this._dataService.InsertNewArea(new NewAreaRequest()
+            var area = new Area()
             {
-                Longitude = 10,
+                Id = Guid.NewGuid(),
                 Latitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
-            });
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
 
-            // 0.5 Add groups
-            var firstGroupId = this._dataService.InsertNewGroup(new StandaloneGroupRequestDto()
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
+
+            var userId = Guid.NewGuid();
+            var user = new User()
             {
-                AreaIds = new List<Guid>()
-                {
-                    newAreaId
-                },
-                Name = "Group1",
-                TagIds = new List<Guid>()
-                {
-
-                }
-            });
-
-            // 1. Add user
-            var newUserId = this._dataService.InsertNewUser(new NewUserRequestDto()
-            {
+                Id = userId,
                 FirstName = "Stefcho",
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
                 IdsrvUniqueId = Guid.NewGuid().ToString()
-            });
+            };
 
-            // 2. Add groups that have specific coordinates and assign them to user
-            // This means that in a specific x, y area this user subscribes these groups
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>(){ groupOne, groupTwo },
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
 
-            // 3. Create RelateUserToGroupsDto(Id = newUserId) request with coordinates x, y and groups in the same area
-            // This means we are trying to change user's the groups in a specific x,y region
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
-                UserId = newUserId,
-                Latitude = currentlyWorkingLat,
-                Longitude = currentlyWorkingLon,
-                GroupsUserSubscribes = new List<Guid>()
-                {
-                    group1, group2
-                }
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
             };
+
             // act
             this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
-
             var userSubscribtionsAroundCoordintes = this._dataService
-                .GetUserSubscriptions(newUserId, currentlyWorkingLat, currentlyWorkingLon);
-
-
-            // Assume our user has no groups he subscribes in this area
-            // After applying step 3 we assume that the user now subscribes 2 groups
-
-            // After that we make another RelateUserToGroupsDto request that passes one of the current user groups and some other
-            // Assert that the old one is still there and the new ones are added
-
-            // After that we make a request that is for the same coordinates but with completely new groups
-            // Assert non of the old groups is still there
+                .GetUserSubscriptions(userId, 10, 10);
 
             // assert
+            Assert.IsNotNull(userSubscribtionsAroundCoordintes);
+            Assert.AreEqual(userSubscribtionsAroundCoordintes.Count(), 2);
+            Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupOneId));
+            Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
+
+            // arrange
+            relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupTwoId }
+            };
+
+            groupOne.Users = new List<User>() { user };
+            groupTwo.Users = new List<User>() { user };
+
+            // act
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+            userSubscribtionsAroundCoordintes = this._dataService.GetUserSubscriptions(userId, 10, 10);
+
+            // assert
+            Assert.IsNotNull(userSubscribtionsAroundCoordintes);
+            Assert.AreEqual(userSubscribtionsAroundCoordintes.Count(), 1);
+            Assert.IsFalse(userSubscribtionsAroundCoordintes.Contains(groupOneId));
+            Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
+
+            // arrange
+            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() };
+            var groupFour = new Group() { Id = Guid.NewGuid(), Name = "GroupFour", Users = new List<User>() };
+
+            groupThree.Areas = new List<Area>() { area };
+            groupFour.Areas = new List<Area>() { area };
+
+            area.Groups.Clear();
+
+            area.Groups.Add(groupThree);
+            area.Groups.Add(groupFour);
+
+            populatedDatabase.Groups = new FakeDbSet<Group>() { groupThree, groupFour };
+
+            relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupThree.Id, groupFour.Id }
+            };
+
+            // act
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+            userSubscribtionsAroundCoordintes = this._dataService.GetUserSubscriptions(userId, 10, 10);
+
+            // assert
+            Assert.IsNotNull(userSubscribtionsAroundCoordintes);
+            Assert.AreEqual(userSubscribtionsAroundCoordintes.Count(), 2);
+            Assert.IsFalse(userSubscribtionsAroundCoordintes.Contains(groupOneId));
+            Assert.IsFalse(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
+            Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupThree.Id));
+            Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupFour.Id));         
         }
     }
 }
