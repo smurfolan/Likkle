@@ -326,7 +326,7 @@ namespace Likkle.BusinessServices
 
             return userDtos;
         }
-        // TODO: To be seriously unit tested
+
         public Guid InsertNewUser(NewUserRequestDto newUser)
         {
             var userEntity = this._mapper.Map<NewUserRequestDto, User>(newUser);
@@ -457,7 +457,8 @@ namespace Likkle.BusinessServices
             var notificationSettingDto =
                 this._mapper.Map<NotificationSetting, NotificationSettingDto>(notificationEntity);
 
-            notificationSettingDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);
+            if(notificationEntity.Tags != null)
+                notificationSettingDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);
 
             return notificationSettingDto;
         }
