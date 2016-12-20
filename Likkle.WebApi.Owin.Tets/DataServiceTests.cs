@@ -219,7 +219,8 @@ namespace Likkle.WebApi.Owin.Tets
                 LastName = "Stefchev",
                 Gender = GenderEnum.Male,
                 IdsrvUniqueId = newUserStsId,
-                PhoneNumber = "+359886585549"
+                PhoneNumber = "+359886585549",
+                LanguageIds = new List<Guid>() { Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb") }
             };
 
             // act
@@ -275,6 +276,128 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(newUser.Languages.Count(), 2);
             Assert.IsTrue(newUser.Languages.Select(l => l.Id).Contains(firstLanguageId));
             Assert.IsTrue(newUser.Languages.Select(l => l.Id).Contains(secondLanguageId));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "User not available in Database")]
+        public void Updating_Non_Existing_User_Throws_ArgumentException()
+        {
+            // arrange
+            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+            // TODO: Extract this as a common part between this one and the one above
+            var newUserRequest = new NewUserRequestDto()
+            {
+                About = "About",
+                Email = "some@body.com",
+                FirstName = "Stecho",
+                LastName = "Stefchev",
+                Gender = GenderEnum.Male,
+                IdsrvUniqueId = newUserStsId,
+                PhoneNumber = "+359886585549"
+            };
+
+            // act
+            var newUserId = this._dataService.InsertNewUser(newUserRequest);
+
+            // assert
+            var newUser = this._dataService.GetUserById(newUserId);
+
+            Assert.IsNotNull(newUser);
+            Assert.AreEqual(newUser.IdsrvUniqueId, newUserStsId);
+            Assert.IsNotNull(newUser.NotificationSettings);
+            Assert.IsNotNull(newUser.BirthDate);
+            Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
+
+            var updatedBirthDate = DateTime.UtcNow;
+            var updatedAbout = "UpdatedAbout";
+            var updatedEmail = "Updatedsome@body.com";
+            var firstNameUpdated = "UpdatedStecho";
+            var lastNameUpdated = "UpdatedStefchev";
+            var firstLanguageId = Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb");
+            var secondLanguageId = Guid.Parse("05872235-365b-41f8-ab50-3913ffe9c601");
+
+            var updateData = new UpdateUserInfoRequestDto()
+            {
+                About = updatedAbout,
+                BirthDate = updatedBirthDate,
+                Email = updatedEmail,
+                FirstName = firstNameUpdated,
+                Gender = GenderEnum.Female,
+                LastName = lastNameUpdated,
+                LanguageIds = new List<Guid>()
+                {
+                    firstLanguageId,
+                    secondLanguageId
+                },
+                PhoneNumber = "Updated+359886585549"
+            };
+
+            // act
+
+            Guid notValidUserId = Guid.NewGuid();
+
+            while (notValidUserId == newUserId)
+                notValidUserId = Guid.NewGuid();
+
+
+            this._dataService.UpdateUserInfo(notValidUserId, updateData);
+        }
+
+        [TestMethod]
+        public void We_Can_Insert_New_User()
+        {
+            // arrange
+            var firstLanguageId = Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb");
+            var secondLanguageId = Guid.Parse("05872235-365b-41f8-ab50-3913ffe9c601");
+            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne }
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            var newUserRequestDto = new NewUserRequestDto()
+            {
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "stefcho@stefchev.com",
+                IdsrvUniqueId = newUserStsId,
+                LanguageIds = new List<Guid>() { firstLanguageId, secondLanguageId },
+                GroupIds = new List<Guid>() { groupOneId },
+                BirthDate = DateTime.Parse(this.InitialDateString).AddYears(-1)
+            };
+
+            // act
+            var userId = this._dataService.InsertNewUser(newUserRequestDto);
+
+            // assert
+            Assert.IsNotNull(userId);
+
+            var user = this._dataService.GetUserById(userId);
+
+            Assert.IsNotNull(user);
+            Assert.IsNotNull(user.Id);
+            Assert.AreEqual(userId, user.Id);
+            Assert.AreEqual(user.Languages.Count(), 2);
+            Assert.AreEqual(user.BirthDate, DateTime.Parse(this.InitialDateString));
         }
     }
 }
