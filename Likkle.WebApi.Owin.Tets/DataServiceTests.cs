@@ -399,5 +399,53 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(user.Languages.Count(), 2);
             Assert.AreEqual(user.BirthDate, DateTime.Parse(this.InitialDateString));
         }
+
+        [TestMethod]
+        public void We_Can_Get_Notification_Settings_For_User()
+        {
+            // arrange
+            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+
+            var newUserRequest = new NewUserRequestDto()
+            {
+                About = "About",
+                Email = "some@body.com",
+                FirstName = "Stecho",
+                Gender = GenderEnum.Male,
+                IdsrvUniqueId = newUserStsId,
+                PhoneNumber = "+359886585549"
+            };
+
+            // act
+            var newUserId = this._dataService.InsertNewUser(newUserRequest);
+
+            // assert
+            var newUser = this._dataService.GetUserById(newUserId);
+
+            Assert.IsNotNull(newUser);
+
+            // arrange
+            // 1. Create new update user notifications request with tags 
+            var newUpdatedUserNotifications = new EditUserNotificationsRequestDto()
+            {
+                AutomaticallySubscribeToAllGroups = false,
+                AutomaticallySubscribeToAllGroupsWithTag = true,
+                SubscribedTagIds = new List<Guid>()
+                {
+                    Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8")
+                }
+            };
+
+            // act
+            this._dataService.UpdateUserNotificationSettings(newUserId, newUpdatedUserNotifications);
+
+            // assert
+            var updatedNotificationSettings = this._dataService.GetNotificationSettingsForUserWithId(newUserId);
+
+            Assert.IsNotNull(updatedNotificationSettings);
+            Assert.IsNotNull(updatedNotificationSettings.SubscribedTagIds);
+            // 1. Notificiation settings were updated and now we have tags
+
+        }
     }
 }

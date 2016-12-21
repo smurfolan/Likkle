@@ -430,7 +430,10 @@ namespace Likkle.BusinessServices
             userNotificationSettings.AutomaticallySubscribeToAllGroupsWithTag =
                 edittedUserNotificationSettings.AutomaticallySubscribeToAllGroupsWithTag;
 
-            userNotificationSettings.Tags.Clear();
+            if(userNotificationSettings.Tags != null)
+                userNotificationSettings.Tags.Clear();
+            else
+                userNotificationSettings.Tags = new List<Tag>();
 
             var tagsForNotification = this._unitOfWork.TagRepository.GetAllTags()
                 .Where(t => edittedUserNotificationSettings.SubscribedTagIds.Contains(t.Id));
