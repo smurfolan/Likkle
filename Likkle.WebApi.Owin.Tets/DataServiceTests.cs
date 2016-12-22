@@ -447,5 +447,76 @@ namespace Likkle.WebApi.Owin.Tets
             // 1. Notificiation settings were updated and now we have tags
 
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "There's no notification settings for the user")]
+        public void Exception_Is_Thrown_When_Trying_To_Update_Not_Existing_Notification()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            this._dataService.UpdateUserNotificationSettings(userId, null);
+        }
+
+        [TestMethod]
+        public void We_Can_Insert_New_Group()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { newArea }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            var newGroupRequest = new StandaloneGroupRequestDto()
+            {
+               Name = "New group",
+               TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
+               AreaIds = new List<Guid>() { newAreaId },
+               UserId = userId
+            };
+
+            // act
+            var newGroupId = this._dataService.InsertNewGroup(newGroupRequest);
+
+            // assert
+            Assert.IsTrue(newGroupId != Guid.Empty);
+        }
     }
 }

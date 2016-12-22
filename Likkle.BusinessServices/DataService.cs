@@ -138,6 +138,7 @@ namespace Likkle.BusinessServices
         public Guid InsertNewGroup(StandaloneGroupRequestDto newGroup)
         {
             var newGroupEntity = this._mapper.Map<StandaloneGroupRequestDto, Group>(newGroup);
+            newGroupEntity.Id = Guid.NewGuid();
 
             newGroupEntity.Areas = new List<Area>();
             newGroupEntity.Tags = new List<Tag>();
