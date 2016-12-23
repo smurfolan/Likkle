@@ -576,5 +576,81 @@ namespace Likkle.WebApi.Owin.Tets
             var newlyCreatedGroup = this._dataService.GetGroupById(newGroupId);
             Assert.IsNotNull(newlyCreatedGroup);
         }
+
+        [TestMethod]
+        public void We_Can_Get_AreaMetadata()
+        {
+            // arrange
+            var myLocationLatitude = 10;
+            var myLocationLongitude = 10;
+
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
+
+            var workingTag = new Tag()
+            {
+                Id = Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
+                Name = "Help"
+            };
+
+            var groupOne = new Group()
+            {
+                Id = groupOneId, Name = "GroupOne", Users = new List<User>(),
+                Tags = new List<Tag>() { workingTag }
+            };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>(), Tags = new List<Tag>() { workingTag } };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
+
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var areaMetadata = this._dataService.GetMetadataForArea(myLocationLatitude, myLocationLongitude, areaId);
+
+            // assert
+            Assert.IsNotNull(areaMetadata);
+            Assert.AreEqual(areaMetadata.TagIds.Count(), 1);
+            Assert.AreEqual(areaMetadata.DistanceTo, 0);
+        }
+
+        [TestMethod]
+        public void We_Can_Get_Metadata_For_Multiple_Areas()
+        {
+            // arrange
+
+            // act
+
+            // assert
+        }
     }
 }
