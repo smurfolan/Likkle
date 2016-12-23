@@ -45,11 +45,6 @@ namespace Likkle.BusinessServices
             return areaAsDto;
         }
 
-        public IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId)
-        {
-            throw new NotImplementedException();
-        }
-
         public IEnumerable<AreaForLocationResponseDto> GetAreas(double latitude, double longitude)
         {
             var currentLocation = new GeoCoordinate(latitude, longitude);
@@ -116,6 +111,7 @@ namespace Likkle.BusinessServices
         public Guid InsertNewArea(NewAreaRequest newArea)
         {
             var areaEntity = this._mapper.Map<NewAreaRequest, Area>(newArea);
+            areaEntity.Id = Guid.NewGuid();
             
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
         }

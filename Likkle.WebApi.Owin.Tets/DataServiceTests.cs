@@ -15,6 +15,9 @@ using Moq;
 
 namespace Likkle.WebApi.Owin.Tets
 {
+    // TODO: Remove repeating code.There's plenty of it.
+    // TODO: Implement random data generator and apply it here
+    // TODO: Try to remove all hard coded values
     [TestClass]
     public class DataServiceTests
     {
@@ -896,6 +899,148 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(areaIds.Contains(firstAreaId));
             Assert.IsTrue(areaIds.Contains(secondAreaId));
             Assert.IsFalse(areaIds.Contains(thirdAreaId));
+        }
+
+        [TestMethod]
+        public void We_Can_Get_All_Users()
+        {
+            // arrange
+            var firstUserId = Guid.NewGuid();
+            var firstUser = new User()
+            {
+                Id = firstUserId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var secondUserId = Guid.NewGuid();
+            var secondUser = new User()
+            {
+                Id = secondUserId,
+                FirstName = "Other",
+                LastName = "Name",
+                Email = "null@null.bg",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { firstUser, secondUser }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var users = this._dataService.GetAllUsers();
+
+            // assert
+            Assert.IsNotNull(users);
+            Assert.IsTrue(users.Count() == 2);
+        }
+
+        [TestMethod]
+        public void We_Can_Get_User_By_StsId()
+        {
+            // arrange
+            var idsrvUniqueId = Guid.NewGuid().ToString();
+            var firstUser = new User()
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = idsrvUniqueId
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { firstUser }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var user = this._dataService.GetUserByStsId(idsrvUniqueId);
+
+            // assert
+            Assert.IsNotNull(user);
+        }
+
+        [TestMethod]
+        public void We_Can_Fetch_All_Users_From_Group()
+        {
+            // arrange
+            var firstUserId = Guid.NewGuid();
+            var firstUser = new User()
+            {
+                Id = firstUserId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var secondUserId = Guid.NewGuid();
+            var secondUser = new User()
+            {
+                Id = secondUserId,
+                FirstName = "Other",
+                LastName = "Name",
+                Email = "null@null.bg",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var groupId = Guid.NewGuid();
+            var group = new Group() { Id = groupId, Name = "Group", Users = new List<User>() { firstUser, secondUser } };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { group }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var allUsersInGroup = this._dataService.GetUsersFromGroup(groupId);
+
+            // assert
+            Assert.IsNotNull(allUsersInGroup);
+            Assert.AreEqual(allUsersInGroup.Count(), 2);
+        }
+
+        [TestMethod]
+        public void We_Can_Insert_New_Area()
+        {
+            // arrange
+            var newAreaRequest = new NewAreaRequest()
+            {
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            // act
+            var newAreaId = this._dataService.InsertNewArea(newAreaRequest);
+
+            // assert
+            var newlyCreatedArea = this._dataService.GetAreaById(newAreaId);
+
+            Assert.IsNotNull(newlyCreatedArea);
+        }
+
+        [TestMethod]
+        public void We_Can_Get_All_Areas_A_Group_Belongs_To()
+        {
+            // arrange
+
+            // act
+
+            // assert
         }
     }
 }

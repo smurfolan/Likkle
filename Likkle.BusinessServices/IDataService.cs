@@ -11,7 +11,6 @@ namespace Likkle.BusinessServices
         #region Area specific
         IEnumerable<AreaDto> GetAllAreas();
         AreaDto GetAreaById(Guid areaId);
-        IEnumerable<AreaDto> GetAreasForGroupId(Guid groupId);
         IEnumerable<AreaForLocationResponseDto> GetAreas(double latitude, double longitude);
         IEnumerable<UserDto> GetUsersFromArea(Guid areaId);
         AreaMetadataResponseDto GetMetadataForArea(double latitude, double longitude, Guid areaId);
