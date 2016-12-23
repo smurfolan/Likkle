@@ -517,6 +517,64 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsTrue(newGroupId != Guid.Empty);
+
+            var newlyCreatedGroup = this._dataService.GetGroupById(newGroupId);
+
+            Assert.IsNotNull(newlyCreatedGroup);
+        }
+
+        [TestMethod]
+        public void We_Can_Insert_Grou_As_New_Area()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            var newGroupRequest = new GroupAsNewAreaRequestDto()
+            {
+                Longitude = 10,
+                Latitude = 10,
+                Name = "Group 1",
+                Radius = RadiusRangeEnum.FiftyMeters,
+                TagIds =
+                    new List<Guid>()
+                    {
+                        Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
+                        Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8")
+                    },
+                UserId = userId
+            };
+
+            var allAreasCount = this._dataService.GetAllAreas().Count();
+
+            Assert.AreEqual(allAreasCount, 0);
+
+            // act
+            var newGroupId = this._dataService.InserGroupAsNewArea(newGroupRequest);
+
+            // assert
+            allAreasCount = this._dataService.GetAllAreas().Count();
+
+            Assert.AreNotEqual(newGroupId, Guid.Empty);
+            Assert.AreEqual(allAreasCount, 1);
+
+            var newlyCreatedGroup = this._dataService.GetGroupById(newGroupId);
+            Assert.IsNotNull(newlyCreatedGroup);
         }
     }
 }

@@ -193,6 +193,7 @@ namespace Likkle.BusinessServices
 
             // 2. Add new group
             var newGroupEntity = this._mapper.Map<GroupAsNewAreaRequestDto, Group>(newGroup);
+            newGroupEntity.Id = Guid.NewGuid();
 
             newGroupEntity.Tags = new List<Tag>();
             newGroupEntity.Areas = new List<Area>();
