@@ -78,7 +78,8 @@ namespace Likkle.BusinessServices
         {
             var users = this._unitOfWork.AreaRepository.GetAreas()
                 .Where(a => a.Id == areaId)
-                .SelectMany(ar => ar.Groups.SelectMany(gr => gr.Users));
+                .SelectMany(ar => ar.Groups.SelectMany(gr => gr.Users))
+                .Distinct();
 
             var usersAsDtos = this._mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
 
