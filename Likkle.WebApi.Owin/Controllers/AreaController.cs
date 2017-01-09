@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Web.Http;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
@@ -89,6 +90,14 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._likkleDataService.GetMultipleAreasMetadata(areas);
+
+                if (result == null || !result.Any())
+                {
+                    _apiLogger.LogError($"Non of the areas with ids: {areas.AreaIds} could not be found.", null);
+                    return InternalServerError();
+                }
+                    
+                // TODO: If result is empty throw an error. BadRequest or InternalServer error. Add it to the tests.
 
                 return Ok(result);
             }

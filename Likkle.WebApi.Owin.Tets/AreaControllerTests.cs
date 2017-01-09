@@ -178,7 +178,45 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void Client_Gets_Multiple_Areas_Metadata()
         {
-            throw new NotImplementedException();
+            // arrange
+            var mockedDataService = new Mock<IDataService>();
+
+            mockedDataService.Setup(x => x.GetMultipleAreasMetadata(It.IsAny<MultipleAreasMetadataRequestDto>()))
+                .Returns(new List<AreaMetadataResponseDto>()
+                {
+                    new AreaMetadataResponseDto()
+                    {
+                        DistanceTo = 10,
+                        NumberOfParticipants = 2,
+                        TagIds = new List<Guid>()
+                    }
+                });
+
+            var areaController = new AreaController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.GetMultipleAreasMetadata(new MultipleAreasMetadataRequestDto());
+            var contentResult = actionResult as OkNegotiatedContentResult<IEnumerable<AreaMetadataResponseDto>>;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+
+            // arrange
+            mockedDataService.Setup(x => x.GetMultipleAreasMetadata(It.IsAny<MultipleAreasMetadataRequestDto>()))
+                .Returns((IEnumerable<AreaMetadataResponseDto>) null);
+
+            areaController = new AreaController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            actionResult = areaController.GetMultipleAreasMetadata(new MultipleAreasMetadataRequestDto());
+
+            // assert
+            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
         }
     }
 }
