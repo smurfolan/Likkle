@@ -17,13 +17,16 @@ namespace Likkle.BusinessServices
 
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IConfigurationWrapper _configuration;
 
         public DataService(
             ILikkleUoW uow, 
-            IConfigurationProvider configurationProvider)
+            IConfigurationProvider configurationProvider,
+            IConfigurationWrapper config)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
+            this._configuration = config;
         }
 
         #region Area specific
@@ -242,6 +245,15 @@ namespace Likkle.BusinessServices
             return userDtos;
         }
 
+        public IEnumerable<GroupMetadataResponseDto> AllGroups()
+        {
+            var result = this._unitOfWork.GroupRepository.GetGroups();
+
+            var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupMetadataResponseDto>>(result);
+
+            return groupsAsDtos;
+        }
+
 
 
         #endregion
@@ -297,7 +309,7 @@ namespace Likkle.BusinessServices
             var forUserAroundCurrentLocation = groupsForUserAroundCurrentLocation as Group[] ?? groupsForUserAroundCurrentLocation.ToArray();
 
             var unsubscribedGroups =
-                forUserAroundCurrentLocation.Where(gr => !groupSubscriptionsThatCameFromTheRequest.Contains(gr));
+                forUserAroundCurrentLocation.Where(gr => !groupSubscriptionsThatCameFromTheRequest.Contains(gr)).ToList();
 
             // 4. Determine what groups have bee added and are new: Everything that is in (2) and doesn't belong to (1)
             var newlySubscribedGroups = groupSubscriptionsThatCameFromTheRequest.Where(gr => !forUserAroundCurrentLocation.Contains(gr));
@@ -315,8 +327,11 @@ namespace Likkle.BusinessServices
             }
 
             this._unitOfWork.Save();
-        }
 
+            if (this._configuration.AutomaticallyCleanupGroupsAndAreas)
+                this.DeleteGroupsWithNoUsersInsideOfThem(unsubscribedGroups);
+        }
+        
         public IEnumerable<UserDto> GetAllUsers()
         {
             var allUserEntities = this._unitOfWork.UserRepository.GetAllUsers();
@@ -492,6 +507,30 @@ namespace Likkle.BusinessServices
                 NumberOfParticipants = totalNumberOfParticipants,
                 TagIds = allTags
             };
+        }
+
+        private void DeleteGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups)
+        {
+            var allGroups = this._unitOfWork.GroupRepository.GetGroups();
+
+            var groupsToBeRemoved = allGroups.Where(ag => unsubscribedGroups.Select(g => g.Id).Contains(ag.Id)).ToList();
+
+            foreach (var group in groupsToBeRemoved)
+            {
+                this._unitOfWork.GroupRepository.DeleteGroup(group.Id);
+            }
+
+            this.DeleteAreasWithNoGroups(groupsToBeRemoved.SelectMany(gr => gr.Areas).Distinct());
+        }
+
+        private void DeleteAreasWithNoGroups(IEnumerable<Area> areas)
+        {
+            var areasToBeDeleted = areas.Where(a => a.Groups.Count < 1);
+
+            foreach (var area in areasToBeDeleted)
+            {
+                this._unitOfWork.AreaRepository.DeleteArea(area.Id);
+            }
         }
         #endregion
     }

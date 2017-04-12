@@ -26,6 +26,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly DataService _dataService;
         private readonly Mock<ILikkleUoW> _mockedLikkleUoW;
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
+        private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
 
         public DataServiceTests()
         {
@@ -55,9 +56,12 @@ namespace Likkle.WebApi.Owin.Tets
             });
             this._mockedConfigurationProvider.Setup(mc => mc.CreateMapper()).Returns(mapConfiguration.CreateMapper);
 
+            this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
+
             this._dataService = new DataService(
                 this._mockedLikkleUoW.Object, 
-                this._mockedConfigurationProvider.Object);
+                this._mockedConfigurationProvider.Object,
+                this._configurationWrapperMock.Object);
         }
 
         [TestMethod]
@@ -1036,11 +1040,179 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void We_Can_Get_All_Areas_A_Group_Belongs_To()
         {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void Group_Gets_Deleted_If_No_Users_Belongs_To_It()
+        {
             // arrange
+            this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
 
-            // act
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
 
-            // assert
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
+
+            var groupThreeId = Guid.NewGuid();
+            var groupFourId = Guid.NewGuid();
+            var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() };
+            var groupFour = new Group() { Id = groupFourId, Name = "GroupFour", Users = new List<User>() };
+
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo, groupThree, groupFour }
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
+            groupThree.Areas = new List<Area>() { area };
+            groupFour.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo, groupThree, groupFour },
+                Users = new FakeDbSet<User>() { user },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            var relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
+            };
+
+            var relateUserToGroupsRequestWithUnsubscribedGroups = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupThreeId, groupFourId }
+            };
+
+            // act and assert
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+            
+            Assert.AreEqual(4, this._dataService.AllGroups().Count());
+            groupOne.Users.Add(user);
+            groupTwo.Users.Add(user);
+            Assert.IsTrue(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
+            Assert.IsTrue(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequestWithUnsubscribedGroups);
+
+            Assert.AreEqual(2, this._dataService.AllGroups().Count());
+            Assert.IsTrue(this._dataService.GetAllAreas().Any());
+            Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
+            Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+        }
+
+        [TestMethod]
+        public void Area_Gets_Deleted_If_No_Groups_Belong_To_It()
+        {
+            // arrange
+            this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
+
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
+
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
+
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo}
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo},
+                Users = new FakeDbSet<User>() { user },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            var relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
+            };
+
+            var relateUserToGroupsRequestWithUnsubscribedGroups = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { }
+            };
+
+            // act and assert
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+
+            Assert.AreEqual(2, this._dataService.AllGroups().Count());
+            groupOne.Users.Add(user);
+            groupTwo.Users.Add(user);
+            Assert.IsTrue(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
+            Assert.IsTrue(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+
+            this._mockedLikkleUoW.Setup(uow => uow.Save()).Callback((() =>
+            {
+                area.Groups = new List<Group>();
+            }));
+
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequestWithUnsubscribedGroups);
+
+            Assert.AreEqual(0, this._dataService.AllGroups().Count());
+            Assert.IsTrue(!this._dataService.GetAllAreas().Any());
+            Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
+            Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+
+
+
+
+
+
+
+            
         }
     }
 }

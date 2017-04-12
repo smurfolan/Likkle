@@ -24,6 +24,7 @@ namespace Likkle.BusinessServices
         #region Group specific
 
         IEnumerable<GroupMetadataResponseDto> GetGroups(double latitude, double longitude);
+        IEnumerable<GroupMetadataResponseDto> AllGroups();
         Guid InsertNewGroup(StandaloneGroupRequestDto newGroup);
         Guid InserGroupAsNewArea(GroupAsNewAreaRequestDto newGroup);
         GroupDto GetGroupById(Guid groupId);

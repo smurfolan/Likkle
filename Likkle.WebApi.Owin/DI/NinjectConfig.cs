@@ -31,6 +31,7 @@ namespace Likkle.WebApi.Owin.DI
             kernel.Bind<ILikkleDbContext>().To<LikkleDbContext>();
             kernel.Bind<ILikkleUoW>().To<LikkleUoW>();
             kernel.Bind<IDataService>().To<DataService>();
+            kernel.Bind<IConfigurationWrapper>().To<ConfigurationWrapper>();
 
             var mapperConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
