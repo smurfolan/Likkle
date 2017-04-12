@@ -1205,14 +1205,6 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(!this._dataService.GetAllAreas().Any());
             Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
             Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
-
-
-
-
-
-
-
-            
         }
     }
 }
