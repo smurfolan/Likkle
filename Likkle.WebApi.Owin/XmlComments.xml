@@ -78,7 +78,7 @@
             Example: GET api/v1/groups/{id:Guid}/users
             </summary>
             <param name="id">Unique identifier of the group you are getting the users from</param>
-            <returns>All the users for a specific group</returns>
+            <returns>All the users for a specific group that are actually inside of it (The area a group belongs to).</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.Post(Likkle.BusinessEntities.Requests.StandaloneGroupRequestDto)">
             <summary>
@@ -155,6 +155,14 @@
             </summary>
             <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
             <returns>Latest notification settings set up by the user.</returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.UpdateLocation(System.Guid,Likkle.BusinessEntities.Requests.UpdatedUserLocationRequestDto)">
+            <summary>
+            Example: POST api/v1/users/{id:Guid}/UpdateLocation
+            </summary>
+            <param name="id">Id of the user that is reporting his latest location.</param>
+            <param name="latestLocation">Body sample: {'LatestLatitude': 1.1, 'LatestLongitude': 2.2}</param>
+            <returns></returns>
         </member>
     </members>
 </doc>

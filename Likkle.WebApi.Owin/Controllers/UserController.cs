@@ -238,5 +238,34 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
+
+        /// <summary>
+        /// Example: POST api/v1/users/{id:Guid}/UpdateLocation
+        /// </summary>
+        /// <param name="id">Id of the user that is reporting his latest location.</param>
+        /// <param name="latestLocation">Body sample: {'LatestLatitude': 1.1, 'LatestLongitude': 2.2}</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("{id}/UpdateLocation")]
+        public IHttpActionResult UpdateLocation(Guid id, [FromBody] UpdatedUserLocationRequestDto latestLocation)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            try
+            {
+                this._likkleDataService.UpdateUserLocation(
+                    id, 
+                    latestLocation.LatestLatitude,
+                    latestLocation.LatestLongitude);
+
+                return Created("api/v1/users/" + id, "Success");
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error when trying to update latest user location.", ex);
+                return InternalServerError();
+            }
+        }
     }
 }

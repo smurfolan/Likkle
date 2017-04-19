@@ -43,6 +43,8 @@ namespace Likkle.BusinessServices
         IEnumerable<Guid> GetUserSubscriptions(Guid uid, double lat, double lon);
         void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings);
         NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
+        void UpdateUserLocation(Guid id, double lat, double lon);
+
         #endregion
     }
 }
