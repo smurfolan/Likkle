@@ -79,7 +79,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: GET api/v1/groups/{id:Guid}/users
         /// </summary>
         /// <param name="id">Unique identifier of the group you are getting the users from</param>
-        /// <returns>All the users for a specific group</returns>
+        /// <returns>All the users for a specific group that are actually inside of it (The area a group belongs to).</returns>
         [HttpGet]
         [Route("{id}/users")]
         public IHttpActionResult GetUsers(Guid id)

@@ -290,6 +290,9 @@ namespace Likkle.BusinessServices
             if(user.Groups == null)
                 user.Groups = new List<Group>();
 
+            if(user.HistoryGroups == null)
+                user.HistoryGroups = new List<HistoryGroup>();
+
             var currentLocation = new GeoCoordinate(newRelations.Latitude, newRelations.Longitude);
 
             var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
@@ -318,12 +321,23 @@ namespace Likkle.BusinessServices
             foreach (var unsubscribedGroup in unsubscribedGroups)
             {
                 user.Groups.Remove(unsubscribedGroup);
+
+                var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
+                user.HistoryGroups.Remove(historyRecordToBeRemoved);
             }
 
             // 6. Each group in (4) has to be added to the current user subscriptions
             foreach (var newlySubscribedGroup in newlySubscribedGroups)
             {
                 user.Groups.Add(newlySubscribedGroup);
+                user.HistoryGroups.Add(new HistoryGroup()
+                {
+                    DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                    GroupId = newlySubscribedGroup.Id,
+                    GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
+                    UserId = user.Id,
+                    UserWhoSubscribedGroup = user
+                });
             }
 
             this._unitOfWork.Save();
@@ -480,6 +494,25 @@ namespace Likkle.BusinessServices
             return notificationSettingDto;
         }
 
+        /// <summary>
+        /// Currently method is only used to detach users from groups in order to know keep only relevant information when showing up a group.
+        /// </summary>
+        /// <param name="id">Id of the user</param>
+        /// <param name="lat">Latest latitude of the user</param>
+        /// <param name="lon">Latest longitude of the user</param>
+        public void UpdateUserLocation(Guid id, double lat, double lon)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(id);
+            var groupsTheUserIsCurrentlyIn = user.Groups.ToArray();
+            
+            foreach (var group in groupsTheUserIsCurrentlyIn)
+            {
+                if (!GroupIsAvailableAroundCoordinates(group, lat, lon))
+                    user.Groups.Remove(group);
+            }
+
+            this._unitOfWork.Save();
+        }
         #endregion
 
         #region Private methods
@@ -531,6 +564,19 @@ namespace Likkle.BusinessServices
             {
                 this._unitOfWork.AreaRepository.DeleteArea(area.Id);
             }
+        }
+
+        private static bool GroupIsAvailableAroundCoordinates(Group group, double lat, double lon)
+        {
+            var areasOfTheGroup = group.Areas.ToList();
+
+            var currentUserLocation = new GeoCoordinate(lat, lon);
+
+            return
+                areasOfTheGroup.Any(
+                    area =>
+                        currentUserLocation.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                        (int) area.Radius);
         }
         #endregion
     }

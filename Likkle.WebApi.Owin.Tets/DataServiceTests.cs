@@ -120,11 +120,15 @@ namespace Likkle.WebApi.Owin.Tets
             var userSubscribtionsAroundCoordintes = this._dataService
                 .GetUserSubscriptions(userId, 10, 10);
 
-            // assert
+            // assert subscription works
             Assert.IsNotNull(userSubscribtionsAroundCoordintes);
             Assert.AreEqual(userSubscribtionsAroundCoordintes.Count(), 2);
             Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupOneId));
             Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
+            Assert.IsNotNull(user.HistoryGroups);
+            Assert.AreEqual(user.HistoryGroups.Count(), 2);
+            var historyGroupIds = user.HistoryGroups.Select(hgr => hgr.GroupId).ToList();
+            Assert.IsTrue(historyGroupIds.Contains(groupOneId) && historyGroupIds.Contains(groupTwoId));
 
             // arrange
             relateUserToGroupsRequest = new RelateUserToGroupsDto()
@@ -142,11 +146,15 @@ namespace Likkle.WebApi.Owin.Tets
             this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
             userSubscribtionsAroundCoordintes = this._dataService.GetUserSubscriptions(userId, 10, 10);
 
-            // assert
+            // assert unsubscription works
             Assert.IsNotNull(userSubscribtionsAroundCoordintes);
             Assert.AreEqual(userSubscribtionsAroundCoordintes.Count(), 1);
             Assert.IsFalse(userSubscribtionsAroundCoordintes.Contains(groupOneId));
             Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
+            Assert.IsTrue(user.HistoryGroups != null);
+            Assert.AreEqual(user.HistoryGroups.Count(), 1);
+            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
+
 
             // arrange
             var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() };
@@ -1205,14 +1213,71 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(!this._dataService.GetAllAreas().Any());
             Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupOneId));
             Assert.IsFalse(this._dataService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+        }
 
+        [TestMethod]
+        public void When_User_Location_Is_Changed_Group_Is_Removed_But_HistoryGroup_Stays()
+        {
+            // arrange
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
 
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
 
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
 
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
 
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
 
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
 
-            
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            var relateUserToGroupsRequest = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
+            };
+
+            // act
+            this._dataService.RelateUserToGroups(relateUserToGroupsRequest);
+
+            Assert.IsNotNull(user.Groups);
+            Assert.AreEqual(user.Groups.Count(), 2);
+
+            Assert.IsNotNull(user.HistoryGroups);
+            Assert.AreEqual(user.HistoryGroups.Count(), 2);
+
+            this._dataService.UpdateUserLocation(userId, 90, 90);
+            Assert.AreEqual(user.Groups.Count(), 0);
+            Assert.AreEqual(user.HistoryGroups.Count(), 2);
         }
     }
 }

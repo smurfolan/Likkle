@@ -24,11 +24,16 @@ namespace Likkle.DataModel
         public DateTime? BirthDate { get; set; }
         public string PhoneNumber { get; set; }
 
+        public string InstagramUsername { get; set; }
+        public string FacebookUsername { get; set; }
+
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 
 
         public virtual ICollection<Language> Languages { get; set; }
         [Required]
         public virtual NotificationSetting NotificationSettings { get; set; }
+
+        public virtual ICollection<HistoryGroup> HistoryGroups { get; set; }      
     }
 }

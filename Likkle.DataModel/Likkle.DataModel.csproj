@@ -52,6 +52,15 @@
   <ItemGroup>
     <Compile Include="Area.cs" />
     <Compile Include="Group.cs" />
+    <Compile Include="HistoryGroup.cs" />
+    <Compile Include="Migrations\201704181231478_HistoryOfSubscribedGroupsByUser.cs" />
+    <Compile Include="Migrations\201704181231478_HistoryOfSubscribedGroupsByUser.Designer.cs">
+      <DependentUpon>201704181231478_HistoryOfSubscribedGroupsByUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704201346419_AddedSocialLinksToUserProfile.cs" />
+    <Compile Include="Migrations\201704201346419_AddedSocialLinksToUserProfile.Designer.cs">
+      <DependentUpon>201704201346419_AddedSocialLinksToUserProfile.cs</DependentUpon>
+    </Compile>
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
     <Compile Include="TestingPurposes\FakeLikkleDbContext.cs" />
     <Compile Include="TestingPurposes\ILikkleDbContext.cs" />
@@ -129,6 +138,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611211057171_MoreThatJustANumber.resx">
       <DependentUpon>201611211057171_MoreThatJustANumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704181231478_HistoryOfSubscribedGroupsByUser.resx">
+      <DependentUpon>201704181231478_HistoryOfSubscribedGroupsByUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704201346419_AddedSocialLinksToUserProfile.resx">
+      <DependentUpon>201704201346419_AddedSocialLinksToUserProfile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
