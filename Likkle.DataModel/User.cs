@@ -24,6 +24,9 @@ namespace Likkle.DataModel
         public DateTime? BirthDate { get; set; }
         public string PhoneNumber { get; set; }
 
+        public string InstagramUsername { get; set; }
+        public string FacebookUsername { get; set; }
+
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 
 

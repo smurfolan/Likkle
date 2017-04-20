@@ -1,15 +1,18 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Web.Http;
+using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
+using Likkle.BusinessServices.Validators;
 using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
@@ -144,8 +147,17 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{id}")]
         public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
+            var validator = new UpdatedUserInfoRequestValidator();
+            var results = validator.Validate(updateUserData);
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
 
             try
             {
