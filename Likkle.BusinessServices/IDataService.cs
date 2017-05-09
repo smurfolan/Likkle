@@ -44,7 +44,10 @@ namespace Likkle.BusinessServices
         void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings);
         NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
         void UpdateUserLocation(Guid id, double lat, double lon);
-
+        SocialLinksResponseDto GetSocialLinksForUser(Guid userId);
+        void UpdateSocialLinksForUser(Guid userId, UpdateSocialLinksRequestDto updatedSocialLinks);
         #endregion
+
+
     }
 }

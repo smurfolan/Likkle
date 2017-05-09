@@ -494,6 +494,29 @@ namespace Likkle.BusinessServices
             return notificationSettingDto;
         }
 
+        public SocialLinksResponseDto GetSocialLinksForUser(Guid userId)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            var socialLinks = new SocialLinksResponseDto()
+            {
+                FacebookUsername = user.FacebookUsername,
+                InstagramUsername = user.InstagramUsername
+            };
+
+            return socialLinks;
+        }
+
+        public void UpdateSocialLinksForUser(Guid userId, UpdateSocialLinksRequestDto updatedSocialLinks)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            user.FacebookUsername = updatedSocialLinks.FacebookUsername;
+            user.InstagramUsername = updatedSocialLinks.InstagramUsername;
+
+            this._unitOfWork.Save();
+        }
+
         /// <summary>
         /// Currently method is only used to detach users from groups in order to know keep only relevant information when showing up a group.
         /// </summary>
