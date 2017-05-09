@@ -72,11 +72,14 @@
     <Compile Include="Requests\NewUserRequestDto.cs" />
     <Compile Include="Requests\StandaloneGroupRequestDto.cs" />
     <Compile Include="Requests\UpdatedUserLocationRequestDto.cs" />
+    <Compile Include="Requests\UpdateSocialLinksRequestDto.cs" />
     <Compile Include="Requests\UpdateUserInfoRequestDto.cs" />
     <Compile Include="Responses\AreaForLocationResponseDto.cs" />
     <Compile Include="Responses\AreaMetadataResponseDto.cs" />
     <Compile Include="Responses\GroupMetadataResponseDto.cs" />
+    <Compile Include="Responses\SocialLinksResponseDto.cs" />
     <Compile Include="Responses\UserInfoResponseDto.cs" />
+    <Compile Include="Responses\UserLocationUpdatedResponseDto.cs" />
     <Compile Include="TagDto.cs" />
     <Compile Include="UserDto.cs" />
   </ItemGroup>

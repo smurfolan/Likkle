@@ -164,5 +164,29 @@
             <param name="latestLocation">Body sample: {'LatestLatitude': 1.1, 'LatestLongitude': 2.2}</param>
             <returns></returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.UpdateLocation(System.Guid,System.Double,System.Double)">
+            <summary>
+            Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}
+            </summary>
+            <param name="id">Id of the user that is reporting his latest location.</param>
+            <param name="lat">Latest user latitude</param>
+            <param name="lon">Latest user longitude</param>
+            <returns></returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSocialLinks(System.Guid)">
+            <summary>
+            Example: GET api/v1/users/{id:Guid}/SocialLinks
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.UpdateSocialLinks(System.Guid,Likkle.BusinessEntities.Requests.UpdateSocialLinksRequestDto)">
+            <summary>
+            Example: POST api/v1/users/{id:Guid}/UpdateSocialLinks
+            </summary>
+            <param name="id"></param>
+            <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

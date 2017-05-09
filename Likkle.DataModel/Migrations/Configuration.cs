@@ -8,7 +8,7 @@ namespace Likkle.DataModel.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
             ContextKey = "Likkle.DataModel.LikkleDbContext";
         }
 

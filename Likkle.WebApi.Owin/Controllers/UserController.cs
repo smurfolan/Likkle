@@ -6,6 +6,7 @@ using System.Web.Http;
 using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.BusinessServices.Validators;
 using Likkle.WebApi.Owin.Helpers;
@@ -276,6 +277,82 @@ namespace Likkle.WebApi.Owin.Controllers
             catch (Exception ex)
             {
                 _apiLogger.LogError("Error when trying to update latest user location.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}
+        /// </summary>
+        /// <param name="id">Id of the user that is reporting his latest location.</param>
+        /// <param name="lat">Latest user latitude</param>
+        /// <param name="lon">Latest user longitude</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id}/UpdateLocation/{lat}/{lon}")]
+        public IHttpActionResult UpdateLocation(Guid id, double lat, double lon)
+        {
+            if (Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
+                return BadRequest("Latitude and longitude values must be in the [-90, 90] range.");
+
+            try
+            {
+                this._likkleDataService.UpdateUserLocation(id, lat, lon);
+
+                // TODO: (1) service method to return seconds of walking(with ~ 5 km/h) to the closest area boundary. Relevant to task 14
+                
+                var result = new UserLocationUpdatedResponseDto() { SecodsToClosestBoundary = 34.5 /*TODO: assign from (1)*/};
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error when trying to update latest user location.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: GET api/v1/users/{id:Guid}/SocialLinks
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id}/SocialLinks")]
+        public IHttpActionResult GetSocialLinks(Guid id)
+        {
+            try
+            {
+                var result = this._likkleDataService.GetSocialLinksForUser(id);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while trying to get social links for user.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: POST api/v1/users/{id:Guid}/UpdateSocialLinks
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id}/UpdateSocialLinks")]
+        public IHttpActionResult UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
+        {
+            try
+            {
+                this._likkleDataService.UpdateSocialLinksForUser(id, updatedSocialLinks);
+
+                return Created($"api/v1/users/{id}/SocialLinks", "Success");
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while trying to get social links for user.", ex);
                 return InternalServerError();
             }
         }
