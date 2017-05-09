@@ -335,7 +335,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// Example: POST api/v1/users/{id:Guid}/UpdateSocialLinks
+        /// Example: PUT api/v1/users/{id:Guid}/UpdateSocialLinks
         /// </summary>
         /// <param name="id"></param>
         /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
