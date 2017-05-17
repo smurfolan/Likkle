@@ -30,7 +30,12 @@ namespace Likkle.WebApi.Owin.DI
 
             kernel.Bind<ILikkleDbContext>().To<LikkleDbContext>();
             kernel.Bind<ILikkleUoW>().To<LikkleUoW>();
-            kernel.Bind<IDataService>().To<DataService>();
+
+            kernel.Bind<IAreaService>().To<AreaService>();
+            kernel.Bind<IGroupService>().To<GroupService>();
+            kernel.Bind<IUserService>().To<UserService>();
+            kernel.Bind<ISubscriptionService>().To<SubscriptionService>();
+
             kernel.Bind<IConfigurationWrapper>().To<ConfigurationWrapper>();
 
             var mapperConfiguration = new MapperConfiguration(cfg => {

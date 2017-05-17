@@ -10,14 +10,14 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
-        private readonly IDataService _likkleDataService;
+        private readonly IGroupService _groupService;
         private readonly ILikkleApiLogger _apiLogger;
 
         public GroupController(
-            IDataService dataService,
+            IGroupService groupService,
             ILikkleApiLogger logger)
         {
-            this._likkleDataService = dataService;
+            this._groupService = groupService;
             this._apiLogger = logger;
         }
 
@@ -35,7 +35,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetGroupById(id);
+                var result = this._groupService.GetGroupById(id);
 
                 if (result == null)
                     return NotFound();
@@ -64,7 +64,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetGroups(lat, lon);
+                var result = this._groupService.GetGroups(lat, lon);
 
                 return Ok(result);
             }
@@ -86,7 +86,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetUsersFromGroup(id);
+                var result = this._groupService.GetUsersFromGroup(id);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -110,7 +110,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newGroupId = this._likkleDataService.InsertNewGroup(newGroup);
+                var newGroupId = this._groupService.InsertNewGroup(newGroup);
                 return Created("api/v1/groups/" + newGroupId, "Success");
             }
             catch (Exception ex)
@@ -137,7 +137,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newlyCreatedGroupId = this._likkleDataService.InserGroupAsNewArea(newGroup);
+                var newlyCreatedGroupId = this._groupService.InserGroupAsNewArea(newGroup);
 
                 return Created("api/v1/groups/" + newlyCreatedGroupId, "Success");
             }

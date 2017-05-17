@@ -28,7 +28,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Get_Area_By_Id()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             var areaDtoResultId = Guid.NewGuid();
 
@@ -55,7 +55,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Gets_500_Error_When_DataService_Throws_Exception_And_Then_Error_Is_Logged()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
             mockedDataService.Setup(x => x.GetAreaById(It.IsAny<Guid>()))
                 .Throws(new Exception("Error while getting area from data service."));
 
@@ -75,7 +75,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Get_Area_By_Lat_Lon()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             var areaDtoResultId = Guid.NewGuid();
 
@@ -104,7 +104,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Post_New_Area()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             var newAreaId = Guid.NewGuid();
 
@@ -133,7 +133,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Gets_NotFound_Response_If_Entity_Not_Available()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             mockedDataService.Setup(x => x.GetAreaById(It.IsAny<Guid>())).Returns((AreaDto) null);
 
@@ -154,7 +154,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Gets_AreaMetadata()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             mockedDataService.Setup(x => x.GetMetadataForArea(
                 It.IsAny<double>(), 
@@ -179,7 +179,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Gets_Multiple_Areas_Metadata()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IAreaService>();
 
             mockedDataService.Setup(x => x.GetMultipleAreasMetadata(It.IsAny<MultipleAreasMetadataRequestDto>()))
                 .Returns(new List<AreaMetadataResponseDto>()
