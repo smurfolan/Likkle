@@ -311,5 +311,50 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
+
+        /// <summary>
+        /// Example: GET api/v1/users/{id:Guid}/SocialLinks
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id}/SocialLinks")]
+        public IHttpActionResult GetSocialLinks(Guid id)
+        {
+            try
+            {
+                var result = this._likkleDataService.GetSocialLinksForUser(id);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while trying to get social links for user.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// Example: POST api/v1/users/{id:Guid}/UpdateSocialLinks
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id}/UpdateSocialLinks")]
+        public IHttpActionResult UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
+        {
+            try
+            {
+                this._likkleDataService.UpdateSocialLinksForUser(id, updatedSocialLinks);
+
+                return Created($"api/v1/users/{id}/SocialLinks", "Success");
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while trying to get social links for user.", ex);
+                return InternalServerError();
+            }
+        }
     }
 }
