@@ -33,7 +33,7 @@
             </summary>
             <param name="lat">Latitude</param>
             <param name="lon">Longitude</param>
-            <returns>All the areas around coordinates.</returns>
+            <returns>All the active areas around coordinates.</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.Get(System.Double,System.Double,System.Int32)">
             <summary>
@@ -42,7 +42,7 @@
             <param name="lat">Latitude of the center of the screen</param>
             <param name="lon">Longitude of the center of the screen</param>
             <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
-            <returns>All areas in a radius around point.</returns>
+            <returns>All active areas in a radius around point.</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.AreaController.GetUsers(System.Guid)">
             <summary>
@@ -71,7 +71,7 @@
             </summary>
             <param name="lat">Latitude</param>
             <param name="lon">Longitude</param>
-            <returns>All the groups that contain this point(lat/lon) as part of their diameter</returns>
+            <returns>All the active groups that contain this point(lat/lon) as part of their diameter</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.GetUsers(System.Guid)">
             <summary>

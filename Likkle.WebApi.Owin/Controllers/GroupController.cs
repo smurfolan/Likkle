@@ -54,7 +54,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the groups that contain this point(lat/lon) as part of their diameter</returns>
+        /// <returns>All the active groups that contain this point(lat/lon) as part of their diameter</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}")]
         public IHttpActionResult Get(double lat, double lon)

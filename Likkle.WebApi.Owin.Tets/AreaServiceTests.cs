@@ -348,7 +348,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = firstAreaId,
                 Latitude = 10,
                 Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
             };
 
             var secondAreaId = Guid.NewGuid();
@@ -357,7 +358,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = secondAreaId,
                 Latitude = 10.000001,
                 Longitude = 10.000001,
-                Radius = RadiusRangeEnum.FiftyMeters
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
             };
 
             var thirdAreaId = Guid.NewGuid();
@@ -366,7 +368,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = thirdAreaId,
                 Latitude = 42,
                 Longitude = 42,
-                Radius = RadiusRangeEnum.FiftyMeters
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
             };
 
             var populatedDatabase = new FakeLikkleDbContext()
@@ -400,7 +403,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = firstAreaId,
                 Latitude = 10,
                 Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
             };
 
             var secondAreaId = Guid.NewGuid();
@@ -409,7 +413,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = secondAreaId,
                 Latitude = 10,
                 Longitude = 10,
-                Radius = RadiusRangeEnum.ThreeHundredMeters
+                Radius = RadiusRangeEnum.ThreeHundredMeters,
+                IsActive = true
             };
 
             var thirdAreaId = Guid.NewGuid();
@@ -418,7 +423,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = thirdAreaId,
                 Latitude = 50,
                 Longitude = 50,
-                Radius = RadiusRangeEnum.FiftyMeters
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
             };
 
             var populatedDatabase = new FakeLikkleDbContext()

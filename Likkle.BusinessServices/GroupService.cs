@@ -30,7 +30,10 @@ namespace Likkle.BusinessServices
         {
             var result = this._unitOfWork.AreaRepository.GetAreas(latitude, longitude);
 
-            var groupsInsideAreas = result.SelectMany(ar => ar.Groups).Distinct();
+            var groupsInsideAreas = result
+                .SelectMany(ar => ar.Groups)
+                .Distinct()
+                .Where(gr => gr.IsActive);
 
             var groupsAsDtos = this._mapper.Map<IEnumerable<Group>, IEnumerable<GroupMetadataResponseDto>>(groupsInsideAreas);
 
@@ -73,6 +76,8 @@ namespace Likkle.BusinessServices
                 }
             }
 
+            newGroupEntity.IsActive = true;
+
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 
             this._unitOfWork.GroupRepository.Save();
@@ -87,7 +92,8 @@ namespace Likkle.BusinessServices
             {
                 Latitude = newGroup.Latitude,
                 Longitude = newGroup.Longitude,
-                Radius = newGroup.Radius
+                Radius = newGroup.Radius,
+                IsActive = true
             };
 
             var newAreaId = this._unitOfWork.AreaRepository.InsertArea(areaEntity);
@@ -122,6 +128,8 @@ namespace Likkle.BusinessServices
                     newGroupEntity.Tags.Add(tag);
                 }
             }
+
+            newGroupEntity.IsActive = true;
 
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 

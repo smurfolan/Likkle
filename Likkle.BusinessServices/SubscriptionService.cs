@@ -63,27 +63,10 @@ namespace Likkle.BusinessServices
             var newlySubscribedGroups = groupSubscriptionsThatCameFromTheRequest.Where(gr => !forUserAroundCurrentLocation.Contains(gr));
 
             // 5. Each group in (3) has to be removed from current user subscriptions
-            foreach (var unsubscribedGroup in unsubscribedGroups)
-            {
-                user.Groups.Remove(unsubscribedGroup);
-
-                var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
-                user.HistoryGroups.Remove(historyRecordToBeRemoved);
-            }
+            this.DisconnectUserFromUnsubscribedGroups(unsubscribedGroups, user);
 
             // 6. Each group in (4) has to be added to the current user subscriptions
-            foreach (var newlySubscribedGroup in newlySubscribedGroups)
-            {
-                user.Groups.Add(newlySubscribedGroup);
-                user.HistoryGroups.Add(new HistoryGroup()
-                {
-                    DateTimeGroupWasSubscribed = DateTime.UtcNow,
-                    GroupId = newlySubscribedGroup.Id,
-                    GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
-                    UserId = user.Id,
-                    UserWhoSubscribedGroup = user
-                });
-            }
+            this.ConnectUserToNewlySubscribedGroups(newlySubscribedGroups, user);
 
             this._unitOfWork.Save();
 
@@ -116,6 +99,32 @@ namespace Likkle.BusinessServices
             }
         }
 
+        private void DisconnectUserFromUnsubscribedGroups(List<Group> unsubscribedGroups, User user)
+        {
+            foreach (var unsubscribedGroup in unsubscribedGroups)
+            {
+                user.Groups.Remove(unsubscribedGroup);
+
+                var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
+                user.HistoryGroups.Remove(historyRecordToBeRemoved);
+            }
+        }
+
+        private void ConnectUserToNewlySubscribedGroups(IEnumerable<Group> newlySubscribedGroups, User user)
+        {
+            foreach (var newlySubscribedGroup in newlySubscribedGroups)
+            {
+                user.Groups.Add(newlySubscribedGroup);
+                user.HistoryGroups.Add(new HistoryGroup()
+                {
+                    DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                    GroupId = newlySubscribedGroup.Id,
+                    GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
+                    UserId = user.Id,
+                    UserWhoSubscribedGroup = user
+                });
+            }
+        }
 
         #endregion
     }

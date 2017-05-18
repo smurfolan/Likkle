@@ -113,7 +113,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the areas around coordinates.</returns>
+        /// <returns>All the active areas around coordinates.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/")]
         public IHttpActionResult Get(double lat, double lon)
@@ -133,14 +133,14 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-
+        
         /// <summary>
         /// Example: GET api/v1/areas/{lat:double}/{lon:double}/{rad:int}
         /// </summary>
         /// <param name="lat">Latitude of the center of the screen</param>
         /// <param name="lon">Longitude of the center of the screen</param>
         /// <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
-        /// <returns>All areas in a radius around point.</returns>
+        /// <returns>All active areas in a radius around point.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/{rad:int}")]
         public IHttpActionResult Get(double lat, double lon, int rad)

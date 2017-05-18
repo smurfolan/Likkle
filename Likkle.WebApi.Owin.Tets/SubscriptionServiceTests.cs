@@ -83,15 +83,16 @@ namespace Likkle.WebApi.Owin.Tets
             var groupOneId = Guid.NewGuid();
             var groupTwoId = Guid.NewGuid();
 
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
-            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>(), IsActive = true};
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>(), IsActive = true };
 
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo }
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -168,8 +169,8 @@ namespace Likkle.WebApi.Owin.Tets
 
 
             // arrange
-            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() };
-            var groupFour = new Group() { Id = Guid.NewGuid(), Name = "GroupFour", Users = new List<User>() };
+            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>(), IsActive = true };
+            var groupFour = new Group() { Id = Guid.NewGuid(), Name = "GroupFour", Users = new List<User>(), IsActive = true };
 
             groupThree.Areas = new List<Area>() { area };
             groupFour.Areas = new List<Area>() { area };

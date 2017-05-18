@@ -50,7 +50,7 @@ namespace Likkle.BusinessServices
             var currentLocation = new GeoCoordinate(latitude, longitude);
 
             var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
-                .Where(x => currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
+                .Where(x => x.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
 
             var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaForLocationResponseDto>>(areaEntities);
 
@@ -62,7 +62,7 @@ namespace Likkle.BusinessServices
             var currentLocation = new GeoCoordinate(lat, lon);
 
             var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
-                .Where(a => currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= rad);
+                .Where(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= rad);
 
             var areasAsDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaForLocationResponseDto>>(areaEntities);
 
@@ -112,6 +112,8 @@ namespace Likkle.BusinessServices
         {
             var areaEntity = this._mapper.Map<NewAreaRequest, Area>(newArea);
             areaEntity.Id = Guid.NewGuid();
+
+            areaEntity.IsActive = true;
 
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
         }
