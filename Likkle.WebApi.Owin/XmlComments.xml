@@ -80,6 +80,14 @@
             <param name="id">Unique identifier of the group you are getting the users from</param>
             <returns>All the users for a specific group that are actually inside of it (The area a group belongs to).</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.GetGroupCreationType(System.Double,System.Double)">
+            <summary>
+            EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType
+            </summary>
+            <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
+            <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
+            <returns>What type of creation it is going to be: Aut. group as new area/Choice screen/List of prev. created</returns>
+        </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.Post(Likkle.BusinessEntities.Requests.StandaloneGroupRequestDto)">
             <summary>
             Example: POST /api/v1/groups

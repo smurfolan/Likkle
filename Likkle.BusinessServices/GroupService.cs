@@ -203,5 +203,10 @@ namespace Likkle.BusinessServices
 
             return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
         }
+
+        public PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

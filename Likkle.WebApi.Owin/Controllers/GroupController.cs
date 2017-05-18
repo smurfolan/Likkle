@@ -97,6 +97,28 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
+        /// EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType
+        /// </summary>
+        /// <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
+        /// <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
+        /// <returns>What type of creation it is going to be: Aut. group as new area/Choice screen/List of prev. created</returns>
+        [HttpGet]
+        [Route("{lat:double}/{lon:double}/GroupCreationType")]
+        public IHttpActionResult GetGroupCreationType(double lat, double lon)
+        {
+            try
+            {
+                var result = this._groupService.GetGroupCreationType(lat, lon);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while getting information of what type the group creation should be.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
         /// Example: POST /api/v1/groups
         /// </summary>
         /// <param name="newGroup">Body sample:{'name':'Second floor cooks', 'tagIds':['0c53eeff-06a1-4104-a86e-1bd3c8028a00', 'afc3c12f-b884-40e2-b356-2c863fd0b86c'], 'areaIds':['c6f22434-fbc1-47f5-8149-2dd57f78a29e'],'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b'}</param>
