@@ -267,18 +267,13 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(user.Groups.Count(), 0);
             Assert.AreEqual(user.HistoryGroups.Count(), 2);
         }
-
+        
+        // TODO: Extract common parts from this method and the one below
         [TestMethod]
-        public void Area_Gets_Deleted_If_No_Groups_Belong_To_It()
+        public void Group_Gets_Inactive_When_No_Users_Belong_To_It()
         {
             // arrange
             this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
-
-            var groupOneId = Guid.NewGuid();
-            var groupTwoId = Guid.NewGuid();
-
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
-            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
 
             var userId = Guid.NewGuid();
             var user = new User()
@@ -290,12 +285,20 @@ namespace Likkle.WebApi.Owin.Tets
                 IdsrvUniqueId = Guid.NewGuid().ToString()
             };
 
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
+
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { user }, IsActive = true };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>(), IsActive = true };
+
+            var areaId = Guid.NewGuid();
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
+                Id = areaId,
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo }
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -308,63 +311,30 @@ namespace Likkle.WebApi.Owin.Tets
                 Areas = new FakeDbSet<Area>() { area }
             }
             .Seed();
-
             DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
+            // act 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
                 UserId = userId,
                 Latitude = 10,
                 Longitude = 10,
-                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
+                GroupsUserSubscribes = new List<Guid>() { groupTwoId }
             };
 
-            var relateUserToGroupsRequestWithUnsubscribedGroups = new RelateUserToGroupsDto()
-            {
-                UserId = userId,
-                Latitude = 10,
-                Longitude = 10,
-                GroupsUserSubscribes = new List<Guid>() { }
-            };
-
-            // act and assert
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequest);
 
-            Assert.AreEqual(2, this._groupService.AllGroups().Count());
-            groupOne.Users.Add(user);
-            groupTwo.Users.Add(user);
-            Assert.IsTrue(this._groupService.AllGroups().Select(a => a.Id).Contains(groupOneId));
-            Assert.IsTrue(this._groupService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
-
-            this._mockedLikkleUoW.Setup(uow => uow.Save()).Callback((() =>
-            {
-                area.Groups = new List<Group>();
-            }));
-
-            this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequestWithUnsubscribedGroups);
-
-            Assert.AreEqual(0, this._groupService.AllGroups().Count());
-            Assert.IsTrue(!this._areaService.GetAllAreas().Any());
-            Assert.IsFalse(this._groupService.AllGroups().Select(a => a.Id).Contains(groupOneId));
-            Assert.IsFalse(this._groupService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+            // assert
+            Assert.AreEqual(2, this._areaService.GetAreaById(areaId).Groups.Count());
+            Assert.IsFalse(this._mockedLikkleUoW.Object.GroupRepository.GetGroupById(groupOneId).IsActive);
+            Assert.IsTrue(this._mockedLikkleUoW.Object.GroupRepository.GetGroupById(groupTwoId).IsActive);
         }
 
         [TestMethod]
-        public void Group_Gets_Deleted_If_No_Users_Belongs_To_It()
+        public void Area_Gets_Inactive_When_No_Active_Groups_Belong_To_It()
         {
             // arrange
             this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
-
-            var groupOneId = Guid.NewGuid();
-            var groupTwoId = Guid.NewGuid();
-
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
-            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() };
-
-            var groupThreeId = Guid.NewGuid();
-            var groupFourId = Guid.NewGuid();
-            var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() };
-            var groupFour = new Group() { Id = groupFourId, Name = "GroupFour", Users = new List<User>() };
 
             var userId = Guid.NewGuid();
             var user = new User()
@@ -376,60 +346,52 @@ namespace Likkle.WebApi.Owin.Tets
                 IdsrvUniqueId = Guid.NewGuid().ToString()
             };
 
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
+
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { user }, IsActive = true };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>(), IsActive = false };
+
+            var areaId = Guid.NewGuid();
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
+                Id = areaId,
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo, groupThree, groupFour }
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true
             };
 
             groupOne.Areas = new List<Area>() { area };
             groupTwo.Areas = new List<Area>() { area };
-            groupThree.Areas = new List<Area>() { area };
-            groupFour.Areas = new List<Area>() { area };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
-                Groups = new FakeDbSet<Group>() { groupOne, groupTwo, groupThree, groupFour },
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
                 Users = new FakeDbSet<User>() { user },
                 Areas = new FakeDbSet<Area>() { area }
             }
             .Seed();
-
             DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
+            // act 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
                 UserId = userId,
                 Latitude = 10,
                 Longitude = 10,
-                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
+                GroupsUserSubscribes = new List<Guid>() { groupTwoId }
             };
 
-            var relateUserToGroupsRequestWithUnsubscribedGroups = new RelateUserToGroupsDto()
-            {
-                UserId = userId,
-                Latitude = 10,
-                Longitude = 10,
-                GroupsUserSubscribes = new List<Guid>() { groupThreeId, groupFourId }
-            };
-
-            // act and assert
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequest);
 
-            Assert.AreEqual(4, this._groupService.AllGroups().Count());
-            groupOne.Users.Add(user);
-            groupTwo.Users.Add(user);
-            Assert.IsTrue(this._groupService.AllGroups().Select(a => a.Id).Contains(groupOneId));
-            Assert.IsTrue(this._groupService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+            // assert
+            Assert.AreEqual(2, this._areaService.GetAreaById(areaId).Groups.Count());
 
-            this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequestWithUnsubscribedGroups);
+            Assert.IsFalse(this._mockedLikkleUoW.Object.GroupRepository.GetGroupById(groupOneId).IsActive);
+            Assert.IsFalse(this._mockedLikkleUoW.Object.GroupRepository.GetGroupById(groupTwoId).IsActive);
 
-            Assert.AreEqual(2, this._groupService.AllGroups().Count());
-            Assert.IsTrue(this._areaService.GetAllAreas().Any());
-            Assert.IsFalse(this._groupService.AllGroups().Select(a => a.Id).Contains(groupOneId));
-            Assert.IsFalse(this._groupService.AllGroups().Select(a => a.Id).Contains(groupTwoId));
+            Assert.IsFalse(this._mockedLikkleUoW.Object.AreaRepository.GetAreaById(areaId).IsActive);
         }
     }
 }

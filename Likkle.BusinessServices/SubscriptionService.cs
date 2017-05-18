@@ -71,31 +71,35 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
 
             if (this._configuration.AutomaticallyCleanupGroupsAndAreas)
-                this.DeleteGroupsWithNoUsersInsideOfThem(unsubscribedGroups);
+            {
+                this.DeactivateGroupsWithNoUsersInsideOfThem(unsubscribedGroups, newRelations.UserId);
+                this._unitOfWork.Save();
+            } 
         }
 
         #region Private methods
-        private void DeleteGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups)
+        private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
-            var allGroups = this._unitOfWork.GroupRepository.GetGroups();
+            var userToBeRemoved = this._unitOfWork.UserRepository.GetUserById(userId);
 
-            var groupsToBeRemoved = allGroups.Where(ag => unsubscribedGroups.Select(g => g.Id).Contains(ag.Id)).ToList();
-
-            foreach (var group in groupsToBeRemoved)
+            foreach (var unsubscribedGroup in unsubscribedGroups)
             {
-                this._unitOfWork.GroupRepository.DeleteGroup(group.Id);
-            }
+                unsubscribedGroup.Users.Remove(userToBeRemoved);
+                if (!unsubscribedGroup.Users.Any())
+                {
+                    unsubscribedGroup.IsActive = false;
+                }
 
-            this.DeleteAreasWithNoGroups(groupsToBeRemoved.SelectMany(gr => gr.Areas).Distinct());
+                this.DeactivateAreasWithNoGroups(unsubscribedGroup.Areas);
+            }
         }
 
-        private void DeleteAreasWithNoGroups(IEnumerable<Area> areas)
+        private void DeactivateAreasWithNoGroups(IEnumerable<Area> areas)
         {
-            var areasToBeDeleted = areas.Where(a => a.Groups.Count < 1);
-
-            foreach (var area in areasToBeDeleted)
+            foreach (var area in areas)
             {
-                this._unitOfWork.AreaRepository.DeleteArea(area.Id);
+                if (area.Groups.All(gr => gr.IsActive == false))
+                    area.IsActive = false;
             }
         }
 
