@@ -55,7 +55,22 @@ namespace Likkle.BusinessServices
                 var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
 
                 if (user != null)
+                {
                     newGroupEntity.Users.Add(user);
+
+                    if(user.HistoryGroups == null)
+                        user.HistoryGroups = new List<HistoryGroup>();
+
+                    user.HistoryGroups.Add(new HistoryGroup()
+                    {
+                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                        GroupId = newGroupEntity.Id,
+                        GroupThatWasPreviouslySubscribed = newGroupEntity,
+                        Id = Guid.NewGuid(),
+                        UserId = newGroup.UserId,
+                        UserWhoSubscribedGroup = user
+                    });
+                }
             }
 
             if (newGroup.TagIds != null && newGroup.TagIds.Any())
@@ -113,7 +128,22 @@ namespace Likkle.BusinessServices
                 var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
 
                 if (user != null)
+                {
                     newGroupEntity.Users.Add(user);
+
+                    if (user.HistoryGroups == null)
+                        user.HistoryGroups = new List<HistoryGroup>();
+
+                    user.HistoryGroups.Add(new HistoryGroup()
+                    {
+                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                        GroupId = newGroupEntity.Id,
+                        GroupThatWasPreviouslySubscribed = newGroupEntity,
+                        Id = Guid.NewGuid(),
+                        UserId = newGroup.UserId,
+                        UserWhoSubscribedGroup = user
+                    });
+                }
             }
 
             var newlyCreatedArea = this._unitOfWork.AreaRepository.GetAreaById(newAreaId);
