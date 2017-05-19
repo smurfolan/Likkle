@@ -105,6 +105,13 @@
             <param name="UserIdNote">NOTE: 'userId':1 -> Supposed to be the id of the user. If you pass it, you automatically get subscribed to the group you created. Otherwise, you just create it without following it.</param>
             <returns>Uniqe identifier of the newly created group entity</returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.Put(System.Guid)">
+            <summary>
+            Example: PUT /api/v1/{id}/Activate
+            </summary>
+            <param name="groupId"></param>
+            <returns>Activates group that was previously active as in paralle activates all inactive areas it used to belong to</returns>
+        </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Get(System.Guid)">
             <summary>
             Example: GET /api/v1/users/{id:Guid}

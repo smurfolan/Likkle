@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Device.Location;
 using System.Linq;
 using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
 using Likkle.DataModel;
@@ -12,6 +14,8 @@ namespace Likkle.BusinessServices
 {
     public class GroupService : IGroupService
     {
+        private readonly string GroupRecreateUrlTemplate = @"api/v1/groups/{0}/Activate";
+
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
@@ -206,7 +210,54 @@ namespace Likkle.BusinessServices
 
         public PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon, Guid userId)
         {
-            throw new NotImplementedException();
+            var currentLocation = new GeoCoordinate(lat, lon);
+
+            var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
+                .Where(x => x.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
+
+            var areas = areaEntities as Area[] ?? areaEntities.ToArray();
+
+            if (!areas.Any())
+                return new PreGroupCreationResponseDto()
+                {
+                    CreationType = CreateGroupActionTypeEnum.AutomaticallyGroupAsNewArea,
+                    PrevousGroupsList = null
+                };
+
+            var inactiveGroupsInTheArea =
+                areas.SelectMany(a => a.Groups).Distinct().Where(gr => gr.IsActive == false).ToList();
+
+            if(!inactiveGroupsInTheArea.Any())
+                return new PreGroupCreationResponseDto()
+                {
+                    CreationType = CreateGroupActionTypeEnum.ChoiceScreen,
+                    PrevousGroupsList = null
+                };
+
+            return this.GetListOfPrevouslyCreatedOrSubscribedGroups(inactiveGroupsInTheArea, userId);
+        }
+
+        private PreGroupCreationResponseDto GetListOfPrevouslyCreatedOrSubscribedGroups(
+            IEnumerable<Group> inactiveGroupsInTheArea, 
+            Guid userId)
+        {
+            var groupsUserPreviouslyInteractedWith = this._unitOfWork
+                .UserRepository.GetUserById(userId)
+                .HistoryGroups.Select(hgr => hgr.GroupId).ToList();
+            
+            var groupsToReturn = inactiveGroupsInTheArea
+                .Where(gr => groupsUserPreviouslyInteractedWith.Contains(gr.Id))
+                .Select(g => new RecreateGroupRecord()
+                {
+                    GroupName = g.Name,
+                    ReCreateGroupUrl = string.Format(GroupRecreateUrlTemplate, g.Id)
+                });
+
+            return new PreGroupCreationResponseDto()
+            {
+                CreationType = CreateGroupActionTypeEnum.ListOfPreviouslyCreatedOrSubscribedGroups,
+                PrevousGroupsList = groupsToReturn
+            };
         }
     }
 }

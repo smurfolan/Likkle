@@ -170,5 +170,17 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
+
+        /// <summary>
+        /// Example: PUT /api/v1/{id}/Activate
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns>Activates group that was previously active as in paralle activates all inactive areas it used to belong to</returns>
+        [HttpPut]
+        [Route("{groupId}/Activate")]
+        public IHttpActionResult Put(Guid groupId)
+        {
+            return BadRequest();
+        }
     }
 }
