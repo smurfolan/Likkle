@@ -1,9 +1,7 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Web.Http;
-using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
@@ -17,15 +15,22 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/users")]
     public class UserController : ApiController
     {
-        private readonly IDataService _likkleDataService;
+        private readonly IUserService _userService;
+        private readonly ISubscriptionService _subscriptionService;
+        private readonly IGroupService _groupService;
+
         private readonly ILikkleApiLogger _apiLogger;
 
         public UserController(
-            IDataService dataService, 
-            ILikkleApiLogger logger)
+            IUserService userService, 
+            ILikkleApiLogger logger, 
+            ISubscriptionService subscriptionService, 
+            IGroupService groupService)
         {
-            this._likkleDataService = dataService;
+            this._userService = userService;
             this._apiLogger = logger;
+            this._subscriptionService = subscriptionService;
+            _groupService = groupService;
         }
 
         /// <summary>
@@ -42,7 +47,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetUserById(id);
+                var result = this._userService.GetUserById(id);
 
                 if (result == null)
                     return NotFound();
@@ -70,7 +75,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 var data = Convert.FromBase64String(stsId);
                 var decodedString = Encoding.UTF8.GetString(data);
 
-                var result = this._likkleDataService.GetUserByStsId(decodedString);
+                var result = this._userService.GetUserByStsId(decodedString);
 
                 if (result == null)
                     return NotFound();
@@ -82,7 +87,6 @@ namespace Likkle.WebApi.Owin.Controllers
                 _apiLogger.LogError("Error while getting user by STS id.", ex);
                 return InternalServerError();
             }
-
         }
 
         /// <summary>
@@ -99,7 +103,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._likkleDataService.RelateUserToGroups(userToGroupsModel);
+                this._subscriptionService.RelateUserToGroups(userToGroupsModel);
                 return Ok();
             }
             catch (Exception ex)
@@ -123,11 +127,11 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                if (this._likkleDataService.GetAllUsers()
+                if (this._userService.GetAllUsers()
                     .Any(x => x.IdsrvUniqueId == newUser.IdsrvUniqueId || x.Email == newUser.Email))
                     return BadRequest("User with the same email or STS id has been already added.");
 
-                var newlyCreatedUserId = this._likkleDataService.InsertNewUser(newUser);
+                var newlyCreatedUserId = this._userService.InsertNewUser(newUser);
 
                 return Created("api/v1/users/" + newlyCreatedUserId, "Success");
             }
@@ -162,7 +166,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._likkleDataService.UpdateUserInfo(id, updateUserData);
+                this._userService.UpdateUserInfo(id, updateUserData);
 
                 return Ok();
             }
@@ -187,7 +191,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetUserSubscriptions(id, lat, lon);
+                var result = this._groupService.GetUserSubscriptions(id, lat, lon);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -213,7 +217,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._likkleDataService.UpdateUserNotificationSettings(id, notifications);
+                this._userService.UpdateUserNotificationSettings(id, notifications);
 
                 return Ok();
             }
@@ -238,7 +242,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetNotificationSettingsForUserWithId(id);
+                var result = this._userService.GetNotificationSettingsForUserWithId(id);
 
                 if (result == null)
                     return NotFound();
@@ -267,7 +271,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._likkleDataService.UpdateUserLocation(
+                this._userService.UpdateUserLocation(
                     id, 
                     latestLocation.LatestLatitude,
                     latestLocation.LatestLongitude);
@@ -297,7 +301,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._likkleDataService.UpdateUserLocation(id, lat, lon);
+                this._userService.UpdateUserLocation(id, lat, lon);
 
                 // TODO: (1) service method to return seconds of walking(with ~ 5 km/h) to the closest area boundary. Relevant to task 14
                 
@@ -323,7 +327,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetSocialLinksForUser(id);
+                var result = this._userService.GetSocialLinksForUser(id);
 
                 return Ok(result);
             }
@@ -346,7 +350,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                this._likkleDataService.UpdateSocialLinksForUser(id, updatedSocialLinks);
+                this._userService.UpdateSocialLinksForUser(id, updatedSocialLinks);
 
                 return Created($"api/v1/users/{id}/SocialLinks", "Success");
             }

@@ -11,14 +11,14 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
-        private readonly IDataService _likkleDataService;
+        private readonly IAreaService _areaService;
         private readonly ILikkleApiLogger _apiLogger;
 
         public AreaController(
-            IDataService dataService, 
+            IAreaService areaService, 
             ILikkleApiLogger logger)
         {
-            this._likkleDataService = dataService;
+            this._areaService = areaService;
             this._apiLogger = logger;
         }
 
@@ -36,7 +36,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetAreaById(id);
+                var result = this._areaService.GetAreaById(id);
 
                 if(result == null)
                     return NotFound();
@@ -66,7 +66,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetMetadataForArea(lat, lon, areaId);
+                var result = this._areaService.GetMetadataForArea(lat, lon, areaId);
 
                 return Ok(result);
             }
@@ -89,7 +89,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetMultipleAreasMetadata(areas);
+                var result = this._areaService.GetMultipleAreasMetadata(areas);
 
                 if (result == null || !result.Any())
                 {
@@ -113,7 +113,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the areas around coordinates.</returns>
+        /// <returns>All the active areas around coordinates.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/")]
         public IHttpActionResult Get(double lat, double lon)
@@ -123,7 +123,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetAreas(lat, lon);
+                var result = this._areaService.GetAreas(lat, lon);
 
                 return Ok(result);
             }
@@ -133,14 +133,14 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError();
             }
         }
-
+        
         /// <summary>
         /// Example: GET api/v1/areas/{lat:double}/{lon:double}/{rad:int}
         /// </summary>
         /// <param name="lat">Latitude of the center of the screen</param>
         /// <param name="lon">Longitude of the center of the screen</param>
         /// <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
-        /// <returns>All areas in a radius around point.</returns>
+        /// <returns>All active areas in a radius around point.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/{rad:int}")]
         public IHttpActionResult Get(double lat, double lon, int rad)
@@ -150,7 +150,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetAreas(lat, lon, rad*1000);
+                var result = this._areaService.GetAreas(lat, lon, rad*1000);
 
                 return Ok(result);
             }
@@ -172,7 +172,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetUsersFromArea(id);
+                var result = this._areaService.GetUsersFromArea(id);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -196,7 +196,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newAreaId = this._likkleDataService.InsertNewArea(area);
+                var newAreaId = this._areaService.InsertNewArea(area);
 
                 return Created("api/v1/areas/" + newAreaId, "Success");
             }

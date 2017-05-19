@@ -27,7 +27,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Get_Group_By_Id()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
 
             var groupDtoResultId = Guid.NewGuid();
 
@@ -54,7 +54,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Gets_500_Error_When_DataService_Throws_Exception_And_Then_Error_Is_Logged()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
             mockedDataService.Setup(x => x.GetGroupById(It.IsAny<Guid>()))
                 .Throws(new Exception("Error while getting group from data service."));
 
@@ -74,7 +74,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Get_Groups_By_Lat_Lon()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
 
             var groupDtoResultId = Guid.NewGuid();
 
@@ -106,7 +106,7 @@ namespace Likkle.WebApi.Owin.Tets
         {
             // arrange
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
 
             var userDtoResultId = Guid.NewGuid();
 
@@ -136,7 +136,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Post_New_Group()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
 
             var newGroupId = Guid.NewGuid();
 
@@ -160,7 +160,7 @@ namespace Likkle.WebApi.Owin.Tets
         public void Client_Can_Post_New_Group_As_New_Area()
         {
             // arrange
-            var mockedDataService = new Mock<IDataService>();
+            var mockedDataService = new Mock<IGroupService>();
 
             var newGroupId = Guid.NewGuid();
 

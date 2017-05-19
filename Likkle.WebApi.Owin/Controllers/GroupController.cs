@@ -10,14 +10,14 @@ namespace Likkle.WebApi.Owin.Controllers
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
-        private readonly IDataService _likkleDataService;
+        private readonly IGroupService _groupService;
         private readonly ILikkleApiLogger _apiLogger;
 
         public GroupController(
-            IDataService dataService,
+            IGroupService groupService,
             ILikkleApiLogger logger)
         {
-            this._likkleDataService = dataService;
+            this._groupService = groupService;
             this._apiLogger = logger;
         }
 
@@ -35,7 +35,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetGroupById(id);
+                var result = this._groupService.GetGroupById(id);
 
                 if (result == null)
                     return NotFound();
@@ -54,7 +54,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the groups that contain this point(lat/lon) as part of their diameter</returns>
+        /// <returns>All the active groups that contain this point(lat/lon) as part of their diameter</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}")]
         public IHttpActionResult Get(double lat, double lon)
@@ -64,7 +64,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._likkleDataService.GetGroups(lat, lon);
+                var result = this._groupService.GetGroups(lat, lon);
 
                 return Ok(result);
             }
@@ -86,12 +86,35 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                var result = this._likkleDataService.GetUsersFromGroup(id);
+                var result = this._groupService.GetUsersFromGroup(id);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 _apiLogger.LogError("Error while getting users for group.", ex);
+                return InternalServerError();
+            }
+        }
+
+        /// <summary>
+        /// EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType
+        /// </summary>
+        /// <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
+        /// <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
+        /// <param name="userId">Id of the user who is trying to create a group</param>
+        /// <returns>What type of creation it is going to be: Aut. group as new area/Choice screen/List of prev. created</returns>
+        [HttpGet]
+        [Route("{lat:double}/{lon:double}/GroupCreationType/{userId}")]
+        public IHttpActionResult GetGroupCreationType(double lat, double lon, Guid userId)
+        {
+            try
+            {
+                var result = this._groupService.GetGroupCreationType(lat, lon, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _apiLogger.LogError("Error while getting information of what type the group creation should be.", ex);
                 return InternalServerError();
             }
         }
@@ -110,7 +133,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newGroupId = this._likkleDataService.InsertNewGroup(newGroup);
+                var newGroupId = this._groupService.InsertNewGroup(newGroup);
                 return Created("api/v1/groups/" + newGroupId, "Success");
             }
             catch (Exception ex)
@@ -137,7 +160,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newlyCreatedGroupId = this._likkleDataService.InserGroupAsNewArea(newGroup);
+                var newlyCreatedGroupId = this._groupService.InserGroupAsNewArea(newGroup);
 
                 return Created("api/v1/groups/" + newlyCreatedGroupId, "Success");
             }
@@ -146,6 +169,18 @@ namespace Likkle.WebApi.Owin.Controllers
                 _apiLogger.LogError("Error while creating new group.", ex);
                 return InternalServerError();
             }
+        }
+
+        /// <summary>
+        /// Example: PUT /api/v1/{id}/Activate
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns>Activates group that was previously active as in paralle activates all inactive areas it used to belong to</returns>
+        [HttpPut]
+        [Route("{groupId}/Activate")]
+        public IHttpActionResult Put(Guid groupId)
+        {
+            return BadRequest();
         }
     }
 }

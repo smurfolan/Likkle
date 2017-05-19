@@ -16,6 +16,8 @@ namespace Likkle.DataModel
         
         public double Longitude { get; set; }
 
+        public bool IsActive { get; set; }
+
         public RadiusRangeEnum Radius { get; set; }
 
         // Navigation properties
