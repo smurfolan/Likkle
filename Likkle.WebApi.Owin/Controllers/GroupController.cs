@@ -101,14 +101,15 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
         /// <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
+        /// <param name="userId">Id of the user who is trying to create a group</param>
         /// <returns>What type of creation it is going to be: Aut. group as new area/Choice screen/List of prev. created</returns>
         [HttpGet]
-        [Route("{lat:double}/{lon:double}/GroupCreationType")]
-        public IHttpActionResult GetGroupCreationType(double lat, double lon)
+        [Route("{lat:double}/{lon:double}/GroupCreationType/{userId}")]
+        public IHttpActionResult GetGroupCreationType(double lat, double lon, Guid userId)
         {
             try
             {
-                var result = this._groupService.GetGroupCreationType(lat, lon);
+                var result = this._groupService.GetGroupCreationType(lat, lon, userId);
                 return Ok(result);
             }
             catch (Exception ex)

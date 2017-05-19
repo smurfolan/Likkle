@@ -252,5 +252,28 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(user.HistoryGroups);
             Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
         }
+
+        [TestMethod]
+        public void We_Can_Get_List_Of_Previously_Created_Groups_When_At_A_Place_With_Previous_Activity()
+        {
+            // 1. User creates a group as new area
+            // 2. User leaves group range
+            // 3. User gets back to prev. created group
+            // 4. When trying to create a group he gets a list of the group he previously created
+
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void We_Get_AutomaticallyGroupAsNewArea_Response_When_Never_Created_Or_Subscribed_Group_Here()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void We_Get_Choice_Screen_When_Creating_A_group_In_Existing_Active_Area()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
