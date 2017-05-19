@@ -2,7 +2,7 @@
 
 namespace Likkle.DataModel
 {
-    // TODO: Implement FakeLIkkleDbContext
+    // TODO: Currently, migrations are running right after a call is made to the API. In order to optimize this, try to run them before any call is made.
     public class LikkleDbContext : DbContext, ILikkleDbContext
     {
         public IDbSet<Area> Areas { get; set; }
