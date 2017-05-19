@@ -22,5 +22,6 @@ namespace Likkle.BusinessEntities.Requests
 
         public string InstagramUsername { get; set; }
         public string FacebookUsername { get; set; }
+        public string TwitterUsername { get; set; }
     }
 }

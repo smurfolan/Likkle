@@ -63,6 +63,7 @@
     <Compile Include="SubscriptionService.cs" />
     <Compile Include="UserService.cs" />
     <Compile Include="Validators\UpdatedUserInfoRequestValidator.cs" />
+    <Compile Include="Validators\UpdateSocialLinksRequestDtoValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Likkle.BusinessEntities\Likkle.BusinessEntities.csproj">
