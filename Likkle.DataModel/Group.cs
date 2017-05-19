@@ -13,6 +13,8 @@ namespace Likkle.DataModel
 
         public string Name { get; set; }
 
+        public bool IsActive { get; set; }
+
         // Navigation properties
         public virtual ICollection<Area> Areas { get; set; } 
         public virtual ICollection<User> Users { get; set; } 

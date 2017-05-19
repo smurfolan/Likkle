@@ -152,5 +152,315 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(allUsersInGroup);
             Assert.AreEqual(allUsersInGroup.Count(), 2);
         }
+
+        [TestMethod]
+        public void StandaloneGroup_We_Create_Gets_Into_Our_HistoryGroups()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { newArea }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            var newGroupRequest = new StandaloneGroupRequestDto()
+            {
+                Name = "New group",
+                TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
+                AreaIds = new List<Guid>() { newAreaId },
+                UserId = userId
+            };
+
+            // act 
+            var newGroupId = this._groupService.InsertNewGroup(newGroupRequest);
+
+            // assert
+            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(userId);
+            Assert.IsNotNull(user.HistoryGroups);
+            Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
+        }
+
+        [TestMethod]
+        public void GroupAsNewArea_We_Create_Gets_Into_Our_HistoryGroups()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { newArea }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            var newGroupRequest = new GroupAsNewAreaRequestDto()
+            {
+                Name = "New group",
+                TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
+                Radius = RadiusRangeEnum.FiveHundredMeters,
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10
+            };
+
+            // act 
+            var newGroupId = this._groupService.InserGroupAsNewArea(newGroupRequest);
+
+            // assert
+            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(userId);
+            Assert.IsNotNull(user.HistoryGroups);
+            Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
+        }
+
+        [TestMethod]
+        public void We_Can_Get_List_Of_Previously_Created_Groups_When_At_A_Place_With_Previous_Activity()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                Name = "Group one",
+                IsActive = false
+            };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group()
+            {
+                Id = groupTwoId,
+                Name = "Group two",
+                IsActive = true
+            };
+
+            var groupThreeId = Guid.NewGuid();
+            var groupThree = new Group()
+            {
+                Id = groupThreeId,
+                Name = "Group three",
+                IsActive = false
+            };
+
+            dbUser.HistoryGroups = new List<HistoryGroup>() {
+                new HistoryGroup()
+                {
+                    DateTimeGroupWasSubscribed = DateTime.UtcNow.AddDays(-2),
+                    GroupId = groupOneId,
+                    GroupThatWasPreviouslySubscribed = groupOne,
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    UserWhoSubscribedGroup = dbUser
+                },
+                new HistoryGroup()
+                {
+                    DateTimeGroupWasSubscribed = DateTime.UtcNow.AddDays(-2),
+                    GroupId = groupThreeId,
+                    GroupThatWasPreviouslySubscribed = groupThree,
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    UserWhoSubscribedGroup = dbUser
+                }
+            };
+
+            groupOne.Users = new List<User>() { dbUser };
+            groupTwo.Users = new List<User>() { dbUser };
+            groupThree.Users = new List<User>() { dbUser };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10.0000000,
+                Longitude = 10.0000000,
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
+
+            var areaTwoId = Guid.NewGuid();
+            var areaTwo = new Area()
+            {
+                Id = areaTwoId,
+                Latitude = 10.0000001,
+                Longitude = 10.0000001,
+                Radius = RadiusRangeEnum.HunderdAndFiftyMeters,
+                IsActive = true,
+                Groups = new List<Group>() { groupOne, groupTwo, groupThree }
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne, areaTwo };
+            groupTwo.Areas = new List<Area>() { areaOne, areaTwo };
+            groupThree.Areas = new List<Area>() { areaTwo };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { areaOne, areaTwo },
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo, groupThree }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var result = this._groupService.GetGroupCreationType(10, 10, userId);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.PrevousGroupsList);
+            Assert.AreEqual(result.CreationType, CreateGroupActionTypeEnum.ListOfPreviouslyCreatedOrSubscribedGroups);
+            Assert.AreEqual(2, result.PrevousGroupsList.Count());
+        }
+
+        [TestMethod]
+        public void We_Get_AutomaticallyGroupAsNewArea_Response_When_Never_Created_Or_Subscribed_Group_Here()
+        {
+            // arrange 
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { newArea }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var result = this._groupService.GetGroupCreationType(20, 20, userId);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.CreationType, CreateGroupActionTypeEnum.AutomaticallyGroupAsNewArea);
+        }
+
+        [TestMethod]
+        public void We_Get_Choice_Screen_When_Creating_A_group_In_Existing_Active_Area()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                NotificationSettings = null
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                IsActive = true
+            };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group()
+            {
+                Id = groupTwoId,
+                IsActive = true
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
+
+            groupOne.Areas = new List<Area>() { newArea };
+            groupTwo.Areas = new List<Area>() { newArea };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { dbUser },
+                Areas = new FakeDbSet<Area>() { newArea },
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var result = this._groupService.GetGroupCreationType(10, 10, userId);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.CreationType, CreateGroupActionTypeEnum.ChoiceScreen);
+        }
     }
 }

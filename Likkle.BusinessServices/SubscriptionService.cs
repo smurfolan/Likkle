@@ -63,6 +63,48 @@ namespace Likkle.BusinessServices
             var newlySubscribedGroups = groupSubscriptionsThatCameFromTheRequest.Where(gr => !forUserAroundCurrentLocation.Contains(gr));
 
             // 5. Each group in (3) has to be removed from current user subscriptions
+            this.DisconnectUserFromUnsubscribedGroups(unsubscribedGroups, user);
+
+            // 6. Each group in (4) has to be added to the current user subscriptions
+            this.ConnectUserToNewlySubscribedGroups(newlySubscribedGroups, user);
+
+            this._unitOfWork.Save();
+
+            if (this._configuration.AutomaticallyCleanupGroupsAndAreas)
+            {
+                this.DeactivateGroupsWithNoUsersInsideOfThem(unsubscribedGroups, newRelations.UserId);
+                this._unitOfWork.Save();
+            } 
+        }
+
+        #region Private methods
+        private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
+        {
+            var userToBeRemoved = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            foreach (var unsubscribedGroup in unsubscribedGroups)
+            {
+                unsubscribedGroup.Users.Remove(userToBeRemoved);
+                if (!unsubscribedGroup.Users.Any())
+                {
+                    unsubscribedGroup.IsActive = false;
+                }
+
+                this.DeactivateAreasWithNoGroups(unsubscribedGroup.Areas);
+            }
+        }
+
+        private void DeactivateAreasWithNoGroups(IEnumerable<Area> areas)
+        {
+            foreach (var area in areas)
+            {
+                if (area.Groups.All(gr => gr.IsActive == false))
+                    area.IsActive = false;
+            }
+        }
+
+        private void DisconnectUserFromUnsubscribedGroups(List<Group> unsubscribedGroups, User user)
+        {
             foreach (var unsubscribedGroup in unsubscribedGroups)
             {
                 user.Groups.Remove(unsubscribedGroup);
@@ -70,8 +112,10 @@ namespace Likkle.BusinessServices
                 var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
                 user.HistoryGroups.Remove(historyRecordToBeRemoved);
             }
+        }
 
-            // 6. Each group in (4) has to be added to the current user subscriptions
+        private void ConnectUserToNewlySubscribedGroups(IEnumerable<Group> newlySubscribedGroups, User user)
+        {
             foreach (var newlySubscribedGroup in newlySubscribedGroups)
             {
                 user.Groups.Add(newlySubscribedGroup);
@@ -84,38 +128,7 @@ namespace Likkle.BusinessServices
                     UserWhoSubscribedGroup = user
                 });
             }
-
-            this._unitOfWork.Save();
-
-            if (this._configuration.AutomaticallyCleanupGroupsAndAreas)
-                this.DeleteGroupsWithNoUsersInsideOfThem(unsubscribedGroups);
         }
-
-        #region Private methods
-        private void DeleteGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups)
-        {
-            var allGroups = this._unitOfWork.GroupRepository.GetGroups();
-
-            var groupsToBeRemoved = allGroups.Where(ag => unsubscribedGroups.Select(g => g.Id).Contains(ag.Id)).ToList();
-
-            foreach (var group in groupsToBeRemoved)
-            {
-                this._unitOfWork.GroupRepository.DeleteGroup(group.Id);
-            }
-
-            this.DeleteAreasWithNoGroups(groupsToBeRemoved.SelectMany(gr => gr.Areas).Distinct());
-        }
-
-        private void DeleteAreasWithNoGroups(IEnumerable<Area> areas)
-        {
-            var areasToBeDeleted = areas.Where(a => a.Groups.Count < 1);
-
-            foreach (var area in areasToBeDeleted)
-            {
-                this._unitOfWork.AreaRepository.DeleteArea(area.Id);
-            }
-        }
-
 
         #endregion
     }
