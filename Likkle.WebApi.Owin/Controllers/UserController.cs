@@ -342,12 +342,24 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: PUT api/v1/users/{id:Guid}/UpdateSocialLinks
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
+        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam', 'TwitterUsername': '@stefhano'}</param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}/UpdateSocialLinks")]
         public IHttpActionResult UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
         {
+            var validator = new UpdateSocialLinksRequestDtoValidator();
+            var results = validator.Validate(updatedSocialLinks);
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
+
             try
             {
                 this._userService.UpdateSocialLinksForUser(id, updatedSocialLinks);

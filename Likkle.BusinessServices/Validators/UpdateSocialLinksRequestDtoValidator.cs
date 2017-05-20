@@ -5,25 +5,16 @@ using Likkle.BusinessEntities.Requests;
 
 namespace Likkle.BusinessServices.Validators
 {
-    public class UpdatedUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRequestDto>
+    public class UpdateSocialLinksRequestDtoValidator : AbstractValidator<UpdateSocialLinksRequestDto>
     {
-        private const string FacebookUrl = "https://www.facebook.com/{0}";
         private const string FacebookUsernamePrefixForMessenger = "m.me/";
         private const string InstagramUrl = "https://www.instagram.com/{0}/?__a=1";
 
-        public UpdatedUserInfoRequestValidator()
+        public UpdateSocialLinksRequestDtoValidator()
         {
-            RuleFor(userInfo => userInfo.Email)
-                .EmailAddress()
-                .WithMessage("Invalid email address");
-
             RuleFor(userInfo => userInfo.InstagramUsername)
                 .Must(BeAValidInstagramUsername)
                 .WithMessage("Instagram username is not valid");
-
-            RuleFor(userInfo => userInfo.FacebookUsername)
-                .Must(BeAValidFacebookUsername)
-                .WithMessage("Facebook username is not valid");
 
             RuleFor(userInfo => userInfo.FacebookUsername)
                 .Must(s => s.StartsWith(FacebookUsernamePrefixForMessenger))
@@ -40,17 +31,6 @@ namespace Likkle.BusinessServices.Validators
                 return true;
 
             return this.ValidateSocialLink(string.Format(InstagramUrl, instagramUsername));
-        }
-
-        private bool BeAValidFacebookUsername(string facebookUsername)
-        {
-            // TODO: Think of a way for validating facebook somehow
-            //if (facebookUsername == null)
-            //    return true;
-
-            //return this.ValidateSocialLink(string.Format(FacebookUrl, facebookUsername));
-
-            return true;
         }
 
         private bool ValidateSocialLink(string socialLink)
