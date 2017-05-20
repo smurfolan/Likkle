@@ -65,6 +65,10 @@
     <Compile Include="Migrations\201705181117125_StatusPropertyAddedToGroupsAndAreas.Designer.cs">
       <DependentUpon>201705181117125_StatusPropertyAddedToGroupsAndAreas.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705200740106_DunnoWhaat.cs" />
+    <Compile Include="Migrations\201705200740106_DunnoWhaat.Designer.cs">
+      <DependentUpon>201705200740106_DunnoWhaat.cs</DependentUpon>
+    </Compile>
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
     <Compile Include="TestingPurposes\FakeLikkleDbContext.cs" />
     <Compile Include="TestingPurposes\ILikkleDbContext.cs" />
@@ -151,6 +155,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705181117125_StatusPropertyAddedToGroupsAndAreas.resx">
       <DependentUpon>201705181117125_StatusPropertyAddedToGroupsAndAreas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705200740106_DunnoWhaat.resx">
+      <DependentUpon>201705200740106_DunnoWhaat.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
