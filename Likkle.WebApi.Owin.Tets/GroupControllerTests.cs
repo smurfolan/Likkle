@@ -179,5 +179,26 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(contentResult);
             Assert.IsTrue(string.CompareOrdinal(contentResult.Location.ToString(), "api/v1/groups/" + newGroupId) == 0);
         }
+
+        [TestMethod]
+        public void Getting_Group_By_Coordinates_Exception_Is_Properly_Handled()
+        {
+            // arrange
+            var mockedGroupService = new Mock<IGroupService>();
+
+            var groupController = new GroupController(
+                mockedGroupService.Object,
+                _apiLogger.Object);
+
+            mockedGroupService.Setup(x => x.GetGroups(It.IsAny<double>(), It.IsAny<double>()))
+                .Throws(new Exception("Joke"));
+
+            // act
+            var actionResult = groupController.Get(90, 90);
+
+            // assert
+            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
+        }
     }
 }

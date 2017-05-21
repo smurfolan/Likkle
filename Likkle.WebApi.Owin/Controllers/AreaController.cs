@@ -7,7 +7,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
