@@ -82,7 +82,7 @@
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.GroupController.GetGroupCreationType(System.Double,System.Double,System.Guid)">
             <summary>
-            EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType
+            EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType/{userId}
             </summary>
             <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
             <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
@@ -145,7 +145,7 @@
             Example: PUT api/v1/users/{id:Guid}
             </summary>
             <param name="id">Unique identifier of the user that will be updated</param>
-            <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'InstagramUsername': 'someuser', 'FacebookUsername': 'smfbuser'}</param>
+            <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'] }</param>
             <returns></returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSubscriptions(System.Guid,System.Double,System.Double)">

@@ -267,7 +267,7 @@ namespace Likkle.WebApi.Owin.Tets
                 IdsrvUniqueId = newUserStsId,
                 LanguageIds = new List<Guid>() { firstLanguageId, secondLanguageId },
                 GroupIds = new List<Guid>() { groupOneId },
-                BirthDate = DateTime.Parse(this.InitialDateString).AddYears(-1)
+                BirthDate = DateTime.Parse(this.InitialDateString)
             };
 
             // act
