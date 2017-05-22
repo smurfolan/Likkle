@@ -97,7 +97,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType
+        /// EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType/{userId}
         /// </summary>
         /// <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
         /// <param name="lon">Longitude of the point where we are now and we try to create new group.</param>

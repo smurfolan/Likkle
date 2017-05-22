@@ -26,6 +26,7 @@ namespace Likkle.DataModel
 
         public string InstagramUsername { get; set; }
         public string FacebookUsername { get; set; }
+        public string TwitterUsername { get; set; }
 
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 

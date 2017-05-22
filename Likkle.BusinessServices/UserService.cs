@@ -175,7 +175,8 @@ namespace Likkle.BusinessServices
             var socialLinks = new SocialLinksResponseDto()
             {
                 FacebookUsername = user.FacebookUsername,
-                InstagramUsername = user.InstagramUsername
+                InstagramUsername = user.InstagramUsername,
+                TwitterUsername = user.TwitterUsername
             };
 
             return socialLinks;
@@ -187,6 +188,7 @@ namespace Likkle.BusinessServices
 
             user.FacebookUsername = updatedSocialLinks.FacebookUsername;
             user.InstagramUsername = updatedSocialLinks.InstagramUsername;
+            user.TwitterUsername = updatedSocialLinks.TwitterUsername;
 
             this._unitOfWork.Save();
         }

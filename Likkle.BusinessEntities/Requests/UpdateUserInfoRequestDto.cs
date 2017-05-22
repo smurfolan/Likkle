@@ -19,8 +19,5 @@ namespace Likkle.BusinessEntities.Requests
         public string PhoneNumber { get; set; }
 
         public IEnumerable<Guid> LanguageIds { get; set; }
-
-        public string InstagramUsername { get; set; }
-        public string FacebookUsername { get; set; }
     }
 }

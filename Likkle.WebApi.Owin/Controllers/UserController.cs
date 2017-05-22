@@ -146,24 +146,12 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: PUT api/v1/users/{id:Guid}
         /// </summary>
         /// <param name="id">Unique identifier of the user that will be updated</param>
-        /// <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'InstagramUsername': 'someuser', 'FacebookUsername': 'smfbuser'}</param>
+        /// <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'] }</param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
         public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
         {
-            var validator = new UpdatedUserInfoRequestValidator();
-            var results = validator.Validate(updateUserData);
-
-            var detailedError = new StringBuilder();
-            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
-            {
-                detailedError.Append(error + "; ");
-            }
-
-            if (!results.IsValid)
-                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
-
             try
             {
                 this._userService.UpdateUserInfo(id, updateUserData);
@@ -342,12 +330,24 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: PUT api/v1/users/{id:Guid}/UpdateSocialLinks
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam'}</param>
+        /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam', 'TwitterUsername': '@stefhano'}</param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}/UpdateSocialLinks")]
         public IHttpActionResult UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
         {
+            var validator = new UpdateSocialLinksRequestDtoValidator();
+            var results = validator.Validate(updatedSocialLinks);
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
+
             try
             {
                 this._userService.UpdateSocialLinksForUser(id, updatedSocialLinks);
