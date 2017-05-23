@@ -218,5 +218,40 @@ namespace Likkle.WebApi.Owin.Tets
             _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
             Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
         }
+
+        [TestMethod]
+        public void We_Can_Not_Insert_New_Area_With_Same_Center_And_Radius()
+        {
+            // arrange
+            var mockedAreaService = new Mock<IAreaService>();
+
+            mockedAreaService.Setup(a => a.GetAllAreas()).Returns(new List<AreaDto>()
+            {
+                new AreaDto()
+                {
+                    Latitude = 12.121212,
+                    Longitude = 12.121212,
+                    Radius = RadiusRangeEnum.FiftyMeters,
+                    Id = Guid.NewGuid()
+                }
+            });
+
+            var areaController = new AreaController(
+                mockedAreaService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.Post(new NewAreaRequest()
+            {
+                Latitude = 12.121212,
+                Longitude = 12.121212,
+                Radius = RadiusRangeEnum.FiftyMeters
+            });
+
+            // assert
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
+        }
     }
 }

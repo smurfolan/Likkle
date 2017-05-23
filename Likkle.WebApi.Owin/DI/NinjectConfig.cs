@@ -2,6 +2,7 @@
 using System.Reflection;
 using AutoMapper;
 using Likkle.BusinessServices;
+using Likkle.BusinessServices.Utils;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 using Likkle.WebApi.Owin.Helpers;
@@ -37,6 +38,7 @@ namespace Likkle.WebApi.Owin.DI
             kernel.Bind<ISubscriptionService>().To<SubscriptionService>();
 
             kernel.Bind<IConfigurationWrapper>().To<ConfigurationWrapper>();
+            kernel.Bind<IGeoCodingManager>().To<GeoCodingManager>();
 
             var mapperConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
