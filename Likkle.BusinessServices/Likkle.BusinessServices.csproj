@@ -69,6 +69,7 @@
     <Compile Include="Utils\GeoCodingManager.cs" />
     <Compile Include="Utils\IGeoCodingManager.cs" />
     <Compile Include="Utils\ReverseGeoCoordinateResponse.cs" />
+    <Compile Include="Validators\NewAreaRequestValidator.cs" />
     <Compile Include="Validators\UpdateSocialLinksRequestDtoValidator.cs" />
   </ItemGroup>
   <ItemGroup>

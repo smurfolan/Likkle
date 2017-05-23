@@ -34,7 +34,7 @@ namespace Likkle.BusinessServices.Utils
 
 
             return reverseGeoCoordinateResponse != null 
-                ? $"{reverseGeoCoordinateResponse.formatted_address}({newArea.Radius})"  
+                ? $"{reverseGeoCoordinateResponse.formatted_address} ({(int)newArea.Radius} meters radius)"  
                 : $"{newArea.Latitude}, {newArea.Longitude}";
         }
     }
