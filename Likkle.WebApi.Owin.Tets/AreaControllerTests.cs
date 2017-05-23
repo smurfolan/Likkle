@@ -220,6 +220,41 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
+        public void We_Can_Not_Insert_New_Area_With_Same_Center_And_Radius()
+        {
+            // arrange
+            var mockedAreaService = new Mock<IAreaService>();
+
+            mockedAreaService.Setup(a => a.GetAllAreas()).Returns(new List<AreaDto>()
+            {
+                new AreaDto()
+                {
+                    Latitude = 12.121212,
+                    Longitude = 12.121212,
+                    Radius = RadiusRangeEnum.FiftyMeters,
+                    Id = Guid.NewGuid()
+                }
+            });
+
+            var areaController = new AreaController(
+                mockedAreaService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.Post(new NewAreaRequest()
+            {
+                Latitude = 12.121212,
+                Longitude = 12.121212,
+                Radius = RadiusRangeEnum.FiftyMeters
+            });
+
+            // assert
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
+        }
+
+        [TestMethod]
         public void GetMetadataForArea_Exception_Is_Properly_Handled_And_Logged()
         {
             // arrange

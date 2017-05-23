@@ -8,6 +8,8 @@ namespace Likkle.BusinessEntities.Responses
         // Distance from the client to the area
         public double DistanceTo { get; set; }
 
+        public string ApproximateAddress { get; set; }
+
         // What is the total number of all the people currently inside the area
         public int NumberOfParticipants { get; set; }
 
