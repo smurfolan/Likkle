@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Text;
 using System.Web.Http;
+using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
+using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices.Validators;
 using Likkle.WebApi.Owin.Helpers;
 
@@ -18,6 +20,7 @@ namespace Likkle.WebApi.Owin.Controllers
         private readonly IUserService _userService;
         private readonly ISubscriptionService _subscriptionService;
         private readonly IGroupService _groupService;
+        private readonly IPhoneValidationManager _phoneValidationManager;
 
         private readonly ILikkleApiLogger _apiLogger;
 
@@ -25,12 +28,14 @@ namespace Likkle.WebApi.Owin.Controllers
             IUserService userService, 
             ILikkleApiLogger logger, 
             ISubscriptionService subscriptionService, 
-            IGroupService groupService)
+            IGroupService groupService,
+            IPhoneValidationManager phoneValidationManager)
         {
             this._userService = userService;
             this._apiLogger = logger;
             this._subscriptionService = subscriptionService;
             _groupService = groupService;
+            this._phoneValidationManager = phoneValidationManager;
         }
 
         /// <summary>
@@ -122,15 +127,20 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("")]
         public IHttpActionResult Post([FromBody]NewUserRequestDto newUser)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var validator = new NewUserRequestDtoValidator(this._phoneValidationManager, this._userService);
+            var results = validator.Validate(newUser);
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
 
             try
             {
-                if (this._userService.GetAllUsers()
-                    .Any(x => x.IdsrvUniqueId == newUser.IdsrvUniqueId || x.Email == newUser.Email))
-                    return BadRequest("User with the same email or STS id has been already added.");
-
                 var newlyCreatedUserId = this._userService.InsertNewUser(newUser);
 
                 return Created("api/v1/users/" + newlyCreatedUserId, "Success");
@@ -152,6 +162,18 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{id}")]
         public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
         {
+            var validator = new UpdatedUserInfoRequestDtoValidator(this._phoneValidationManager, this._userService);
+            var results = validator.Validate(updateUserData);
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
+
             try
             {
                 this._userService.UpdateUserInfo(id, updateUserData);

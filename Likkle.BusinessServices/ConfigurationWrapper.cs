@@ -10,5 +10,9 @@ namespace Likkle.BusinessServices
         public string GoogleApiKeyForReverseGeoCoding => ConfigurationManager.AppSettings["googleApiKeyForReverseGeoCoding"];
 
         public string GoogleMapsApiRoot => ConfigurationManager.AppSettings["googleMapsApiRoot"];
+
+        public string NumverifyApiRoot => ConfigurationManager.AppSettings["numverifyApiRoot"];
+
+        public string NumverifyApiKey => ConfigurationManager.AppSettings["numverifyApiKey"];
     }
 }
