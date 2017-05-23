@@ -73,7 +73,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._areaService = new AreaService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
-                this._configurationWrapperMock.Object);
+                this._configurationWrapperMock.Object,
+                null);
         }
 
         [TestMethod]

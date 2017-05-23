@@ -7,7 +7,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/areas")]
     public class AreaController : ApiController
     {
@@ -191,6 +191,7 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("")]
         public IHttpActionResult Post([FromBody]NewAreaRequest area)
         {
+            // TODO: Validation if area with same center and radius exist
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

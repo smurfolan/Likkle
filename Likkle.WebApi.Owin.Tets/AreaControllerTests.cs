@@ -218,5 +218,11 @@ namespace Likkle.WebApi.Owin.Tets
             _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
             Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
         }
+
+        [TestMethod]
+        public void We_Can_Not_Insert_New_Area_With_Same_Center_And_Radius()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
