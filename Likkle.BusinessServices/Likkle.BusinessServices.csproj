@@ -54,10 +54,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccelometerAlgorithmHelperService.cs" />
     <Compile Include="AreaService.cs" />
     <Compile Include="ConfigurationWrapper.cs" />
     <Compile Include="EntitiesMappingProfile.cs" />
     <Compile Include="GroupService.cs" />
+    <Compile Include="IAccelometerAlgorithmHelperService.cs" />
     <Compile Include="IAreaService.cs" />
     <Compile Include="IConfigurationWrapper.cs" />
     <Compile Include="IGroupService.cs" />

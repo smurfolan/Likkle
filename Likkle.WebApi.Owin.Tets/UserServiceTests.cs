@@ -58,7 +58,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._userService = new UserService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
-                this._configurationWrapperMock.Object);
+                this._configurationWrapperMock.Object,
+                null);
         }
 
         [TestMethod]
@@ -423,6 +424,12 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsNotNull(user);
+        }
+
+        [TestMethod]
+        public void When_User_Location_Is_Updated_Proper_ResponseDto_IsReturned()
+        {
+            throw new NotImplementedException();
         }
     }
 }

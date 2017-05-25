@@ -311,15 +311,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._userService.UpdateUserLocation(id, lat, lon);
-
-                // TODO: (1) service method to return seconds of walking(with ~ 5 km/h) to the closest area boundary. Relevant to task 14
-                // TODO: (2) method to return groups subscribed in this region in order to be able to automatically subscribe them
-                var result = new UserLocationUpdatedResponseDto()
-                {
-                    SecodsToClosestBoundary = 34.5 /*TODO: assign from (1)*/,
-                    SubscribedGroupIds = null /*TODO: assign from (2)*/
-                };
+                var result = this._userService.UpdateUserLocation(id, lat, lon);
 
                 return Ok(result);
             }
