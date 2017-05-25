@@ -8,12 +8,10 @@ namespace Likkle.DataModel.Migrations
         public override void Up()
         {
             AddColumn("dbo.Areas", "ApproximateAddress", c => c.String());
-            AddColumn("dbo.Users", "TwitterUsername", c => c.String());
         }
         
         public override void Down()
         {
-            DropColumn("dbo.Users", "TwitterUsername");
             DropColumn("dbo.Areas", "ApproximateAddress");
         }
     }
