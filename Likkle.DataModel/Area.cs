@@ -18,6 +18,8 @@ namespace Likkle.DataModel
 
         public bool IsActive { get; set; }
 
+        public string ApproximateAddress { get; set; }
+
         public RadiusRangeEnum Radius { get; set; }
 
         // Navigation properties

@@ -91,6 +91,7 @@
     <Compile Include="GroupServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubscriptionServiceTests.cs" />
+    <Compile Include="UserControllerTests.cs" />
     <Compile Include="UserServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

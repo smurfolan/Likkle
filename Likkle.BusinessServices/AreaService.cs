@@ -6,6 +6,7 @@ using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
+using Likkle.BusinessServices.Utils;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -16,15 +17,18 @@ namespace Likkle.BusinessServices
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
+        private readonly IGeoCodingManager _geoCodingManager;
 
         public AreaService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
-            IConfigurationWrapper config)
+            IConfigurationWrapper config, 
+            IGeoCodingManager geoCodingManager)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
+            _geoCodingManager = geoCodingManager;
         }
 
         public IEnumerable<AreaDto> GetAllAreas()
@@ -113,6 +117,8 @@ namespace Likkle.BusinessServices
             var areaEntity = this._mapper.Map<NewAreaRequest, Area>(newArea);
             areaEntity.Id = Guid.NewGuid();
 
+            areaEntity.ApproximateAddress = this._geoCodingManager.GetApproximateAddress(newArea);
+
             areaEntity.IsActive = true;
 
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
@@ -141,7 +147,9 @@ namespace Likkle.BusinessServices
             {
                 DistanceTo = distance,
                 NumberOfParticipants = totalNumberOfParticipants,
-                TagIds = allTags
+                TagIds = allTags,
+                ApproximateAddress = clickedArea.ApproximateAddress
+
             };
         }
         #endregion
