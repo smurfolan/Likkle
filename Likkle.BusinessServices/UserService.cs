@@ -262,11 +262,11 @@ namespace Likkle.BusinessServices
         {
             var currentLocation = new GeoCoordinate(lat, lon);
 
-            var areasMyPreviousGroupsBelongTo = this._unitOfWork.UserRepository
+            var historyGroups = this._unitOfWork.UserRepository
                 .GetUserById(userId)
                 .HistoryGroups.Where(hg => hg.GroupThatWasPreviouslySubscribed.Areas.Any(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= (int)a.Radius));
 
-            return areasMyPreviousGroupsBelongTo.Select(hg => hg.GroupId);
+            return historyGroups.Select(hg => hg.GroupId);
         }
         #endregion
     }
