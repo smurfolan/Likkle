@@ -301,7 +301,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <param name="id">Id of the user that is reporting his latest location.</param>
         /// <param name="lat">Latest user latitude</param>
         /// <param name="lon">Latest user longitude</param>
-        /// <returns></returns>
+        /// <returns>SecodsToClosestBoundary: used by the accelometer-based algorithm, SubscribedGroupIds: groups user subscribed when he was here before</returns>
         [HttpGet]
         [Route("{id}/UpdateLocation/{lat}/{lon}")]
         public IHttpActionResult UpdateLocation(Guid id, double lat, double lon)
@@ -314,8 +314,12 @@ namespace Likkle.WebApi.Owin.Controllers
                 this._userService.UpdateUserLocation(id, lat, lon);
 
                 // TODO: (1) service method to return seconds of walking(with ~ 5 km/h) to the closest area boundary. Relevant to task 14
-                
-                var result = new UserLocationUpdatedResponseDto() { SecodsToClosestBoundary = 34.5 /*TODO: assign from (1)*/};
+                // TODO: (2) method to return groups subscribed in this region in order to be able to automatically subscribe them
+                var result = new UserLocationUpdatedResponseDto()
+                {
+                    SecodsToClosestBoundary = 34.5 /*TODO: assign from (1)*/,
+                    SubscribedGroupIds = null /*TODO: assign from (2)*/
+                };
 
                 return Ok(result);
             }
