@@ -187,7 +187,7 @@
             <param name="id">Id of the user that is reporting his latest location.</param>
             <param name="lat">Latest user latitude</param>
             <param name="lon">Latest user longitude</param>
-            <returns></returns>
+            <returns>SecodsToClosestBoundary: used by the accelometer-based algorithm, SubscribedGroupIds: groups user subscribed when he was here before</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetSocialLinks(System.Guid)">
             <summary>

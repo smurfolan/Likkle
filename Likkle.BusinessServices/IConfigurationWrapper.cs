@@ -7,5 +7,6 @@
         string GoogleMapsApiRoot { get; }
         string NumverifyApiRoot { get; }
         string NumverifyApiKey { get; }
+        int PersonWalkingSpeedInKmh { get; }
     }
 }
