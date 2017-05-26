@@ -84,6 +84,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AccelometerAlgorithmHelperServiceTests.cs" />
     <Compile Include="AreaControllerTests.cs" />
     <Compile Include="AreaServiceTests.cs" />
     <Compile Include="DataGenerator.cs" />

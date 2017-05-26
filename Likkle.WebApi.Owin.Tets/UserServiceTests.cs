@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
@@ -20,10 +21,12 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly string InitialDateString = "01/01/1753";
 
         private readonly IUserService _userService;
+        private readonly ISubscriptionService _subscriptionService;
 
         private readonly Mock<ILikkleUoW> _mockedLikkleUoW;
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
+        private readonly Mock<IAccelometerAlgorithmHelperService> _accelometerAlgorithmHelperService;
 
         public UserServiceTests()
         {
@@ -46,6 +49,10 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.LanguageRepository)
                 .Returns(new LanguageRepository(fakeDbContext));
 
+            this._accelometerAlgorithmHelperService = new Mock<IAccelometerAlgorithmHelperService>();
+            this._accelometerAlgorithmHelperService.Setup(
+                a => a.SecondsToClosestBoundary(It.IsAny<double>(), It.IsAny<double>())).Returns(32.5);
+
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
             var mapConfiguration = new MapperConfiguration(cfg => {
@@ -58,6 +65,12 @@ namespace Likkle.WebApi.Owin.Tets
             this._userService = new UserService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
+                this._configurationWrapperMock.Object,
+                this._accelometerAlgorithmHelperService.Object);
+
+            this._subscriptionService = new SubscriptionService(
+                this._mockedLikkleUoW.Object, 
+                this._mockedConfigurationProvider.Object, 
                 this._configurationWrapperMock.Object);
         }
 
@@ -423,6 +436,79 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsNotNull(user);
+        }
+
+        [TestMethod]
+        public void When_User_Location_Is_Updated_Proper_ResponseDto_IsReturned()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString()
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupTwoId = Guid.NewGuid();
+
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", IsActive = true, Users = new List<User>()};
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", IsActive = true, Users = new List<User>()};
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10.00000,
+                Longitude = 10.00000,
+                Groups = new List<Group>() { groupOne, groupTwo },
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+            groupTwo.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var relateUserToGroupsDto = new RelateUserToGroupsDto()
+            {
+                UserId = userId,
+                Latitude = 10,
+                Longitude = 10,
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId}
+            };
+
+            this._subscriptionService.RelateUserToGroups(relateUserToGroupsDto);
+            Assert.IsNotNull(user.Groups);
+            Assert.IsNotNull(user.HistoryGroups);
+
+            Assert.AreEqual(2, user.Groups.Count);
+            Assert.AreEqual(2, user.HistoryGroups.Count);
+
+            this._userService.UpdateUserLocation(userId, 20, 20);
+
+            Assert.AreEqual(0, user.Groups.Count);
+            Assert.AreEqual(2, user.HistoryGroups.Count);
+
+            var updateResponse = this._userService.UpdateUserLocation(userId, 10.00009, 10.00009);
+
+            // TODO: When implemented double SecondsToClosestBoundary(double latitude, double longitude); update the assertions here
+            Assert.AreEqual(2, updateResponse.SubscribedGroupIds.Count());
         }
     }
 }
