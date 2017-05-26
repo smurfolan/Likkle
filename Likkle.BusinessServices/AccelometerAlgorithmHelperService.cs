@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Device.Location;
+using System.Linq;
 using Likkle.DataModel.UnitOfWork;
 
 namespace Likkle.BusinessServices
@@ -23,9 +24,14 @@ namespace Likkle.BusinessServices
 
             var currentLocation = new GeoCoordinate(latitude, longitude);
 
-            var resultingDistance = Int16.MaxValue*1.0;
+            var resultingDistance = Int32.MaxValue*1.0;
 
-            foreach (var area in this._unitOfWork.AreaRepository.GetAreas())
+            var allAvailableAreas = this._unitOfWork.AreaRepository.GetAreas().Where(a => a.IsActive).ToList();
+
+            if (!allAvailableAreas.Any())
+                return 3600; // Default if no areas area available yet in the system
+
+            foreach (var area in allAvailableAreas)
             {
                 // Distance from current location to area center
                 var d1 = currentLocation.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude));
@@ -33,16 +39,15 @@ namespace Likkle.BusinessServices
                 // Radius of the area
                 var d2 = (int) area.Radius;
 
-                var distance = Math.Abs(d2 - d1);
+                var distance = Math.Abs(d2 - d1); // In this way we consider boundaries not only in which we fall but also the ones we are outside of
 
                 if (distance < resultingDistance)
                     resultingDistance = distance;
             }
 
+            var actualSpeed = (walkingSpeed * 1000.0) / 3600; // Speed in m/s
 
-
-            // TODO: Implement calculations. Consider being not only insida area but alos outside of it.
-            return resultingDistance;
+            return resultingDistance/actualSpeed;
         }
     }
 }
