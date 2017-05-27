@@ -18,15 +18,18 @@ namespace Likkle.BusinessServices
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
+        private readonly IAccelometerAlgorithmHelperService _accelometerAlgorithmHelperService;
 
         public UserService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
-            IConfigurationWrapper config)
+            IConfigurationWrapper config, 
+            IAccelometerAlgorithmHelperService accelometerAlgorithmHelperService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
+            _accelometerAlgorithmHelperService = accelometerAlgorithmHelperService;
         }
 
         public IEnumerable<UserDto> GetAllUsers()
@@ -194,12 +197,12 @@ namespace Likkle.BusinessServices
         }
 
         /// <summary>
-        /// Currently method is only used to detach users from groups in order to know keep only relevant information when showing up a group.
+        /// Returns seconds to the closest area boundary and list of group ids this use has subscribed here before.
         /// </summary>
         /// <param name="id">Id of the user</param>
         /// <param name="lat">Latest latitude of the user</param>
         /// <param name="lon">Latest longitude of the user</param>
-        public void UpdateUserLocation(Guid id, double lat, double lon)
+        public UserLocationUpdatedResponseDto UpdateUserLocation(Guid id, double lat, double lon)
         {
             var user = this._unitOfWork.UserRepository.GetUserById(id);
             var groupsTheUserIsCurrentlyIn = user.Groups.ToArray();
@@ -211,6 +214,14 @@ namespace Likkle.BusinessServices
             }
 
             this._unitOfWork.Save();
+
+            var result = new UserLocationUpdatedResponseDto()
+            {
+                SecodsToClosestBoundary = this._accelometerAlgorithmHelperService.SecondsToClosestBoundary(lat, lon),
+                SubscribedGroupIds = this.HistoryGroupsAroundCoordinates(id, lat, lon)
+            };
+
+            return result;
         }
 
         public UserInfoResponseDto GetUserById(Guid userId)
@@ -245,6 +256,17 @@ namespace Likkle.BusinessServices
                     area =>
                         currentUserLocation.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
                         (int)area.Radius);
+        }
+
+        private IEnumerable<Guid> HistoryGroupsAroundCoordinates(Guid userId, double lat, double lon)
+        {
+            var currentLocation = new GeoCoordinate(lat, lon);
+
+            var historyGroups = this._unitOfWork.UserRepository
+                .GetUserById(userId)
+                .HistoryGroups.Where(hg => hg.GroupThatWasPreviouslySubscribed.Areas.Any(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= (int)a.Radius));
+
+            return historyGroups.Select(hg => hg.GroupId);
         }
         #endregion
     }
