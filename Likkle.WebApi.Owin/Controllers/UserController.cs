@@ -162,7 +162,7 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{id}")]
         public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
         {
-            var validator = new UpdatedUserInfoRequestDtoValidator(this._phoneValidationManager, this._userService);
+            var validator = new UpdatedUserInfoRequestDtoValidator(id, this._phoneValidationManager, this._userService);
             var results = validator.Validate(updateUserData);
 
             var detailedError = new StringBuilder();
