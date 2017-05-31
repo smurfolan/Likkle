@@ -253,5 +253,26 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(contentResult);
             Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
         }
+
+        [TestMethod]
+        public void GetMetadataForArea_Exception_Is_Properly_Handled_And_Logged()
+        {
+            // arrange
+            var mockedAreaService = new Mock<IAreaService>();
+
+            mockedAreaService.Setup(x => x.GetMetadataForArea(
+                It.IsAny<double>(),
+                It.IsAny<double>(),
+                It.IsAny<Guid>())).Throws(new Exception("Joke"));
+
+            var areaController = new AreaController(mockedAreaService.Object, _apiLogger.Object);
+
+            // act
+            var actionResult = areaController.GetAreaMetadata(-90, 90, Guid.NewGuid());
+
+            // assert
+            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
+        }
     }
 }
