@@ -16,5 +16,6 @@ namespace Likkle.BusinessServices
         IEnumerable<UserDto> GetUsersFromGroup(Guid groupId);
         IEnumerable<Guid> GetUserSubscriptions(Guid uid, double lat, double lon);
         PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon, Guid userId);
+        void ActivateGroup(Guid groupId);
     }
 }
