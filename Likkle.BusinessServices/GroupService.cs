@@ -259,5 +259,21 @@ namespace Likkle.BusinessServices
                 PrevousGroupsList = groupsToReturn
             };
         }
+
+        public void ActivateGroup(Guid groupId)
+        {
+            var affectedGroup = this._unitOfWork.GroupRepository.GetGroupById(groupId);
+
+            var inactiveAreasThisGroupBelongsTo = affectedGroup.Areas.Where(a => a.IsActive == false);
+
+            foreach (var inactiveArea in inactiveAreasThisGroupBelongsTo)
+            {
+                inactiveArea.IsActive = true;
+            }
+
+            affectedGroup.IsActive = true;
+
+            this._unitOfWork.Save();
+        }
     }
 }
