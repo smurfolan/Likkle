@@ -462,5 +462,60 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(result);
             Assert.AreEqual(result.CreationType, CreateGroupActionTypeEnum.ChoiceScreen);
         }
+
+        [TestMethod]
+        public void We_Can_Activate_Previously_Not_Active_Group()
+        {
+            // arrange
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                IsActive = true
+            };
+
+            var newAreaId = Guid.NewGuid();
+            var newArea = new Area()
+            {
+                Id = newAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = false,
+                Groups = new List<Group>() { groupOne }
+            };
+
+            var secondNewAreaId = Guid.NewGuid();
+            var secondNewArea = new Area()
+            {
+                Id = secondNewAreaId,
+                Latitude = 10,
+                Longitude = 10,
+                Radius = RadiusRangeEnum.FiveHundredMeters,
+                IsActive = false,
+                Groups = new List<Group>() {groupOne}
+            };
+
+            groupOne.Areas = new List<Area>() { newArea, secondNewArea };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Areas = new FakeDbSet<Area>() { newArea, secondNewArea },
+                Groups = new FakeDbSet<Group>() { groupOne }
+            }
+            .Seed();
+            
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            this._groupService.ActivateGroup(groupOneId);
+
+            // assert
+            Assert.IsTrue(groupOne.IsActive);
+            Assert.IsTrue(newArea.IsActive);
+            Assert.IsTrue(secondNewArea.IsActive);
+        }
     }
 }

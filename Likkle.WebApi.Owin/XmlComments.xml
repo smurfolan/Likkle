@@ -110,7 +110,7 @@
             Example: PUT /api/v1/{id}/Activate
             </summary>
             <param name="groupId"></param>
-            <returns>Activates group that was previously active as in paralle activates all inactive areas it used to belong to</returns>
+            <returns>Activates group that was previously active as in parallel activates all inactive areas it used to belong to</returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Get(System.Guid)">
             <summary>
