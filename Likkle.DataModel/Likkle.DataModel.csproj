@@ -69,6 +69,8 @@
     <Compile Include="Migrations\201705231030087_AddressForArea.Designer.cs">
       <DependentUpon>201705231030087_AddressForArea.cs</DependentUpon>
     </Compile>
+    <Compile Include="Repositories\HistoryGroupRepository.cs" />
+    <Compile Include="Repositories\IHistoryGroupRepository.cs" />
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
     <Compile Include="TestingPurposes\FakeLikkleDbContext.cs" />
     <Compile Include="TestingPurposes\ILikkleDbContext.cs" />

@@ -14,6 +14,7 @@ namespace Likkle.DataModel.TestingPurposes
             this.Languages = new FakeDbSet<Language>();
             this.NotificationSettings = new FakeDbSet<NotificationSetting>();
             this.Groups = new FakeDbSet<Group>();
+            this.HistoryGroups = new FakeDbSet<HistoryGroup>();
         }
 
 
@@ -23,6 +24,7 @@ namespace Likkle.DataModel.TestingPurposes
         public IDbSet<User> Users { get; set; }
         public IDbSet<Language> Languages { get; set; }
         public IDbSet<NotificationSetting> NotificationSettings { get; set; }
+        public IDbSet<HistoryGroup> HistoryGroups { get; set; }
 
         public int SaveChanges()
         {

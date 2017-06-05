@@ -10,6 +10,8 @@ namespace Likkle.DataModel.UnitOfWork
         UserRepository UserRepository { get; }
         LanguageRepository LanguageRepository { get; }
         NotificationSettingRepository NotificationSettingRepository { get; }
+        HistoryGroupRepository HistoryGroupRepository { get; }
+
         void Save();
     }
 }
