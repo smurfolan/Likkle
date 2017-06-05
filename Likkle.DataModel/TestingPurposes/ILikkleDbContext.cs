@@ -10,6 +10,7 @@ namespace Likkle.DataModel
         IDbSet<User> Users { get; set; }
         IDbSet<Language> Languages { get; set; }
         IDbSet<NotificationSetting> NotificationSettings { get; set; }
+        IDbSet<HistoryGroup> HistoryGroups { get; set; }
 
         int SaveChanges();
     }

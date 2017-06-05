@@ -114,17 +114,39 @@ namespace Likkle.WebApi.Owin.Tets
                 IdsrvUniqueId = Guid.NewGuid().ToString()
             };
 
+            var firstHistoryGroup = new HistoryGroup()
+            {
+                DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                GroupId = groupOneId,
+                GroupThatWasPreviouslySubscribed = groupOne,
+                UserId = userId,
+                UserWhoSubscribedGroup = user,
+                Id = Guid.NewGuid()
+            };
+
+            var secondHistoryGroup = new HistoryGroup()
+            {
+                DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                GroupId = groupTwoId,
+                GroupThatWasPreviouslySubscribed = groupTwo,
+                UserId = userId,
+                UserWhoSubscribedGroup = user,
+                Id = Guid.NewGuid()
+            };
+
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
                 Areas = new FakeDbSet<Area>() { area },
-                Users = new FakeDbSet<User>() { user }
+                Users = new FakeDbSet<User>() { user },
+                HistoryGroups = new FakeDbSet<HistoryGroup>() { firstHistoryGroup, secondHistoryGroup }
             }
             .Seed();
 
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.HistoryGroupRepository).Returns(new HistoryGroupRepository(populatedDatabase));
 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
@@ -159,6 +181,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             groupOne.Users = new List<User>() { user };
             groupTwo.Users = new List<User>() { user };
+            user.HistoryGroups = new List<HistoryGroup>() {firstHistoryGroup, secondHistoryGroup};
 
             // act
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequest);
@@ -170,9 +193,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsFalse(userSubscribtionsAroundCoordintes.Contains(groupOneId));
             Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
             Assert.IsTrue(user.HistoryGroups != null);
-            Assert.AreEqual(user.HistoryGroups.Count(), 1);
             Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
-
+            Assert.IsTrue(this._mockedLikkleUoW.Object.HistoryGroupRepository.AllHistoryGroups().Count() == 1);
 
             // arrange
             var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>(), IsActive = true };
