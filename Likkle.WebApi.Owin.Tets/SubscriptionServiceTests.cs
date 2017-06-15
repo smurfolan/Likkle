@@ -194,7 +194,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(userSubscribtionsAroundCoordintes.Contains(groupTwoId));
             Assert.IsTrue(user.HistoryGroups != null);
             Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
-            Assert.IsTrue(this._mockedLikkleUoW.Object.HistoryGroupRepository.AllHistoryGroups().Count() == 1);
+            Assert.IsTrue(this._mockedLikkleUoW.Object.HistoryGroupRepository.AllHistoryGroups().Count() == 2);
 
             // arrange
             var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>(), IsActive = true };
