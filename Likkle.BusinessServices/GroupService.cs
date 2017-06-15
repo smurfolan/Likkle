@@ -213,7 +213,7 @@ namespace Likkle.BusinessServices
             var currentLocation = new GeoCoordinate(lat, lon);
 
             var areaEntities = this._unitOfWork.AreaRepository.GetAreas()
-                .Where(x => x.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
+                .Where(x => /*x.IsActive &&*/ currentLocation.GetDistanceTo(new GeoCoordinate(x.Latitude, x.Longitude)) <= (int)x.Radius);
 
             var areas = areaEntities as Area[] ?? areaEntities.ToArray();
 
@@ -227,18 +227,19 @@ namespace Likkle.BusinessServices
             var inactiveGroupsInTheArea =
                 areas.SelectMany(a => a.Groups).Distinct().Where(gr => gr.IsActive == false).ToList();
 
-            if(!inactiveGroupsInTheArea.Any())
+            if(!inactiveGroupsInTheArea.Any() && areas.Any(a => a.IsActive))
                 return new PreGroupCreationResponseDto()
                 {
                     CreationType = CreateGroupActionTypeEnum.ChoiceScreen,
                     PrevousGroupsList = null
                 };
 
-            return this.GetListOfPrevouslyCreatedOrSubscribedGroups(inactiveGroupsInTheArea, userId);
+            return this.GetListOfPrevouslyCreatedOrSubscribedGroups(inactiveGroupsInTheArea, areas, userId);
         }
 
         private PreGroupCreationResponseDto GetListOfPrevouslyCreatedOrSubscribedGroups(
             IEnumerable<Group> inactiveGroupsInTheArea, 
+            IEnumerable<Area> areas,
             Guid userId)
         {
             var groupsUserPreviouslyInteractedWith = this._unitOfWork
@@ -251,7 +252,16 @@ namespace Likkle.BusinessServices
                 {
                     GroupName = g.Name,
                     ReCreateGroupUrl = string.Format(GroupRecreateUrlTemplate, g.Id)
-                });
+                }).ToList();
+
+            if (!groupsToReturn.Any())
+            {
+                return new PreGroupCreationResponseDto()
+                {
+                    CreationType = areas.Any(a => a.IsActive) ? CreateGroupActionTypeEnum.ChoiceScreen : CreateGroupActionTypeEnum.AutomaticallyGroupAsNewArea,
+                    PrevousGroupsList = null
+                };
+            }
 
             return new PreGroupCreationResponseDto()
             {

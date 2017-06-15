@@ -109,10 +109,10 @@ namespace Likkle.BusinessServices
             {
                 user.Groups.Remove(unsubscribedGroup);
 
-                var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
+                //var historyRecordToBeRemoved = user.HistoryGroups.FirstOrDefault(hgr => hgr.GroupId == unsubscribedGroup.Id);
 
-                if (historyRecordToBeRemoved != null)
-                    this._unitOfWork.HistoryGroupRepository.DeleteHistoryGroup(historyRecordToBeRemoved.Id);
+                //if (historyRecordToBeRemoved != null)
+                //    this._unitOfWork.HistoryGroupRepository.DeleteHistoryGroup(historyRecordToBeRemoved.Id);
             }
         }
 
