@@ -36,7 +36,7 @@ namespace Likkle.BusinessServices.Validators
 
         private bool BeAValidPhoneNumber(string phone)
         {
-            return this._phoneValidationManager.PhoneNumberIsValid(phone);
+            return string.IsNullOrEmpty(phone) || this._phoneValidationManager.PhoneNumberIsValid(phone);
         }
     }
 }
