@@ -26,6 +26,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<ILikkleUoW> _mockedLikkleUoW;
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
+        private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsService;
 
         public SubscriptionServiceTests()
         {
@@ -51,6 +52,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
             this._accelometerAlgorithmHelperService = new Mock<IAccelometerAlgorithmHelperService>();
+            this._subscriptionSettingsService = new Mock<ISubscriptionSettingsService>();
 
             var mapConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
@@ -73,7 +75,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
-                this._accelometerAlgorithmHelperService.Object);
+                this._accelometerAlgorithmHelperService.Object,
+                this._subscriptionSettingsService.Object);
 
             this._areaService = new AreaService(
                 this._mockedLikkleUoW.Object,
