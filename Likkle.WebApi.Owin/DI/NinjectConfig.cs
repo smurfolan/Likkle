@@ -37,6 +37,7 @@ namespace Likkle.WebApi.Owin.DI
             kernel.Bind<IUserService>().To<UserService>();
             kernel.Bind<ISubscriptionService>().To<SubscriptionService>();
             kernel.Bind<IAccelometerAlgorithmHelperService>().To<AccelometerAlgorithmHelperService>();
+            kernel.Bind<ISubscriptionSettingsService>().To<SubscriptionSettingsService>();
 
             kernel.Bind<IConfigurationWrapper>().To<ConfigurationWrapper>();
             kernel.Bind<IGeoCodingManager>().To<GeoCodingManager>();
