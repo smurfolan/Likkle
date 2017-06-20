@@ -19,17 +19,20 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly IAccelometerAlgorithmHelperService _accelometerAlgorithmHelperService;
+        private readonly ISubscriptionSettingsService _subscriptionSettingsService;
 
         public UserService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            IAccelometerAlgorithmHelperService accelometerAlgorithmHelperService)
+            IAccelometerAlgorithmHelperService accelometerAlgorithmHelperService, 
+            ISubscriptionSettingsService subscriptionSettingsService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _accelometerAlgorithmHelperService = accelometerAlgorithmHelperService;
+            _subscriptionSettingsService = subscriptionSettingsService;
         }
 
         public IEnumerable<UserDto> GetAllUsers()
@@ -264,10 +267,55 @@ namespace Likkle.BusinessServices
 
             var historyGroups = this._unitOfWork.UserRepository
                 .GetUserById(userId)
-                .HistoryGroups.Where(hg => hg.GroupThatWasPreviouslySubscribed.Areas.Any(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= (int)a.Radius));
+                .HistoryGroups
+                .Where(hg => hg.GroupThatWasPreviouslySubscribed.Areas.Any(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= (int)a.Radius))
+                .ToList();
 
-            return historyGroups.Select(hg => hg.GroupId);
+            var groupsDependingOnUserSettingsAroundCoordinates = this.GroupsDependingOnUserSettingsAroundCoordinates(userId, lat, lon, historyGroups);
+
+            var result = groupsDependingOnUserSettingsAroundCoordinates.Union(historyGroups.Select(hg => hg.GroupId));
+
+            return result;
         }
+
+        private List<Guid> GroupsDependingOnUserSettingsAroundCoordinates(
+            Guid userId, 
+            double lat, 
+            double lon, 
+            List<HistoryGroup> historyGroups)
+        {
+            var groupsDependingOnUserSettingsAroundCoordinates =
+                this._subscriptionSettingsService.GroupsForUserAroundCoordinatesBasedOnUserSettings(userId, lat, lon)
+                    .ToList();
+
+            if (groupsDependingOnUserSettingsAroundCoordinates.Any())
+            {
+                var user = this._unitOfWork.UserRepository.GetUserById(userId);
+                var newlySubscribedGroups = this._unitOfWork.GroupRepository.GetGroups()
+                    .Where(
+                        gr =>
+                            !historyGroups.Select(hg => hg.GroupId).Contains(gr.Id) &&
+                            groupsDependingOnUserSettingsAroundCoordinates.Contains(gr.Id));
+
+                foreach (var newlySubscribedGroup in newlySubscribedGroups)
+                {
+                    user.Groups.Add(newlySubscribedGroup);
+                    user.HistoryGroups.Add(new HistoryGroup()
+                    {
+                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                        GroupId = newlySubscribedGroup.Id,
+                        GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
+                        UserId = user.Id,
+                        UserWhoSubscribedGroup = user
+                    });
+                }
+
+                this._unitOfWork.Save();
+            }
+
+            return groupsDependingOnUserSettingsAroundCoordinates;
+        }
+
         #endregion
     }
 }

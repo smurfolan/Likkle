@@ -61,12 +61,6 @@ namespace Likkle.DataModel.TestingPurposes
 
             ((FakeDbSet<Tag>)Tags).AddPredefined(new Tag()
             {
-                Id = Guid.Parse("0c53eeff-06a1-4104-a86e-1bd3c8028a00"),
-                Name = "Sport"
-            });
-
-            ((FakeDbSet<Tag>)Tags).AddPredefined(new Tag()
-            {
                 Id = Guid.Parse("ca97f757-f249-4d7d-ac80-814498348688"),
                 Name = "University"
             });

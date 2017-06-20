@@ -211,6 +211,7 @@ namespace Likkle.WebApi.Owin.Controllers
             }
         }
 
+        // TODO: Rename to /UpdateAutomaticSubscriptionSettings
         /// <summary>
         /// Example: PUT api/v1/users/{id:Guid}/UpdateNotifications
         /// </summary>
