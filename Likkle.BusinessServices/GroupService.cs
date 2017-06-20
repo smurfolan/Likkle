@@ -7,6 +7,7 @@ using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
+using Likkle.BusinessServices.Utils;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -19,15 +20,18 @@ namespace Likkle.BusinessServices
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
+        private readonly IGeoCodingManager _geoCodingManager;
 
         public GroupService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
-            IConfigurationWrapper config)
+            IConfigurationWrapper config, 
+            IGeoCodingManager geoCodingManager)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
+            _geoCodingManager = geoCodingManager;
         }
 
         public IEnumerable<GroupMetadataResponseDto> GetGroups(double latitude, double longitude)
@@ -114,6 +118,12 @@ namespace Likkle.BusinessServices
                 Radius = newGroup.Radius,
                 IsActive = true
             };
+
+            areaEntity.ApproximateAddress = this._geoCodingManager.GetApproximateAddress(new NewAreaRequest()
+            {
+                Latitude = newGroup.Latitude,
+                Longitude = newGroup.Longitude
+            });
 
             var newAreaId = this._unitOfWork.AreaRepository.InsertArea(areaEntity);
 

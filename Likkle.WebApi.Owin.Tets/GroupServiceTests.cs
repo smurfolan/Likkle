@@ -5,6 +5,7 @@ using AutoMapper;
 using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
+using Likkle.BusinessServices.Utils;
 using Likkle.DataModel;
 using Likkle.DataModel.Repositories;
 using Likkle.DataModel.TestingPurposes;
@@ -22,6 +23,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<ILikkleUoW> _mockedLikkleUoW;
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
+        private readonly Mock<IGeoCodingManager> _geoCodingManagerMock;
 
         public GroupServiceTests()
         {
@@ -51,12 +53,17 @@ namespace Likkle.WebApi.Owin.Tets
             });
             this._mockedConfigurationProvider.Setup(mc => mc.CreateMapper()).Returns(mapConfiguration.CreateMapper);
 
+            _geoCodingManagerMock = new Mock<IGeoCodingManager>();
+            _geoCodingManagerMock.Setup(gcm => gcm.GetApproximateAddress(It.IsAny<NewAreaRequest>()))
+                .Returns(Guid.NewGuid().ToString);
+
             this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
             this._groupService = new GroupService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
-                this._configurationWrapperMock.Object);
+                this._configurationWrapperMock.Object,
+                this._geoCodingManagerMock.Object);
         }
 
         [TestMethod]
