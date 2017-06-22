@@ -268,7 +268,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}
+        /// Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}/
         /// </summary>
         /// <param name="id">Id of the user that is reporting his latest location.</param>
         /// <param name="lat">Latest user latitude</param>
