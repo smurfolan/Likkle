@@ -68,6 +68,7 @@
     <Compile Include="RecreateGroupRecord.cs" />
     <Compile Include="RelateUserToGroupsDto.cs" />
     <Compile Include="Requests\EditUserNotificationsRequestDto.cs" />
+    <Compile Include="Requests\GroupActivationRequestDto.cs" />
     <Compile Include="Requests\GroupAsNewAreaRequestDto.cs" />
     <Compile Include="Requests\MultipleAreasMetadataRequestDto.cs" />
     <Compile Include="Requests\NewAreaRequest.cs" />
