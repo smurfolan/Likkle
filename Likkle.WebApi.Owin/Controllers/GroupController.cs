@@ -6,7 +6,7 @@ using Likkle.WebApi.Owin.Helpers;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
@@ -175,14 +175,15 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: PUT /api/v1/{id}/Activate
         /// </summary>
         /// <param name="groupId"></param>
+        /// <param name="request">Body sample: { userId: '1991bf5a-276a-4ac8-9de9-3e2134439086' }</param>
         /// <returns>Activates group that was previously active as in parallel activates all inactive areas it used to belong to</returns>
         [HttpPut]
         [Route("{groupId}/Activate")]
-        public IHttpActionResult Put(Guid groupId)
+        public IHttpActionResult Put(Guid groupId, [FromBody]GroupActivationRequestDto request)
         {
             try
             {
-                this._groupService.ActivateGroup(groupId);
+                this._groupService.ActivateGroup(groupId, request.UserId);
 
                 return Ok();
             }

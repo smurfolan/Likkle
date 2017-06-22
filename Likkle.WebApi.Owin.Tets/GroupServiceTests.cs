@@ -474,6 +474,12 @@ namespace Likkle.WebApi.Owin.Tets
         public void We_Can_Activate_Previously_Not_Active_Group()
         {
             // arrange
+            var userId = Guid.NewGuid();
+            var dbUser = new User()
+            {
+                Id = userId,
+                Groups = new List<Group>()
+            };
 
             var groupOneId = Guid.NewGuid();
             var groupOne = new Group()
@@ -509,20 +515,24 @@ namespace Likkle.WebApi.Owin.Tets
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Areas = new FakeDbSet<Area>() { newArea, secondNewArea },
-                Groups = new FakeDbSet<Group>() { groupOne }
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { dbUser }
             }
             .Seed();
             
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            this._groupService.ActivateGroup(groupOneId);
+            this._groupService.ActivateGroup(groupOneId, userId);
 
             // assert
             Assert.IsTrue(groupOne.IsActive);
             Assert.IsTrue(newArea.IsActive);
             Assert.IsTrue(secondNewArea.IsActive);
+            Assert.IsTrue(dbUser.Groups.Any());
+            Assert.IsTrue(dbUser.Groups.Any(gr => gr.Id == groupOneId));
         }
     }
 }

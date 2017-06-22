@@ -280,7 +280,7 @@ namespace Likkle.BusinessServices
             };
         }
 
-        public void ActivateGroup(Guid groupId)
+        public void ActivateGroup(Guid groupId, Guid userId)
         {
             var affectedGroup = this._unitOfWork.GroupRepository.GetGroupById(groupId);
 
@@ -292,6 +292,10 @@ namespace Likkle.BusinessServices
             }
 
             affectedGroup.IsActive = true;
+
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            user.Groups.Add(affectedGroup);
 
             this._unitOfWork.Save();
         }
