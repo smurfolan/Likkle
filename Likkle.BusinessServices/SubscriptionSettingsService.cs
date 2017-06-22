@@ -31,13 +31,16 @@ namespace Likkle.BusinessServices
 
             var userSettings = user.NotificationSettings;
 
+            if(userSettings == null)
+                throw new ArgumentException($"There's no user settings related to user with ID:{userId}");
+
             if (userSettings.AutomaticallySubscribeToAllGroups)
                 return GetAllActivGroupsAroundCoordinates(latitude, longitude);
 
             if (userSettings.AutomaticallySubscribeToAllGroupsWithTag)
                 return GetAllActiveGroupsWithTags(latitude, longitude, userSettings.Tags);
 
-            return null;
+            return new List<Guid>();
         }
 
         private IEnumerable<Guid> GetAllActiveGroupsWithTags(

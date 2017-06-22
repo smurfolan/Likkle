@@ -172,14 +172,6 @@
             <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
             <returns>Latest notification settings set up by the user.</returns>
         </member>
-        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.UpdateLocation(System.Guid,Likkle.BusinessEntities.Requests.UpdatedUserLocationRequestDto)">
-            <summary>
-            Example: POST api/v1/users/{id:Guid}/UpdateLocation
-            </summary>
-            <param name="id">Id of the user that is reporting his latest location.</param>
-            <param name="latestLocation">Body sample: {'LatestLatitude': 1.1, 'LatestLongitude': 2.2}</param>
-            <returns></returns>
-        </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.UpdateLocation(System.Guid,System.Double,System.Double)">
             <summary>
             Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}
