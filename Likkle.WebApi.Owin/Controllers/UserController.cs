@@ -211,24 +211,22 @@ namespace Likkle.WebApi.Owin.Controllers
             }
         }
 
-        // TODO: Rename to /UpdateAutomaticSubscriptionSettings
         /// <summary>
-        /// Example: PUT api/v1/users/{id:Guid}/UpdateNotifications
+        /// Example: PUT api/v1/users/{id:Guid}/UpdateAutomaticSubscriptionSettings
         /// </summary>
         /// <param name="id">Unique identifier of the user whose notification settings we are updating</param>
-        /// <param name="notifications">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
+        /// <param name="subscriptionSettings">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
         /// <returns></returns>
         [HttpPut]
-        [Route("{id}/UpdateNotifications")]
-        public IHttpActionResult Put(Guid id, [FromBody] EditUserNotificationsRequestDto notifications)
+        [Route("{id}/UpdateAutomaticSubscriptionSettings")]
+        public IHttpActionResult Put(Guid id, [FromBody] EditUserAutomaticSubscriptionSettingsRequestDto subscriptionSettings)
         {
-            // TODO: Add validation which asserts that AutomaticallySubscribeToAllGroups != AutomaticallySubscribeToAllGroupsWithTag
-            if (!ModelState.IsValid)
-                return BadRequest();
+            if (!(subscriptionSettings.AutomaticallySubscribeToAllGroups ^ subscriptionSettings.AutomaticallySubscribeToAllGroupsWithTag))
+                return BadRequest("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag are not self-excluding.");
 
             try
             {
-                this._userService.UpdateUserNotificationSettings(id, notifications);
+                this._userService.UpdateUserNotificationSettings(id, subscriptionSettings);
 
                 return Ok();
             }

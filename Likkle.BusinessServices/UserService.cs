@@ -125,7 +125,7 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
-        public void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings)
+        public void UpdateUserNotificationSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings)
         {
             var userNotificationSettings = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
 
