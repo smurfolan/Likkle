@@ -61,5 +61,26 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(contentResult);
             Assert.AreEqual("'First Name' must not be empty.; 'Last Name' must not be empty.; Phone number provided is invalid; User with the same STS id has been already added.; User with the same email has been already added.; ", contentResult.Message);
         }
+
+        [TestMethod]
+        public void Bad_Request_Is_Returned_When_AutomaicSubscriptionSettings_Are_Not_Self_Excluding()
+        {
+            // arrange
+            var request = new EditUserAutomaticSubscriptionSettingsRequestDto()
+            {
+                AutomaticallySubscribeToAllGroups = true,
+                AutomaticallySubscribeToAllGroupsWithTag = true
+            };
+
+            var userController = new UserController(null, null, null, null, null);
+
+            // act
+            var actionResult = userController.Put(Guid.NewGuid(), request);
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag are not self-excluding.", contentResult.Message);
+        }
     }
 }

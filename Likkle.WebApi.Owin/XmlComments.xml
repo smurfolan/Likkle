@@ -158,12 +158,12 @@
             <param name="lon">Longitude of the current user location</param>
             <returns>List of Guids which indicate the group ids to which the user is subscribed and these specific groups are around current user location.</returns>
         </member>
-        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Put(System.Guid,Likkle.BusinessEntities.Requests.EditUserNotificationsRequestDto)">
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.Put(System.Guid,Likkle.BusinessEntities.Requests.EditUserAutomaticSubscriptionSettingsRequestDto)">
             <summary>
-            Example: PUT api/v1/users/{id:Guid}/UpdateNotifications
+            Example: PUT api/v1/users/{id:Guid}/UpdateAutomaticSubscriptionSettings
             </summary>
             <param name="id">Unique identifier of the user whose notification settings we are updating</param>
-            <param name="notifications">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
+            <param name="subscriptionSettings">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
             <returns></returns>
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetNotificationSettings(System.Guid)">

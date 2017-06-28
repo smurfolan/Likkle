@@ -14,7 +14,7 @@ namespace Likkle.BusinessServices
         IEnumerable<UserDto> GetAllUsers();
         Guid InsertNewUser(NewUserRequestDto newUser);
         void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo);
-        void UpdateUserNotificationSettings(Guid uid, EditUserNotificationsRequestDto edittedUserNotificationSettings);
+        void UpdateUserNotificationSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings);
         NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
         UserLocationUpdatedResponseDto UpdateUserLocation(Guid id, double lat, double lon);
         SocialLinksResponseDto GetSocialLinksForUser(Guid userId);

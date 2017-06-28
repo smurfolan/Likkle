@@ -328,7 +328,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             // arrange
             // 1. Create new update user notifications request with tags 
-            var newUpdatedUserNotifications = new EditUserNotificationsRequestDto()
+            var newUpdatedUserNotifications = new EditUserAutomaticSubscriptionSettingsRequestDto()
             {
                 AutomaticallySubscribeToAllGroups = false,
                 AutomaticallySubscribeToAllGroupsWithTag = true,
