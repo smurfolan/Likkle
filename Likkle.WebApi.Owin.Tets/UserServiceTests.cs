@@ -22,12 +22,13 @@ namespace Likkle.WebApi.Owin.Tets
 
         private readonly IUserService _userService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly ISubscriptionSettingsService _subscriptionSettingsService;
 
         private readonly Mock<ILikkleUoW> _mockedLikkleUoW;
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
         private readonly Mock<IAccelometerAlgorithmHelperService> _accelometerAlgorithmHelperService;
-        private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsService;
+        private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsServiceMock;
 
         public UserServiceTests()
         {
@@ -54,7 +55,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._accelometerAlgorithmHelperService.Setup(
                 a => a.SecondsToClosestBoundary(It.IsAny<double>(), It.IsAny<double>())).Returns(32.5);
 
-            this._subscriptionSettingsService = new Mock<ISubscriptionSettingsService>();
+            this._subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
 
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
@@ -63,14 +64,24 @@ namespace Likkle.WebApi.Owin.Tets
             });
             this._mockedConfigurationProvider.Setup(mc => mc.CreateMapper()).Returns(mapConfiguration.CreateMapper);
 
+            this._subscriptionSettingsService = new SubscriptionSettingsService(
+                this._mockedLikkleUoW.Object,
+                this._mockedConfigurationProvider.Object);
+
             this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
+
+            // Only this call to the mocked service returns the actual result but not mocked one.
+            this._subscriptionSettingsServiceMock
+                .Setup(ss => ss.GroupsForUserAroundCoordinatesBasedOnUserSettings(It.IsAny<Guid>(), It.IsAny<double>(), It.IsAny<double>()))
+                .Returns((Guid userId, double lat, double lon) => this._subscriptionSettingsService.GroupsForUserAroundCoordinatesBasedOnUserSettings(userId, lat, lon));
+                
 
             this._userService = new UserService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
                 this._accelometerAlgorithmHelperService.Object,
-                this._subscriptionSettingsService.Object);
+                this._subscriptionSettingsServiceMock.Object);
 
             this._subscriptionService = new SubscriptionService(
                 this._mockedLikkleUoW.Object, 
@@ -453,14 +464,19 @@ namespace Likkle.WebApi.Owin.Tets
                 FirstName = "Stefcho",
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                NotificationSettings = new NotificationSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                }
             };
 
             var groupOneId = Guid.NewGuid();
             var groupTwoId = Guid.NewGuid();
 
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", IsActive = true, Users = new List<User>()};
-            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", IsActive = true, Users = new List<User>()};
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", IsActive = true, Users = new List<User>() };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", IsActive = true, Users = new List<User>() };
 
             var areaId = Guid.NewGuid();
             var area = new Area()
@@ -494,7 +510,7 @@ namespace Likkle.WebApi.Owin.Tets
                 UserId = userId,
                 Latitude = 10,
                 Longitude = 10,
-                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId}
+                GroupsUserSubscribes = new List<Guid>() { groupOneId, groupTwoId }
             };
 
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsDto);
@@ -513,6 +529,152 @@ namespace Likkle.WebApi.Owin.Tets
 
             // TODO: When implemented double SecondsToClosestBoundary(double latitude, double longitude); update the assertions here
             Assert.AreEqual(2, updateResponse.SubscribedGroupIds.Count());
+        }
+
+        [TestMethod]
+        public void HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllOption_TurnedOn()
+        {
+            // arrange
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                NotificationSettings = new NotificationSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                }
+            };
+
+            // ================= Area1 (GR1, GR3) ========
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                Name = "Group one",
+                IsActive = true
+            };
+
+            var groupThreeId = Guid.NewGuid();
+            var groupThree = new Group()
+            {
+                Id = groupThreeId,
+                Name = "Group three",
+                IsActive = true
+            };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupThree },
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
+            };
+            // ================= Area1 (GR1, GR3) ========
+
+            // ================= Area2 (GR3) ========
+            var groupSixId = Guid.NewGuid();
+            var groupSix = new Group()
+            {
+                Id = groupSixId,
+                Name = "Group six",
+                IsActive = true
+            };
+
+            var areaTwoId = Guid.NewGuid();
+            var areaTwo = new Area()
+            {
+                Id = areaTwoId,
+                Latitude = 20,
+                Longitude = 20,
+                Groups = new List<Group>() { groupSix },
+                Radius = RadiusRangeEnum.FiftyMeters,
+                IsActive = true
+            };
+            // ================= Area2 (GR3) ========
+
+            groupOne.Areas = new List<Area>() { areaOne };
+            groupThree.Areas = new List<Area>() { areaOne };
+
+            groupSix.Areas = new List<Area>() { areaTwo };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupThree, groupSix },
+                Areas = new FakeDbSet<Area>() { areaOne, areaTwo },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+
+            // assert
+            Assert.AreEqual(2, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupOneId) &&
+                            groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupThreeId));
+            Assert.IsTrue(user.Groups.Contains(groupOne) && user.Groups.Contains(groupThree));
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 15, 15);
+
+            // assert
+            Assert.AreEqual(0, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsFalse(user.Groups.Contains(groupOne) && user.Groups.Contains(groupThree));
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 20, 20);
+
+            // assert
+            Assert.AreEqual(1, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupSixId));
+            Assert.IsTrue(user.Groups.Contains(groupSix));
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 25, 25);
+
+            // assert
+            Assert.AreEqual(0, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsFalse(user.Groups.Any());
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+
+            // assert
+            Assert.AreEqual(2, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupOneId) &&
+                           groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupThreeId));
+            Assert.IsTrue(user.Groups.Contains(groupOne) && user.Groups.Contains(groupThree));
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
+                            user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
+        }
+
+        [TestMethod]
+        public void HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllWithTagOption_TurnedOn()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -208,15 +208,19 @@ namespace Likkle.BusinessServices
         public UserLocationUpdatedResponseDto UpdateUserLocation(Guid id, double lat, double lon)
         {
             var user = this._unitOfWork.UserRepository.GetUserById(id);
-            var groupsTheUserIsCurrentlyIn = user.Groups.ToArray();
 
-            foreach (var group in groupsTheUserIsCurrentlyIn)
+            if(user.Groups != null && user.Groups.Any())
             {
-                if (!GroupIsAvailableAroundCoordinates(group, lat, lon))
-                    user.Groups.Remove(group);
-            }
+                var groupsTheUserIsCurrentlyIn = user.Groups.ToArray();
 
-            this._unitOfWork.Save();
+                foreach (var group in groupsTheUserIsCurrentlyIn)
+                {
+                    if (!GroupIsAvailableAroundCoordinates(group, lat, lon))
+                        user.Groups.Remove(group);
+                }
+
+                this._unitOfWork.Save();
+            }
 
             var result = new UserLocationUpdatedResponseDto()
             {
@@ -265,11 +269,17 @@ namespace Likkle.BusinessServices
         {
             var currentLocation = new GeoCoordinate(lat, lon);
 
-            var historyGroups = this._unitOfWork.UserRepository
-                .GetUserById(userId)
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            var historyGroups = new List<HistoryGroup>();
+
+            if(user.HistoryGroups != null && user.HistoryGroups.Any())
+            {
+                historyGroups = user
                 .HistoryGroups
                 .Where(hg => hg.GroupThatWasPreviouslySubscribed.Areas.Any(a => a.IsActive && currentLocation.GetDistanceTo(new GeoCoordinate(a.Latitude, a.Longitude)) <= (int)a.Radius))
                 .ToList();
+            }
 
             var groupsDependingOnUserSettingsAroundCoordinates = this.GroupsDependingOnUserSettingsAroundCoordinates(userId, lat, lon, historyGroups);
 
@@ -290,30 +300,64 @@ namespace Likkle.BusinessServices
 
             if (groupsDependingOnUserSettingsAroundCoordinates.Any())
             {
-                var user = this._unitOfWork.UserRepository.GetUserById(userId);
-                var newlySubscribedGroups = this._unitOfWork.GroupRepository.GetGroups()
-                    .Where(
-                        gr =>
-                            !historyGroups.Select(hg => hg.GroupId).Contains(gr.Id) &&
-                            groupsDependingOnUserSettingsAroundCoordinates.Contains(gr.Id));
+                // TODO: Think of a way for optimizing the next two methods.
 
-                foreach (var newlySubscribedGroup in newlySubscribedGroups)
-                {
-                    user.Groups.Add(newlySubscribedGroup);
-                    user.HistoryGroups.Add(new HistoryGroup()
-                    {
-                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
-                        GroupId = newlySubscribedGroup.Id,
-                        GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
-                        UserId = user.Id,
-                        UserWhoSubscribedGroup = user
-                    });
-                }
+                var user = SubscribeTheNewGroups(userId, historyGroups, groupsDependingOnUserSettingsAroundCoordinates);
+
+                SubscribeGroupsThatYouHavePreviouslySubscribedHere(groupsDependingOnUserSettingsAroundCoordinates, user);
 
                 this._unitOfWork.Save();
             }
 
             return groupsDependingOnUserSettingsAroundCoordinates;
+        }
+
+        private static void SubscribeGroupsThatYouHavePreviouslySubscribedHere(
+            List<Guid> groupsDependingOnUserSettingsAroundCoordinates, 
+            User user)
+        {
+            var groupsThatWerePreviouslySubscribeHere = user.HistoryGroups.Where(hgr => groupsDependingOnUserSettingsAroundCoordinates.Contains(hgr.GroupId));
+            if (groupsThatWerePreviouslySubscribeHere != null && groupsThatWerePreviouslySubscribeHere.Any())
+            {
+                foreach (var group in groupsThatWerePreviouslySubscribeHere)
+                {
+                    user.Groups.Add(group.GroupThatWasPreviouslySubscribed);
+                }
+            }
+        }
+
+        private User SubscribeTheNewGroups(
+            Guid userId, 
+            List<HistoryGroup> historyGroups, 
+            List<Guid> groupsDependingOnUserSettingsAroundCoordinates)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+            var newlySubscribedGroups = this._unitOfWork.GroupRepository.GetGroups()
+                .Where(
+                    gr =>
+                        !historyGroups.Select(hg => hg.GroupId).Contains(gr.Id) &&
+                        groupsDependingOnUserSettingsAroundCoordinates.Contains(gr.Id));
+
+            if (user.Groups == null)
+                user.Groups = new List<Group>();
+
+            if (user.HistoryGroups == null)
+                user.HistoryGroups = new List<HistoryGroup>();
+
+            foreach (var newlySubscribedGroup in newlySubscribedGroups)
+            {
+                user.Groups.Add(newlySubscribedGroup);
+                user.HistoryGroups.Add(new HistoryGroup()
+                {
+                    DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                    GroupId = newlySubscribedGroup.Id,
+                    GroupThatWasPreviouslySubscribed = newlySubscribedGroup,
+                    UserId = user.Id,
+                    UserWhoSubscribedGroup = user
+                });
+            }
+
+            return user;
         }
 
         #endregion
