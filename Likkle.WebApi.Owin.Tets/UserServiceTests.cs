@@ -674,7 +674,189 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllWithTagOption_TurnedOn()
         {
-            throw new NotImplementedException();
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            // arrange
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId,
+                NotificationSettings = new NotificationSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+                }
+            };
+
+            // ================= Area1 (GR1, GR2) ========
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                Name = "Group one",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Animals")
+                }
+            };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group()
+            {
+                Id = groupTwoId,
+                Name = "Group two",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Sport")
+                }
+            };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne };
+            groupTwo.Areas = new List<Area>() { areaOne };
+
+            // ================= Area1 (GR1, GR2) ========
+            // ================= Area1 (GR3, GR4, GR5) ========
+            var groupThreeId = Guid.NewGuid();
+            var groupThree = new Group()
+            {
+                Id = groupThreeId,
+                Name = "Group three",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Help"),
+                    allTags.FirstOrDefault(t => t.Name == "Sport")
+                }
+            };
+
+            var groupFourId = Guid.NewGuid();
+            var groupFour = new Group()
+            {
+                Id = groupFourId,
+                Name = "Group four",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "University")
+                }
+            };
+
+            var groupFiveId = Guid.NewGuid();
+            var groupFive = new Group()
+            {
+                Id = groupFiveId,
+                Name = "Group five",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Help"),
+                    allTags.FirstOrDefault(t => t.Name == "Animals")
+                }
+            };
+
+            var areaTwoId = Guid.NewGuid();
+            var areaTwo = new Area()
+            {
+                Id = areaTwoId,
+                Latitude = 20,
+                Longitude = 20,
+                Groups = new List<Group>() { groupThree, groupFour, groupFive },
+                IsActive = true,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            groupThree.Areas = new List<Area>() { areaTwo };
+            groupFour.Areas = new List<Area>() { areaTwo };
+            groupFive.Areas = new List<Area>() { areaTwo };
+            // ================= Area1 (GR3, GR4, GR5) ========
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo, groupThree, groupFour, groupFive },
+                Areas = new FakeDbSet<Area>() { areaOne, areaTwo },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+
+            // assert
+            Assert.AreEqual(1, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupTwoId));
+
+            Assert.IsTrue(user.Groups.Contains(groupTwo));
+            Assert.AreEqual(1, user.Groups.Count());
+
+            Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupTwo.Id));
+            Assert.AreEqual(1, user.HistoryGroups.Count());
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 15, 15);
+
+            // assert 
+            Assert.IsFalse(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Any());
+            Assert.IsFalse(user.Groups.Any());
+            Assert.AreEqual(1, user.HistoryGroups.Count());
+            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 20, 20);
+
+            // assert
+            Assert.AreEqual(2, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+            Assert.AreEqual(2, user.Groups.Count());
+            Assert.IsTrue(user.Groups.Contains(groupThree) && user.Groups.Contains(groupFive));
+
+            Assert.AreEqual(3, user.HistoryGroups.Count());
+            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupTwo) &&
+                            user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupThree) &&
+                            user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupFive));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 25, 25);
+
+            // assert
+            Assert.IsFalse(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Any());
+
+            Assert.AreEqual(0, user.Groups.Count());
+
+            Assert.AreEqual(3, user.HistoryGroups.Count());
+            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupTwo) &&
+                            user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupThree) &&
+                            user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupFive));
+
+            // act
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+
+            // assert
+            Assert.AreEqual(1, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
+
+            Assert.AreEqual(1, user.Groups.Count());
+            Assert.IsTrue(user.Groups.Contains(groupTwo));
+
+            var histGroups = user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed);
+
+            Assert.AreEqual(3, user.HistoryGroups.Count());
+            Assert.IsTrue(histGroups.Contains(groupTwo) && histGroups.Contains(groupThree) && histGroups.Contains(groupFive));
         }
     }
 }

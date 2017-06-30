@@ -302,9 +302,17 @@ namespace Likkle.BusinessServices
             {
                 // TODO: Think of a way for optimizing the next two methods.
 
-                var user = SubscribeTheNewGroups(userId, historyGroups, groupsDependingOnUserSettingsAroundCoordinates);
+                var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+                if (user.Groups == null)
+                    user.Groups = new List<Group>();
+
+                if (user.HistoryGroups == null)
+                    user.HistoryGroups = new List<HistoryGroup>();
 
                 SubscribeGroupsThatYouHavePreviouslySubscribedHere(groupsDependingOnUserSettingsAroundCoordinates, user);
+
+                SubscribeTheNewGroups(user, historyGroups, groupsDependingOnUserSettingsAroundCoordinates);
 
                 this._unitOfWork.Save();
             }
@@ -312,7 +320,7 @@ namespace Likkle.BusinessServices
             return groupsDependingOnUserSettingsAroundCoordinates;
         }
 
-        private static void SubscribeGroupsThatYouHavePreviouslySubscribedHere(
+        private void SubscribeGroupsThatYouHavePreviouslySubscribedHere(
             List<Guid> groupsDependingOnUserSettingsAroundCoordinates, 
             User user)
         {
@@ -327,23 +335,16 @@ namespace Likkle.BusinessServices
         }
 
         private User SubscribeTheNewGroups(
-            Guid userId, 
+            User user, 
             List<HistoryGroup> historyGroups, 
             List<Guid> groupsDependingOnUserSettingsAroundCoordinates)
         {
-            var user = this._unitOfWork.UserRepository.GetUserById(userId);
             var newlySubscribedGroups = this._unitOfWork.GroupRepository.GetGroups()
                 .Where(
                     gr =>
                         !historyGroups.Select(hg => hg.GroupId).Contains(gr.Id) &&
                         groupsDependingOnUserSettingsAroundCoordinates.Contains(gr.Id));
-
-            if (user.Groups == null)
-                user.Groups = new List<Group>();
-
-            if (user.HistoryGroups == null)
-                user.HistoryGroups = new List<HistoryGroup>();
-
+            
             foreach (var newlySubscribedGroup in newlySubscribedGroups)
             {
                 user.Groups.Add(newlySubscribedGroup);
