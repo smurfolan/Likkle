@@ -59,7 +59,7 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             var contentResult = actionResult as BadRequestErrorMessageResult;
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("'First Name' must not be empty.; 'Last Name' must not be empty.; Phone number provided is invalid; User with the same STS id has been already added.; User with the same email has been already added.; ", contentResult.Message);
+            Assert.AreEqual("'First Name' must not be empty.; Phone number provided is invalid; User with the same STS id has been already added.; User with the same email has been already added.; ", contentResult.Message);
         }
 
         [TestMethod]
