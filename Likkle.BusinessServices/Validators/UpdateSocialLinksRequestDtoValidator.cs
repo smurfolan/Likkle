@@ -2,6 +2,7 @@
 using System.Net.Http;
 using FluentValidation;
 using Likkle.BusinessEntities.Requests;
+using System.Text.RegularExpressions;
 
 namespace Likkle.BusinessServices.Validators
 {
@@ -17,17 +18,17 @@ namespace Likkle.BusinessServices.Validators
                 .WithMessage("Instagram username is not valid");
 
             RuleFor(userInfo => userInfo.FacebookUsername)
-                .Must(s => s.StartsWith(FacebookUsernamePrefixForMessenger))
+                .Must(BeAValidFacebookUsername)
                 .WithMessage("Facebook username must have the prefix: " + FacebookUsernamePrefixForMessenger);
 
             RuleFor(userInfo => userInfo.TwitterUsername)
-                .Matches("^@[a-zA-Z0-9_]{1,15}$")
+                .Must(BeValidTwitterName)
                 .WithMessage("Twitter username is not valid");
         }
 
         private bool BeAValidInstagramUsername(string instagramUsername)
         {
-            if (instagramUsername == null)
+            if (instagramUsername == null || instagramUsername == string.Empty)
                 return true;
 
             return this.ValidateSocialLink(string.Format(InstagramUrl, instagramUsername));
@@ -41,6 +42,24 @@ namespace Likkle.BusinessServices.Validators
 
                 return result.StatusCode == HttpStatusCode.OK ? true : false;
             }
+        }
+
+        private bool BeAValidFacebookUsername(string facebookUsername)
+        {
+            if (facebookUsername == null || facebookUsername == string.Empty)
+                return true;
+
+            return facebookUsername.StartsWith(FacebookUsernamePrefixForMessenger);
+        }
+
+        private bool BeValidTwitterName(string twitterUsername)
+        {
+            if (twitterUsername == null || twitterUsername == string.Empty)
+                return true;
+
+            var twitterRegex = new Regex(@"^@[a-zA-Z0-9_]{1,15}$");
+
+            return twitterRegex.IsMatch(twitterUsername);
         }
     }
 }
