@@ -19,7 +19,6 @@ namespace Likkle.BusinessServices.Validators
 
             RuleFor(r => r.IdsrvUniqueId).NotNull();
             RuleFor(r => r.FirstName).NotNull();
-            RuleFor(r => r.LastName).NotNull();
             RuleFor(r => r.Email).NotNull();
 
             RuleFor(r => r.PhoneNumber).Must(BeAValidPhoneNumber).WithMessage("Phone number provided is invalid");
