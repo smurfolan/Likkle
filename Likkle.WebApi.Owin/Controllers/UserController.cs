@@ -221,8 +221,9 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{id}/UpdateAutomaticSubscriptionSettings")]
         public IHttpActionResult Put(Guid id, [FromBody] EditUserAutomaticSubscriptionSettingsRequestDto subscriptionSettings)
         {
-            if (!(subscriptionSettings.AutomaticallySubscribeToAllGroups ^ subscriptionSettings.AutomaticallySubscribeToAllGroupsWithTag))
-                return BadRequest("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag are not self-excluding.");
+            if (subscriptionSettings.AutomaticallySubscribeToAllGroups && 
+                subscriptionSettings.AutomaticallySubscribeToAllGroupsWithTag)
+                return BadRequest("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.");
 
             try
             {
