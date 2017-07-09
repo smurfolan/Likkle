@@ -80,7 +80,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag are not self-excluding.", contentResult.Message);
+            Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.", contentResult.Message);
         }
     }
 }
