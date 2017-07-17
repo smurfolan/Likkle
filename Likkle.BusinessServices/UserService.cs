@@ -121,8 +121,28 @@ namespace Likkle.BusinessServices
             {
                 userEntity.Languages.Add(language);
             }
-
+            
             this._unitOfWork.Save();
+
+            if (updatedInfo.AutomaticSubscriptionSettings != null)
+            {
+                this.UpdateUserNotificationSettings(uid, new EditUserAutomaticSubscriptionSettingsRequestDto()
+                {
+                    AutomaticallySubscribeToAllGroups = updatedInfo.AutomaticSubscriptionSettings.AutomaticallySubscribeToAllGroups,
+                    AutomaticallySubscribeToAllGroupsWithTag = updatedInfo.AutomaticSubscriptionSettings.AutomaticallySubscribeToAllGroupsWithTag,
+                    SubscribedTagIds = updatedInfo.AutomaticSubscriptionSettings.SubscribedTagIds
+                });
+            }
+
+            if (updatedInfo.SocialLinks != null)
+            {
+                this.UpdateSocialLinksForUser(uid, new UpdateSocialLinksRequestDto()
+                {
+                    FacebookUsername = updatedInfo.SocialLinks.FacebookUsername,
+                    TwitterUsername = updatedInfo.SocialLinks.TwitterUsername,
+                    InstagramUsername = updatedInfo.SocialLinks.InstagramUsername
+                });
+            }
         }
 
         public void UpdateUserNotificationSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings)
@@ -161,12 +181,12 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
-        public NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid)
+        public AutomaticSubscriptionSettingsDto GetNotificationSettingsForUserWithId(Guid uid)
         {
             var notificationEntity = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
 
             var notificationSettingDto =
-                this._mapper.Map<NotificationSetting, NotificationSettingDto>(notificationEntity);
+                this._mapper.Map<NotificationSetting, AutomaticSubscriptionSettingsDto>(notificationEntity);
 
             if (notificationEntity.Tags != null)
                 notificationSettingDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);

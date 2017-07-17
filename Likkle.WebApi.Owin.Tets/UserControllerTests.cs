@@ -16,10 +16,19 @@ namespace Likkle.WebApi.Owin.Tets
     public class UserControllerTests
     {
         private readonly Mock<ILikkleApiLogger> _apiLogger;
+        private readonly Mock<IUserService> _mockedUserService;
 
         public UserControllerTests()
         {
             this._apiLogger = new Mock<ILikkleApiLogger>();
+            this._mockedUserService = new Mock<IUserService>();
+
+            this._mockedUserService.Setup(us => us.GetAllUsers()).Returns(new List<UserDto>() {
+                new UserDto
+                {
+                    Email = "Some@mail.com"
+                }
+            });
         }
 
         [TestMethod]
@@ -81,6 +90,82 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             Assert.IsNotNull(contentResult);
             Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.", contentResult.Message);
+        }
+
+        [TestMethod]
+        public void We_Validate_Automatic_Subscr_Settings_If_Avail_When_Updating_User()
+        {
+            // arrange
+            var request = new UpdateUserInfoRequestDto()
+            {
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSettingsDto
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = true
+                },
+                Email = "ran@dom.mail",
+                FirstName = "Stefcho",
+                LastName = "Mefcho"
+            };
+
+            var userController = new UserController(this._mockedUserService.Object, null, null, null, null);
+
+            // act
+            var actionResult = userController.Put(Guid.NewGuid(), request);
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.; ", contentResult.Message);
+            this._mockedUserService.Verify(m => m.UpdateUserInfo(It.IsAny<Guid>(), It.IsAny<UpdateUserInfoRequestDto>()), Times.Never);
+
+            // act
+            request.AutomaticSubscriptionSettings = null;
+
+            actionResult = userController.Put(Guid.NewGuid(), request);
+            var secondContentResult = actionResult as OkResult;
+
+            // assert
+            this._mockedUserService.Verify(m => m.UpdateUserInfo(It.IsAny<Guid>(), It.IsAny<UpdateUserInfoRequestDto>()), Times.Once);
+            Assert.IsNotNull(secondContentResult);
+        }
+
+        [TestMethod]
+        public void We_Validate_Social_Links_If_Avail_When_Updating_User()
+        {
+            // arrange
+            var request = new UpdateUserInfoRequestDto()
+            {
+                SocialLinks = new SocialLinksDto()
+                {
+                    FacebookUsername = "wrongName"
+                }
+                ,
+                Email = "ran@dom.mail",
+                FirstName = "Stefcho",
+                LastName = "Mefcho"
+            };
+
+            var userController = new UserController(this._mockedUserService.Object, null, null, null, null);
+
+            // act
+            var actionResult = userController.Put(Guid.NewGuid(), request);
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("Facebook username must have the prefix: m.me/; ", contentResult.Message);
+            this._mockedUserService.Verify(m => m.UpdateUserInfo(It.IsAny<Guid>(), It.IsAny<UpdateUserInfoRequestDto>()), Times.Never);
+
+            // act
+            request.SocialLinks = null;
+
+            actionResult = userController.Put(Guid.NewGuid(), request);
+            var secondContentResult = actionResult as OkResult;
+
+            // assert
+            this._mockedUserService.Verify(m => m.UpdateUserInfo(It.IsAny<Guid>(), It.IsAny<UpdateUserInfoRequestDto>()), Times.Once);
+            Assert.IsNotNull(secondContentResult);
         }
     }
 }
