@@ -22,6 +22,6 @@ namespace Likkle.BusinessEntities
 
         public IEnumerable<GroupDto> Groups { get; set; }
         public IEnumerable<LanguageDto> Languages { get; set; }
-        public NotificationSettingDto NotificationSettings { get; set; }
+        public AutomaticSubscriptionSettingsDto NotificationSettings { get; set; }
     }
 }
