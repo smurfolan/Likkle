@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Text;
 using System.Web.Http;
-using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
-using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices.Validators;
