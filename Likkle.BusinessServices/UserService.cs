@@ -239,6 +239,8 @@ namespace Likkle.BusinessServices
 
             userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(userId);
 
+            userDto.SocialLinks = this._mapper.Map<SocialLinksResponseDto, SocialLinksDto>(this.GetSocialLinksForUser(userId));
+
             return userDto;
         }
 
@@ -360,7 +362,6 @@ namespace Likkle.BusinessServices
 
             return user;
         }
-
         #endregion
     }
 }

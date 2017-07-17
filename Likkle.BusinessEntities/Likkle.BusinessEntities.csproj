@@ -84,6 +84,7 @@
     <Compile Include="Responses\SocialLinksResponseDto.cs" />
     <Compile Include="Responses\UserInfoResponseDto.cs" />
     <Compile Include="Responses\UserLocationUpdatedResponseDto.cs" />
+    <Compile Include="SocialLinksDto.cs" />
     <Compile Include="TagDto.cs" />
     <Compile Include="UserDto.cs" />
   </ItemGroup>
