@@ -270,6 +270,10 @@ namespace Likkle.BusinessServices
 
             var userDto = this._mapper.Map<User, UserInfoResponseDto>(user);
 
+            userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(user.Id);
+
+            userDto.SocialLinks = this._mapper.Map<SocialLinksResponseDto, SocialLinksDto>(this.GetSocialLinksForUser(user.Id));
+
             return userDto;
         }
 
