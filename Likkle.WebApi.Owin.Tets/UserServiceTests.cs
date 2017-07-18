@@ -435,7 +435,12 @@ namespace Likkle.WebApi.Owin.Tets
                 FirstName = "Stefcho",
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
-                IdsrvUniqueId = idsrvUniqueId
+                IdsrvUniqueId = idsrvUniqueId,
+                NotificationSettings = new NotificationSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                }
             };
 
             var populatedDatabase = new FakeLikkleDbContext()
