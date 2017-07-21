@@ -23,7 +23,6 @@ namespace Likkle.BusinessServices.Validators
             _userId = id;
 
             RuleFor(r => r.FirstName).NotNull();
-            RuleFor(r => r.LastName).NotNull();
             RuleFor(r => r.Email).NotNull();
 
             When(x => x.AutomaticSubscriptionSettings != null, () => {
