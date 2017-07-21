@@ -18,7 +18,7 @@ namespace Likkle.BusinessServices
             CreateMap<User, UserInfoResponseDto>();
             CreateMap<NewAreaRequest, Area>();
             CreateMap<Language, LanguageDto>();
-            CreateMap<NotificationSetting, NotificationSettingDto>();
+            CreateMap<NotificationSetting, AutomaticSubscriptionSettingsDto>();
             CreateMap<StandaloneGroupRequestDto, Group>();
             CreateMap<GroupAsNewAreaRequestDto, Group>();
             CreateMap<NewUserRequestDto, User>();
@@ -27,6 +27,7 @@ namespace Likkle.BusinessServices
                 .ForMember(dest => dest.NumberOfUsers, opts => opts.MapFrom(src => src.Users.Count))
                 .ForMember(dest => dest.TagIds, opts => opts.MapFrom(src => src.Tags.Select(t => t.Id)));
             CreateMap<Area, AreaForLocationResponseDto>();
+            CreateMap<SocialLinksResponseDto, SocialLinksDto>();
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Likkle.BusinessEntities
 {
-    public class NotificationSettingDto
+    public class AutomaticSubscriptionSettingsDto
     {
         public Guid Id { get; set; }
 

@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Text;
 using System.Web.Http;
-using FluentValidation;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
-using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices.Validators;
@@ -156,7 +154,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: PUT api/v1/users/{id:Guid}
         /// </summary>
         /// <param name="id">Unique identifier of the user that will be updated</param>
-        /// <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'] }</param>
+        /// <param name="updateUserData">Updated user data. Body sample: {'firstName': 'Stefcho', 'lastName': 'Stefchev', 'email': 'used@to.know', 'about': 'Straightforward', 'gender': '0', 'birthDate': '2008-09-22T13:57:31.2311892-04:00', 'phoneNumber': '+395887647288', 'languageIds' : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4','72f3a2cf-a9ab-4f93-a581-7ae07e812ef1'], 'socialLinks' : { 'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam', 'TwitterUsername': '@stefhano' }, 'automaticSubscriptionSettings' : {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}}</param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]

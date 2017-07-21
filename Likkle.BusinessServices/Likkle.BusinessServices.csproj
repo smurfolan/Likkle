@@ -76,6 +76,7 @@
     <Compile Include="Utils\PhoneNumberValidationResponse.cs" />
     <Compile Include="Utils\PhoneValidationManager.cs" />
     <Compile Include="Utils\ReverseGeoCoordinateResponse.cs" />
+    <Compile Include="Validators\CommonValidationRules.cs" />
     <Compile Include="Validators\NewAreaRequestValidator.cs" />
     <Compile Include="Validators\NewUserRequestDtoValidator.cs" />
     <Compile Include="Validators\UpdatedUserInfoRequestDtoValidator.cs" />

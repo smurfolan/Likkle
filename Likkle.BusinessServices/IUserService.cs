@@ -15,7 +15,7 @@ namespace Likkle.BusinessServices
         Guid InsertNewUser(NewUserRequestDto newUser);
         void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo);
         void UpdateUserNotificationSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings);
-        NotificationSettingDto GetNotificationSettingsForUserWithId(Guid uid);
+        AutomaticSubscriptionSettingsDto GetNotificationSettingsForUserWithId(Guid uid);
         UserLocationUpdatedResponseDto UpdateUserLocation(Guid id, double lat, double lon);
         SocialLinksResponseDto GetSocialLinksForUser(Guid userId);
         void UpdateSocialLinksForUser(Guid userId, UpdateSocialLinksRequestDto updatedSocialLinks);
