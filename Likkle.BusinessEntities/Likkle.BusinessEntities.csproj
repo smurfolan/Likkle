@@ -67,6 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecreateGroupRecord.cs" />
     <Compile Include="RelateUserToGroupsDto.cs" />
+    <Compile Include="Requests\BaseNewGroupRequest.cs" />
     <Compile Include="Requests\EditUserAutomaticSubscriptionSettingsRequestDto.cs" />
     <Compile Include="Requests\GroupActivationRequestDto.cs" />
     <Compile Include="Requests\GroupAsNewAreaRequestDto.cs" />

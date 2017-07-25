@@ -5,16 +5,8 @@ using Likkle.BusinessEntities.Enums;
 
 namespace Likkle.BusinessEntities.Requests
 {
-    public class GroupAsNewAreaRequestDto
+    public class GroupAsNewAreaRequestDto : BaseNewGroupRequest
     {
-        [Required]
-        public string Name { get; set; }
-
-        [Required]
-        public IEnumerable<Guid> TagIds { get; set; }
-        
-        public Guid UserId { get; set; }
-
         [Required]
         public double Latitude { get; set; }
 

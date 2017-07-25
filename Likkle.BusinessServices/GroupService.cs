@@ -48,47 +48,11 @@ namespace Likkle.BusinessServices
             return groupsAsDtos;
         }
 
-        // TODO: Extract common parts from InsertNewGroup and InserGroupAsNewArea
         public Guid InsertNewGroup(StandaloneGroupRequestDto newGroup)
         {
             var newGroupEntity = this._mapper.Map<StandaloneGroupRequestDto, Group>(newGroup);
-            newGroupEntity.Id = Guid.NewGuid();
 
-            newGroupEntity.Areas = new List<Area>();
-            newGroupEntity.Tags = new List<Tag>();
-            newGroupEntity.Users = new List<User>();
-
-            if (newGroup.UserId != Guid.Empty)
-            {
-                var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
-
-                if (user != null)
-                {
-                    newGroupEntity.Users.Add(user);
-
-                    if(user.HistoryGroups == null)
-                        user.HistoryGroups = new List<HistoryGroup>();
-
-                    user.HistoryGroups.Add(new HistoryGroup()
-                    {
-                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
-                        GroupId = newGroupEntity.Id,
-                        GroupThatWasPreviouslySubscribed = newGroupEntity,
-                        Id = Guid.NewGuid(),
-                        UserId = newGroup.UserId,
-                        UserWhoSubscribedGroup = user
-                    });
-                }
-            }
-
-            if (newGroup.TagIds != null && newGroup.TagIds.Any())
-            {
-                var tagsForGroup = this._unitOfWork.TagRepository.GetAllTags().Where(t => newGroup.TagIds.Contains(t.Id));
-                foreach (var tag in tagsForGroup)
-                {
-                    newGroupEntity.Tags.Add(tag);
-                }
-            }
+            this.AssignBaseGroupInfo(newGroup, newGroupEntity);
 
             if (newGroup.AreaIds != null && newGroup.AreaIds.Any())
             {
@@ -99,15 +63,13 @@ namespace Likkle.BusinessServices
                 }
             }
 
-            newGroupEntity.IsActive = true;
-
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 
             this._unitOfWork.GroupRepository.Save();
 
             return newGroupEntity.Id;
         }
-
+        
         public Guid InserGroupAsNewArea(GroupAsNewAreaRequestDto newGroup)
         {
             // 1. Add new area
@@ -131,50 +93,12 @@ namespace Likkle.BusinessServices
 
             // 2. Add new group
             var newGroupEntity = this._mapper.Map<GroupAsNewAreaRequestDto, Group>(newGroup);
-            newGroupEntity.Id = Guid.NewGuid();
-
-            newGroupEntity.Tags = new List<Tag>();
-            newGroupEntity.Areas = new List<Area>();
-            newGroupEntity.Users = new List<User>();
-
-            if (newGroup.UserId != Guid.Empty)
-            {
-                var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
-
-                if (user != null)
-                {
-                    newGroupEntity.Users.Add(user);
-
-                    if (user.HistoryGroups == null)
-                        user.HistoryGroups = new List<HistoryGroup>();
-
-                    user.HistoryGroups.Add(new HistoryGroup()
-                    {
-                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
-                        GroupId = newGroupEntity.Id,
-                        GroupThatWasPreviouslySubscribed = newGroupEntity,
-                        Id = Guid.NewGuid(),
-                        UserId = newGroup.UserId,
-                        UserWhoSubscribedGroup = user
-                    });
-                }
-            }
+            this.AssignBaseGroupInfo(newGroup, newGroupEntity);
 
             var newlyCreatedArea = this._unitOfWork.AreaRepository.GetAreaById(newAreaId);
 
             newGroupEntity.Areas.Add(newlyCreatedArea);
-
-            if (newGroup.TagIds != null && newGroup.TagIds.Any())
-            {
-                var tagsForGroup = this._unitOfWork.TagRepository.GetAllTags().Where(t => newGroup.TagIds.Contains(t.Id));
-                foreach (var tag in tagsForGroup)
-                {
-                    newGroupEntity.Tags.Add(tag);
-                }
-            }
-
-            newGroupEntity.IsActive = true;
-
+            
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 
             this._unitOfWork.GroupRepository.Save();
@@ -247,15 +171,36 @@ namespace Likkle.BusinessServices
             return this.GetListOfPrevouslyCreatedOrSubscribedGroups(inactiveGroupsInTheArea, areas, userId);
         }
 
+        public void ActivateGroup(Guid groupId, Guid userId)
+        {
+            var affectedGroup = this._unitOfWork.GroupRepository.GetGroupById(groupId);
+
+            var inactiveAreasThisGroupBelongsTo = affectedGroup.Areas.Where(a => a.IsActive == false);
+
+            foreach (var inactiveArea in inactiveAreasThisGroupBelongsTo)
+            {
+                inactiveArea.IsActive = true;
+            }
+
+            affectedGroup.IsActive = true;
+
+            var user = this._unitOfWork.UserRepository.GetUserById(userId);
+
+            user.Groups.Add(affectedGroup);
+
+            this._unitOfWork.Save();
+        }
+
+        #region Private area
         private PreGroupCreationResponseDto GetListOfPrevouslyCreatedOrSubscribedGroups(
-            IEnumerable<Group> inactiveGroupsInTheArea, 
+            IEnumerable<Group> inactiveGroupsInTheArea,
             IEnumerable<Area> areas,
             Guid userId)
         {
             var groupsUserPreviouslyInteractedWith = this._unitOfWork
                 .UserRepository.GetUserById(userId)
                 .HistoryGroups.Select(hgr => hgr.GroupId).ToList();
-            
+
             var groupsToReturn = inactiveGroupsInTheArea
                 .Where(gr => groupsUserPreviouslyInteractedWith.Contains(gr.Id))
                 .Select(g => new RecreateGroupRecord()
@@ -280,24 +225,48 @@ namespace Likkle.BusinessServices
             };
         }
 
-        public void ActivateGroup(Guid groupId, Guid userId)
+        private void AssignBaseGroupInfo(BaseNewGroupRequest newGroup, Group newGroupEntity)
         {
-            var affectedGroup = this._unitOfWork.GroupRepository.GetGroupById(groupId);
+            newGroupEntity.Id = Guid.NewGuid();
 
-            var inactiveAreasThisGroupBelongsTo = affectedGroup.Areas.Where(a => a.IsActive == false);
+            newGroupEntity.Areas = new List<Area>();
+            newGroupEntity.Tags = new List<Tag>();
+            newGroupEntity.Users = new List<User>();
 
-            foreach (var inactiveArea in inactiveAreasThisGroupBelongsTo)
+            if (newGroup.UserId != Guid.Empty)
             {
-                inactiveArea.IsActive = true;
+                var user = this._unitOfWork.UserRepository.GetUserById(newGroup.UserId);
+
+                if (user != null)
+                {
+                    newGroupEntity.Users.Add(user);
+
+                    if (user.HistoryGroups == null)
+                        user.HistoryGroups = new List<HistoryGroup>();
+
+                    user.HistoryGroups.Add(new HistoryGroup()
+                    {
+                        DateTimeGroupWasSubscribed = DateTime.UtcNow,
+                        GroupId = newGroupEntity.Id,
+                        GroupThatWasPreviouslySubscribed = newGroupEntity,
+                        Id = Guid.NewGuid(),
+                        UserId = newGroup.UserId,
+                        UserWhoSubscribedGroup = user
+                    });
+                }
             }
 
-            affectedGroup.IsActive = true;
+            newGroupEntity.IsActive = true;
 
-            var user = this._unitOfWork.UserRepository.GetUserById(userId);
-
-            user.Groups.Add(affectedGroup);
-
-            this._unitOfWork.Save();
+            if (newGroup.TagIds != null && newGroup.TagIds.Any())
+            {
+                var tagsForGroup = this._unitOfWork.TagRepository.GetAllTags().Where(t => newGroup.TagIds.Contains(t.Id));
+                foreach (var tag in tagsForGroup)
+                {
+                    newGroupEntity.Tags.Add(tag);
+                }
+            }
         }
+        #endregion
     }
 }
