@@ -8,6 +8,7 @@ using Likkle.BusinessServices;
 using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices.Validators;
 using Likkle.WebApi.Owin.Helpers;
+using System.Threading.Tasks;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
@@ -123,10 +124,10 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <returns>Http status code 201 if user was succesfuly created or 500 if error has occured.</returns>
         [HttpPost]
         [Route("")]
-        public IHttpActionResult Post([FromBody]NewUserRequestDto newUser)
+        public async Task<IHttpActionResult> Post([FromBody]NewUserRequestDto newUser)
         {
             var validator = new NewUserRequestDtoValidator(this._phoneValidationManager, this._userService);
-            var results = validator.Validate(newUser);
+            var results = await validator.ValidateAsync(newUser);
 
             var detailedError = new StringBuilder();
             foreach (var error in results.Errors.Select(e => e.ErrorMessage))
@@ -158,10 +159,10 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public IHttpActionResult Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
+        public async Task<IHttpActionResult> Put(Guid id, [FromBody]UpdateUserInfoRequestDto updateUserData)
         {
             var validator = new UpdatedUserInfoRequestDtoValidator(id, this._phoneValidationManager, this._userService);
-            var results = validator.Validate(updateUserData);
+            var results = await validator.ValidateAsync(updateUserData);
 
             var detailedError = new StringBuilder();
             foreach (var error in results.Errors.Select(e => e.ErrorMessage))
@@ -321,10 +322,10 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}/UpdateSocialLinks")]
-        public IHttpActionResult UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
+        public async Task<IHttpActionResult> UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
         {
             var validator = new UpdateSocialLinksRequestDtoValidator();
-            var results = validator.Validate(updatedSocialLinks);
+            var results = await validator.ValidateAsync(updatedSocialLinks);
 
             var detailedError = new StringBuilder();
             foreach (var error in results.Errors.Select(e => e.ErrorMessage))

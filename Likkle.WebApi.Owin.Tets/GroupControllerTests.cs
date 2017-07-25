@@ -10,6 +10,7 @@ using Likkle.WebApi.Owin.Controllers;
 using Likkle.WebApi.Owin.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Threading.Tasks;
 
 namespace Likkle.WebApi.Owin.Tets
 {
@@ -157,7 +158,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Client_Can_Post_New_Group_As_New_Area()
+        public async Task Client_Can_Post_New_Group_As_New_AreaAsync()
         {
             // arrange
             var mockedDataService = new Mock<IGroupService>();
@@ -171,7 +172,7 @@ namespace Likkle.WebApi.Owin.Tets
                 mockedDataService.Object,
                 _apiLogger.Object);
 
-            var actionResult = groupController.Post(new GroupAsNewAreaRequestDto());
+            var actionResult = await groupController.Post(new GroupAsNewAreaRequestDto());
 
             var contentResult = actionResult as CreatedNegotiatedContentResult<string>;
 
