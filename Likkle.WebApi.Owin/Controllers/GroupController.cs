@@ -60,8 +60,8 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{lat:double}/{lon:double}")]
         public IHttpActionResult Get(double lat, double lon)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
+                return BadRequest("Latitude and longitude values must be in the [-90, 90] range.");
 
             try
             {
@@ -108,6 +108,9 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("{lat:double}/{lon:double}/GroupCreationType/{userId}")]
         public IHttpActionResult GetGroupCreationType(double lat, double lon, Guid userId)
         {
+            if (Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
+                return BadRequest("Latitude and longitude values must be in the [-90, 90] range.");
+
             try
             {
                 var result = this._groupService.GetGroupCreationType(lat, lon, userId);

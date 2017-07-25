@@ -201,5 +201,45 @@ namespace Likkle.WebApi.Owin.Tets
             _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
             Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
         }
+
+        [TestMethod]
+        public void Client_Gets_Bad_Request_If_LatLon_Combination_Is_Not_Valid_When_Requesting_GroupCreationType()
+        {
+            // arrange
+            var mockedDataService = new Mock<IGroupService>();
+
+            var groupController = new GroupController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = groupController.GetGroupCreationType(-91, 23, Guid.NewGuid());
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("Latitude and longitude values must be in the [-90, 90] range.", contentResult.Message);
+            mockedDataService.Verify(m => m.GetGroupCreationType(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<Guid>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void Client_Gets_Bad_Request_If_LatLon_Combination_Is_Not_Valid_When_Requesting_All_Groups_Around_Coords()
+        {
+            // arrange
+            var mockedDataService = new Mock<IGroupService>();
+
+            var groupController = new GroupController(
+                mockedDataService.Object,
+                _apiLogger.Object);
+
+            // act
+            var actionResult = groupController.Get(-91, 23);
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+
+            // assert
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("Latitude and longitude values must be in the [-90, 90] range.", contentResult.Message);
+            mockedDataService.Verify(m => m.GetGroups(It.IsAny<double>(), It.IsAny<double>()), Times.Never);
+        }
     }
 }
