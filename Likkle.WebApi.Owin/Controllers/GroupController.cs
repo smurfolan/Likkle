@@ -3,10 +3,11 @@ using System.Web.Http;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Helpers;
+using System.Threading.Tasks;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
@@ -152,7 +153,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <returns>Uniqe identifier of the newly created group entity</returns>
         [HttpPost]
         [Route("AsNewArea")]
-        public IHttpActionResult Post([FromBody] GroupAsNewAreaRequestDto newGroup)
+        public async Task<IHttpActionResult> Post([FromBody] GroupAsNewAreaRequestDto newGroup)
         {
             // TODO: Validate if really the passed groups belong to the passed coordinates
             if (!ModelState.IsValid)
@@ -160,7 +161,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var newlyCreatedGroupId = this._groupService.InserGroupAsNewArea(newGroup);
+                var newlyCreatedGroupId = await Task.FromResult(this._groupService.InserGroupAsNewArea(newGroup));
 
                 return Created("api/v1/groups/" + newlyCreatedGroupId, "Success");
             }
