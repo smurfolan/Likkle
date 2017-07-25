@@ -9,6 +9,7 @@ using Likkle.WebApi.Owin.Controllers;
 using Likkle.WebApi.Owin.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Threading.Tasks;
 
 namespace Likkle.WebApi.Owin.Tets
 {
@@ -32,7 +33,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Bad_Request_Is_Returned_When_Phone_Number_Invalid()
+        public async Task Bad_Request_Is_Returned_When_Phone_Number_Invalid()
         {
             // arrange
             var phoneValidationManagerMock = new Mock<IPhoneValidationManager>();
@@ -63,7 +64,7 @@ namespace Likkle.WebApi.Owin.Tets
                 phoneValidationManagerMock.Object);
 
             // act
-            var actionResult = userController.Post(request);
+            var actionResult = await userController.Post(request);
 
             // assert
             var contentResult = actionResult as BadRequestErrorMessageResult;
@@ -93,7 +94,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Validate_Automatic_Subscr_Settings_If_Avail_When_Updating_User()
+        public async Task We_Validate_Automatic_Subscr_Settings_If_Avail_When_Updating_User()
         {
             // arrange
             var request = new UpdateUserInfoRequestDto()
@@ -111,7 +112,7 @@ namespace Likkle.WebApi.Owin.Tets
             var userController = new UserController(this._mockedUserService.Object, null, null, null, null);
 
             // act
-            var actionResult = userController.Put(Guid.NewGuid(), request);
+            var actionResult = await userController.Put(Guid.NewGuid(), request);
             var contentResult = actionResult as BadRequestErrorMessageResult;
 
             // assert
@@ -122,7 +123,7 @@ namespace Likkle.WebApi.Owin.Tets
             // act
             request.AutomaticSubscriptionSettings = null;
 
-            actionResult = userController.Put(Guid.NewGuid(), request);
+            actionResult = await userController.Put(Guid.NewGuid(), request);
             var secondContentResult = actionResult as OkResult;
 
             // assert
@@ -131,7 +132,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Validate_Social_Links_If_Avail_When_Updating_User()
+        public async Task We_Validate_Social_Links_If_Avail_When_Updating_User()
         {
             // arrange
             var request = new UpdateUserInfoRequestDto()
@@ -149,7 +150,7 @@ namespace Likkle.WebApi.Owin.Tets
             var userController = new UserController(this._mockedUserService.Object, null, null, null, null);
 
             // act
-            var actionResult = userController.Put(Guid.NewGuid(), request);
+            var actionResult = await userController.Put(Guid.NewGuid(), request);
             var contentResult = actionResult as BadRequestErrorMessageResult;
 
             // assert
@@ -160,7 +161,7 @@ namespace Likkle.WebApi.Owin.Tets
             // act
             request.SocialLinks = null;
 
-            actionResult = userController.Put(Guid.NewGuid(), request);
+            actionResult = await userController.Put(Guid.NewGuid(), request);
             var secondContentResult = actionResult as OkResult;
 
             // assert
