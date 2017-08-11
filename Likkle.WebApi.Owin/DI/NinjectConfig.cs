@@ -12,12 +12,16 @@ namespace Likkle.WebApi.Owin.DI
 {
     public static class NinjectConfig
     {
+        public static StandardKernel Kernel { get; set; }
+
         public static Lazy<IKernel> CreateKernel = new Lazy<IKernel>(() =>
         {
             StandardKernel kernel = new StandardKernel();
             kernel.Load(Assembly.GetExecutingAssembly());
 
             RegisterServices(kernel);
+
+            Kernel = kernel;
 
             return kernel;
         });

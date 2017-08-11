@@ -46,6 +46,10 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Device" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -70,6 +74,7 @@
     <Compile Include="SubscriptionService.cs" />
     <Compile Include="SubscriptionSettingsService.cs" />
     <Compile Include="UserService.cs" />
+    <Compile Include="Utils\ActionLevelExceptionManager.cs" />
     <Compile Include="Utils\GeoCodingManager.cs" />
     <Compile Include="Utils\IGeoCodingManager.cs" />
     <Compile Include="Utils\IPhoneValidationManager.cs" />
