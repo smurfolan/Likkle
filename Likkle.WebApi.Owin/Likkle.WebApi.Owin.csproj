@@ -202,7 +202,6 @@
     <Compile Include="Controllers\GroupController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="DI\NinjectConfig.cs" />
-    <Compile Include="Filters\EndpointExceptionHandlingFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

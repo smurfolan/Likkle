@@ -4,6 +4,7 @@ using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Helpers;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
@@ -45,8 +46,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting group by id.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }  
         }
 
@@ -71,8 +72,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting groups around coordinates.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -92,8 +93,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting users for group.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -118,8 +119,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting information of what type the group creation should be.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -142,8 +143,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while inserting a new group.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -170,8 +171,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while creating new group.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -193,8 +194,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while trying to activate non-active group", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
     }
