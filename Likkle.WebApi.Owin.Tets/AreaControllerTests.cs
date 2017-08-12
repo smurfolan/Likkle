@@ -272,8 +272,8 @@ namespace Likkle.WebApi.Owin.Tets
             var actionResult = areaController.GetAreaMetadata(-90, 90, Guid.NewGuid());
 
             // assert
-            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
-            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
+            _apiLogger.Verify(x => x.OnActionException(It.IsAny<HttpActionContext>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(ExceptionResult));
         }
     }
 }

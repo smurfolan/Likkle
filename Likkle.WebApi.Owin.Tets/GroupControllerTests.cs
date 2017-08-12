@@ -199,8 +199,8 @@ namespace Likkle.WebApi.Owin.Tets
             var actionResult = groupController.Get(90, 90);
 
             // assert
-            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
-            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult));
+            _apiLogger.Verify(x => x.OnActionException(It.IsAny<HttpActionContext>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(ExceptionResult));
         }
 
         [TestMethod]
