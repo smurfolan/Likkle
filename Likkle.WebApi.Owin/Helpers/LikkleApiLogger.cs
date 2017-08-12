@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using System.Web.Http.Controllers;
 using log4net;
+using Likkle.BusinessServices.Utils;
 
 namespace Likkle.WebApi.Owin.Helpers
 {
@@ -16,6 +18,18 @@ namespace Likkle.WebApi.Owin.Helpers
         public void LogError(string message, Exception ex)
         {
             Log.Error(message, ex);
+        }
+
+        public string OnActionException(HttpActionContext httpRequest, Exception ex)
+        {
+            var formattedActionException = ActionLevelExceptionManager.GetActionExceptionMessage(httpRequest);
+
+            this.LogError($"[{formattedActionException.ErrorId}]{formattedActionException.ErrorMessage}", ex);
+
+            // TODO: Mail support person who is stated in the Web.config
+
+            return
+                $"(ErrID:{formattedActionException.ErrorId}) {formattedActionException.ErrorMessage} {formattedActionException.KindMessage}";
         }
     }
 }

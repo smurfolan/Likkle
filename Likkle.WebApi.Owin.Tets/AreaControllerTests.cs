@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http.Controllers;
 using System.Web.Http.Results;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Enums;
@@ -67,8 +68,8 @@ namespace Likkle.WebApi.Owin.Tets
             var actionResult = areaController.Get(Guid.NewGuid());
 
             // assert
-            _apiLogger.Verify(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
-            Assert.IsInstanceOfType(actionResult, typeof(InternalServerErrorResult)); 
+            _apiLogger.Verify(x => x.OnActionException(It.IsAny<HttpActionContext>(), It.IsAny<Exception>()), Times.Once);
+            Assert.IsInstanceOfType(actionResult, typeof(ExceptionResult)); 
         }
 
         [TestMethod]

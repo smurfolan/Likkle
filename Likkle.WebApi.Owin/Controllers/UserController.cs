@@ -9,6 +9,7 @@ using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices.Validators;
 using Likkle.WebApi.Owin.Helpers;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
@@ -60,8 +61,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting user by id.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -88,8 +89,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting user by STS id.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -112,8 +113,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while subscribing user to groups.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -146,8 +147,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while inserting a new user.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -181,8 +182,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while updating user.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -205,8 +206,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error getting user subscribtions.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -232,8 +233,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error updating user notification settings.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -260,8 +261,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error getting user notification settings.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -287,8 +288,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error when trying to update latest user location.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -309,8 +310,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while trying to get social links for user.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -344,8 +345,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while trying to get social links for user.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
     }

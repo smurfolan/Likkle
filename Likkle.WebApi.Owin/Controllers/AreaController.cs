@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
@@ -47,8 +48,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting are by its id.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }        
         }
 
@@ -74,8 +75,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting metadata for area.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -105,8 +106,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting metadata for multiple areas.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -131,8 +132,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting groups around coordinates.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
         
@@ -158,8 +159,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting areas in radius around coordinates", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -179,8 +180,8 @@ namespace Likkle.WebApi.Owin.Controllers
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while getting users for area.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
 
@@ -211,13 +212,12 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var newAreaId = this._areaService.InsertNewArea(area);
-
                 return Created("api/v1/areas/" + newAreaId, "Success");
             }
             catch (Exception ex)
             {
-                _apiLogger.LogError("Error while creating new area.", ex);
-                return InternalServerError();
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
             }
         }
     }
