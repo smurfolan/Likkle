@@ -9,7 +9,7 @@ namespace Likkle.DataModel
         IDbSet<Tag> Tags { get; set; }
         IDbSet<User> Users { get; set; }
         IDbSet<Language> Languages { get; set; }
-        IDbSet<NotificationSetting> NotificationSettings { get; set; }
+        IDbSet<AutomaticSubscriptionSetting> AutomaticSubscriptionSettings { get; set; }
         IDbSet<HistoryGroup> HistoryGroups { get; set; }
 
         int SaveChanges();

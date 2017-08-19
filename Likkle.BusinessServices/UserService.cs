@@ -86,13 +86,13 @@ namespace Likkle.BusinessServices
             }
 
             // add default notification settings
-            var newNotificationSettingEntity = new NotificationSetting()
+            var newNotificationSettingEntity = new AutomaticSubscriptionSetting()
             {
                 AutomaticallySubscribeToAllGroupsWithTag = false,
                 AutomaticallySubscribeToAllGroups = false
             };
 
-            userEntity.NotificationSettings = newNotificationSettingEntity;
+            userEntity.AutomaticSubscriptionSettings = newNotificationSettingEntity;
 
             this._unitOfWork.UserRepository.InsertNewUser(userEntity);
             this._unitOfWork.Save();
@@ -147,7 +147,7 @@ namespace Likkle.BusinessServices
 
         public void UpdateUserNotificationSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings)
         {
-            var userNotificationSettings = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
+            var userNotificationSettings = this._unitOfWork.UserRepository.GetUserById(uid).AutomaticSubscriptionSettings;
 
             if (userNotificationSettings == null)
                 throw new ArgumentException("There's no notification settings for the user");
@@ -183,15 +183,15 @@ namespace Likkle.BusinessServices
 
         public AutomaticSubscriptionSettingsDto GetNotificationSettingsForUserWithId(Guid uid)
         {
-            var notificationEntity = this._unitOfWork.UserRepository.GetUserById(uid).NotificationSettings;
+            var notificationEntity = this._unitOfWork.UserRepository.GetUserById(uid).AutomaticSubscriptionSettings;
 
-            var notificationSettingDto =
-                this._mapper.Map<NotificationSetting, AutomaticSubscriptionSettingsDto>(notificationEntity);
+            var automaticSubscriptionSettingsDto =
+                this._mapper.Map<AutomaticSubscriptionSetting, AutomaticSubscriptionSettingsDto>(notificationEntity);
 
             if (notificationEntity.Tags != null)
-                notificationSettingDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);
+                automaticSubscriptionSettingsDto.SubscribedTagIds = notificationEntity.Tags.Select(t => t.Id);
 
-            return notificationSettingDto;
+            return automaticSubscriptionSettingsDto;
         }
 
         public SocialLinksResponseDto GetSocialLinksForUser(Guid userId)
@@ -257,7 +257,7 @@ namespace Likkle.BusinessServices
 
             var userDto = this._mapper.Map<User, UserInfoResponseDto>(user);
 
-            userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(userId);
+            userDto.AutomaticSubscriptionSettings = this.GetNotificationSettingsForUserWithId(userId);
 
             userDto.SocialLinks = this._mapper.Map<SocialLinksResponseDto, SocialLinksDto>(this.GetSocialLinksForUser(userId));
 
@@ -270,7 +270,7 @@ namespace Likkle.BusinessServices
 
             var userDto = this._mapper.Map<User, UserInfoResponseDto>(user);
 
-            userDto.NotificationSettings = this.GetNotificationSettingsForUserWithId(user.Id);
+            userDto.AutomaticSubscriptionSettings = this.GetNotificationSettingsForUserWithId(user.Id);
 
             userDto.SocialLinks = this._mapper.Map<SocialLinksResponseDto, SocialLinksDto>(this.GetSocialLinksForUser(user.Id));
 

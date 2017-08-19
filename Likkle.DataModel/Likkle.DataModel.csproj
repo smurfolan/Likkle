@@ -101,7 +101,7 @@
       <DependentUpon>201611211057171_MoreThatJustANumber.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="NotificationSetting.cs" />
+    <Compile Include="AutomaticSubscriptionSetting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AreaRepository.cs" />
     <Compile Include="Repositories\GroupRepository.cs" />

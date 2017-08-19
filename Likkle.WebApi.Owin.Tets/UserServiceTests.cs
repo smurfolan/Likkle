@@ -113,7 +113,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             Assert.IsNotNull(newUser);
             Assert.AreEqual(newUser.IdsrvUniqueId, newUserStsId);
-            Assert.IsNotNull(newUser.NotificationSettings);
+            Assert.IsNotNull(newUser.AutomaticSubscriptionSettings);
             Assert.IsNotNull(newUser.BirthDate);
             Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
         }
@@ -144,7 +144,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             Assert.IsNotNull(newUser);
             Assert.AreEqual(newUser.IdsrvUniqueId, newUserStsId);
-            Assert.IsNotNull(newUser.NotificationSettings);
+            Assert.IsNotNull(newUser.AutomaticSubscriptionSettings);
             Assert.IsNotNull(newUser.BirthDate);
             Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
 
@@ -217,7 +217,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             Assert.IsNotNull(newUser);
             Assert.AreEqual(newUser.IdsrvUniqueId, newUserStsId);
-            Assert.IsNotNull(newUser.NotificationSettings);
+            Assert.IsNotNull(newUser.AutomaticSubscriptionSettings);
             Assert.IsNotNull(newUser.BirthDate);
             Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
 
@@ -369,7 +369,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var populatedDatabase = new FakeLikkleDbContext()
@@ -436,7 +436,7 @@ namespace Likkle.WebApi.Owin.Tets
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
                 IdsrvUniqueId = idsrvUniqueId,
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
                     AutomaticallySubscribeToAllGroupsWithTag = false
@@ -470,7 +470,7 @@ namespace Likkle.WebApi.Owin.Tets
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
                 IdsrvUniqueId = Guid.NewGuid().ToString(),
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
@@ -548,7 +548,7 @@ namespace Likkle.WebApi.Owin.Tets
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
                 IdsrvUniqueId = Guid.NewGuid().ToString(),
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
@@ -686,7 +686,7 @@ namespace Likkle.WebApi.Owin.Tets
             var user = new User()
             {
                 Id = userId,
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
                     AutomaticallySubscribeToAllGroupsWithTag = true,

@@ -29,7 +29,7 @@ namespace Likkle.BusinessServices
             if(user == null)
                 throw new ArgumentException("User with such id does not exist in database.");
 
-            var userSettings = user.NotificationSettings;
+            var userSettings = user.AutomaticSubscriptionSettings;
 
             if(userSettings == null)
                 throw new ArgumentException($"There's no user settings related to user with ID:{userId}");
