@@ -13,9 +13,9 @@ namespace Likkle.DataModel.Repositories
             this._dbContext = dbContext;
         }
 
-        public Guid InsertNewSetting(NotificationSetting setting)
+        public Guid InsertNewSetting(AutomaticSubscriptionSetting setting)
         {
-            this._dbContext.NotificationSettings.Add(setting);
+            this._dbContext.AutomaticSubscriptionSettings.Add(setting);
             this._dbContext.SaveChanges();
 
             return setting.Id;

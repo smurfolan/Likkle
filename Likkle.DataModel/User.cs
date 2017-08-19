@@ -33,7 +33,7 @@ namespace Likkle.DataModel
 
         public virtual ICollection<Language> Languages { get; set; }
 
-        public virtual NotificationSetting NotificationSettings { get; set; }
+        public virtual AutomaticSubscriptionSetting AutomaticSubscriptionSettings { get; set; }
 
         public virtual ICollection<HistoryGroup> HistoryGroups { get; set; }      
     }

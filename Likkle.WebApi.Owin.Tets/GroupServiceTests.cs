@@ -74,7 +74,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var newAreaId = Guid.NewGuid();
@@ -168,7 +168,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var newAreaId = Guid.NewGuid();
@@ -217,7 +217,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var newAreaId = Guid.NewGuid();
@@ -268,7 +268,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var groupOneId = Guid.NewGuid();
@@ -377,7 +377,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var newAreaId = Guid.NewGuid();
@@ -418,7 +418,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var groupOneId = Guid.NewGuid();

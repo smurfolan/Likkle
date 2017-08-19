@@ -16,7 +16,7 @@ namespace Likkle.BusinessEntities.Responses
         public DateTime BirthDate { get; set; }
         public string PhoneNumber { get; set; } 
         public IEnumerable<LanguageDto> Languages { get; set; }
-        public AutomaticSubscriptionSettingsDto NotificationSettings { get; set; }
+        public AutomaticSubscriptionSettingsDto AutomaticSubscriptionSettings { get; set; }
         public SocialLinksDto SocialLinks { get; set; }
     }
 }

@@ -227,7 +227,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                this._userService.UpdateUserNotificationSettings(id, subscriptionSettings);
+                this._userService.UpdateUserAutomaticSubscriptionSettings(id, subscriptionSettings);
 
                 return Ok();
             }
@@ -252,7 +252,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
             try
             {
-                var result = this._userService.GetNotificationSettingsForUserWithId(id);
+                var result = this._userService.GetAutomaticSubscriptionSettingsForUserWithId(id);
 
                 if (result == null)
                     return NotFound();

@@ -29,7 +29,7 @@ namespace Likkle.DataModel.Repositories
 
         public IEnumerable<User> GetAllUsers()
         {
-            return this._dbContext.Users.Include(u => u.NotificationSettings);
+            return this._dbContext.Users.Include(u => u.AutomaticSubscriptionSettings);
         }
 
         public Guid InsertNewUser(User newUser)

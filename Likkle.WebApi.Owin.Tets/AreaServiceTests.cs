@@ -81,7 +81,7 @@ namespace Likkle.WebApi.Owin.Tets
             var dbUser = new User()
             {
                 Id = userId,
-                NotificationSettings = null
+                AutomaticSubscriptionSettings = null
             };
 
             var populatedDatabase = new FakeLikkleDbContext()

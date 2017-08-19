@@ -12,7 +12,7 @@ namespace Likkle.DataModel.TestingPurposes
             this.Areas = new FakeDbSet<Area>();
             this.Tags = new FakeDbSet<Tag>();
             this.Languages = new FakeDbSet<Language>();
-            this.NotificationSettings = new FakeDbSet<NotificationSetting>();
+            this.AutomaticSubscriptionSettings = new FakeDbSet<AutomaticSubscriptionSetting>();
             this.Groups = new FakeDbSet<Group>();
             this.HistoryGroups = new FakeDbSet<HistoryGroup>();
         }
@@ -23,7 +23,7 @@ namespace Likkle.DataModel.TestingPurposes
         public IDbSet<Tag> Tags { get; set; }
         public IDbSet<User> Users { get; set; }
         public IDbSet<Language> Languages { get; set; }
-        public IDbSet<NotificationSetting> NotificationSettings { get; set; }
+        public IDbSet<AutomaticSubscriptionSetting> AutomaticSubscriptionSettings { get; set; }
         public IDbSet<HistoryGroup> HistoryGroups { get; set; }
 
         public int SaveChanges()

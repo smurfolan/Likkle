@@ -57,7 +57,7 @@ namespace Likkle.WebApi.Owin.Tets
             var user = new User()
             {
                 Id = userId,
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
@@ -152,7 +152,7 @@ namespace Likkle.WebApi.Owin.Tets
             var user = new User()
             {
                 Id = userId,
-                NotificationSettings = new NotificationSetting()
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
                     AutomaticallySubscribeToAllGroupsWithTag = true,
