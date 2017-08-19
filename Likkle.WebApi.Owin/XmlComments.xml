@@ -168,7 +168,7 @@
         </member>
         <member name="M:Likkle.WebApi.Owin.Controllers.UserController.GetNotificationSettings(System.Guid)">
             <summary>
-            Example: api/v1/users/{id:Guid}/NotificationSettings
+            Example: api/v1/users/{id:Guid}/AutomaticSubscriptionSettings
             </summary>
             <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
             <returns>Latest notification settings set up by the user.</returns>
