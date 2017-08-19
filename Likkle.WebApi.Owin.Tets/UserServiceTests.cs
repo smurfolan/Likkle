@@ -170,7 +170,13 @@ namespace Likkle.WebApi.Owin.Tets
                     firstLanguageId,
                     secondLanguageId
                 },
-                PhoneNumber = "Updated+359886585549"
+                PhoneNumber = "Updated+359886585549",
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSettingsDto()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false,
+                    SubscribedTagIds = new List<Guid>()
+                }
             };
 
             // act
@@ -350,10 +356,10 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             // act
-            this._userService.UpdateUserNotificationSettings(newUserId, newUpdatedUserNotifications);
+            this._userService.UpdateUserAutomaticSubscriptionSettings(newUserId, newUpdatedUserNotifications);
 
             // assert
-            var updatedNotificationSettings = this._userService.GetNotificationSettingsForUserWithId(newUserId);
+            var updatedNotificationSettings = this._userService.GetAutomaticSubscriptionSettingsForUserWithId(newUserId);
 
             Assert.IsNotNull(updatedNotificationSettings);
             Assert.IsNotNull(updatedNotificationSettings.SubscribedTagIds);
@@ -381,7 +387,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            this._userService.UpdateUserNotificationSettings(userId, null);
+            this._userService.UpdateUserAutomaticSubscriptionSettings(userId, null);
         }
 
         [TestMethod]

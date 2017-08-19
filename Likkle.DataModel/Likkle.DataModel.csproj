@@ -69,6 +69,10 @@
     <Compile Include="Migrations\201705231030087_AddressForArea.Designer.cs">
       <DependentUpon>201705231030087_AddressForArea.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708191036184_NotifiationSettingsRenamed.cs" />
+    <Compile Include="Migrations\201708191036184_NotifiationSettingsRenamed.Designer.cs">
+      <DependentUpon>201708191036184_NotifiationSettingsRenamed.cs</DependentUpon>
+    </Compile>
     <Compile Include="Repositories\HistoryGroupRepository.cs" />
     <Compile Include="Repositories\IHistoryGroupRepository.cs" />
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
@@ -160,6 +164,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705231030087_AddressForArea.resx">
       <DependentUpon>201705231030087_AddressForArea.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708191036184_NotifiationSettingsRenamed.resx">
+      <DependentUpon>201708191036184_NotifiationSettingsRenamed.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
