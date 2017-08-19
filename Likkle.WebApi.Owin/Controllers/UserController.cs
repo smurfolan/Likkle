@@ -239,12 +239,12 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// Example: api/v1/users/{id:Guid}/NotificationSettings
+        /// Example: api/v1/users/{id:Guid}/AutomaticSubscriptionSettings
         /// </summary>
         /// <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
         /// <returns>Latest notification settings set up by the user.</returns>
         [HttpGet]
-        [Route("{id}/NotificationSettings")]
+        [Route("{id}/AutomaticSubscriptionSettings")]
         public IHttpActionResult GetNotificationSettings(Guid id)
         {
             if (!ModelState.IsValid)
@@ -274,7 +274,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <param name="lon">Latest user longitude</param>
         /// <returns>SecodsToClosestBoundary: used by the accelometer-based algorithm, SubscribedGroupIds: groups user subscribed when he was here before</returns>
         [HttpGet]
-        [Route("{id}/UpdateLocation/{lat}/{lon}")]
+        [Route("{id}/UpdateLocation/{lat}/{lon}/")]
         public IHttpActionResult UpdateLocation(Guid id, double lat, double lon)
         {
             if (Math.Abs(lat) > 90 || Math.Abs(lon) > 90)
