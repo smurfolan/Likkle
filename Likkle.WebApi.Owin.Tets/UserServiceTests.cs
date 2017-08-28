@@ -869,5 +869,82 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(3, user.HistoryGroups.Count());
             Assert.IsTrue(histGroups.Contains(groupTwo) && histGroups.Contains(groupThree) && histGroups.Contains(groupFive));
         }
+
+        [TestMethod]
+        public void When_User_Disabled_All_His_Groups_Are_Not_Assiciated_With_Him_Anymore()
+        {
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var userId = Guid.NewGuid();
+            var user = new User()
+            {
+                Id = userId
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group()
+            {
+                Id = groupOneId,
+                Name = "Group one",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Animals")
+                },
+                Users = new List<User>() { user }
+            };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group()
+            {
+                Id = groupTwoId,
+                Name = "Group two",
+                IsActive = true,
+                Tags = new List<Tag>()
+                {
+                    allTags.FirstOrDefault(t => t.Name == "Sport")
+                },
+                Users = new List<User>() { user }
+            };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true,
+                Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne };
+            groupTwo.Areas = new List<Area>() { areaOne };
+
+            user.Groups = new List<Group>() { groupOne, groupTwo };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Areas = new FakeDbSet<Area>() { areaOne },
+                Users = new FakeDbSet<User>() { user }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            Assert.AreEqual(2, user.Groups.Count);
+            Assert.IsTrue(user.Groups.Contains(groupOne));
+            Assert.IsTrue(user.Groups.Contains(groupTwo));
+
+            // act
+            this._userService.Disable(userId);
+
+            // assert
+            Assert.AreEqual(0, user.Groups.Count);
+        }
     }
 }

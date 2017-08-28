@@ -197,5 +197,11 @@
             <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam', 'TwitterUsername': '@stefhano'}</param>
             <returns></returns>
         </member>
+        <member name="M:Likkle.WebApi.Owin.Controllers.UserController.DisableUser(System.Guid)">
+            <summary>
+            Example: PUT api/v1/users/{id:Guid}/Disable
+            </summary>
+            <returns>Returns 200 if user was successfuly updated and 500 if there was a server error.</returns>
+        </member>
     </members>
 </doc>

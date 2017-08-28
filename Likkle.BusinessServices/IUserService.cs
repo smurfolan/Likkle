@@ -19,5 +19,6 @@ namespace Likkle.BusinessServices
         UserLocationUpdatedResponseDto UpdateUserLocation(Guid id, double lat, double lon);
         SocialLinksResponseDto GetSocialLinksForUser(Guid userId);
         void UpdateSocialLinksForUser(Guid userId, UpdateSocialLinksRequestDto updatedSocialLinks);
+        void Disable(Guid id);
     }
 }

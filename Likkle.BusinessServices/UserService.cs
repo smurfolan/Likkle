@@ -277,6 +277,23 @@ namespace Likkle.BusinessServices
             return userDto;
         }
 
+        public void Disable(Guid id)
+        {
+            var user = this._unitOfWork.UserRepository.GetUserById(id);
+
+            var groupsUserCurrentlyBelongsTo = user.Groups.Where(gr => gr.IsActive).ToList();
+
+            if (!groupsUserCurrentlyBelongsTo.Any())
+                return;
+
+            foreach (var group in groupsUserCurrentlyBelongsTo)
+            {
+                user.Groups.Remove(group);
+            }
+
+            this._unitOfWork.Save();
+        }
+
         #region Private methods
         private static bool GroupIsAvailableAroundCoordinates(Group group, double lat, double lon)
         {

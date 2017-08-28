@@ -349,5 +349,26 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError(new HttpException(errorMessage));
             }
         }
+
+        /// <summary>
+        /// Example: PUT api/v1/users/{id:Guid}/Disable
+        /// </summary>
+        /// <returns>Returns 200 if user was successfuly updated and 500 if there was a server error.</returns>
+        [HttpPut]
+        [Route("{id}/Disable")]
+        public IHttpActionResult DisableUser(Guid id)
+        {
+            try
+            {
+                this._userService.Disable(id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _apiLogger.OnActionException(ActionContext, ex);
+                return InternalServerError(new HttpException(errorMessage));
+            }
+        }
     }
 }
