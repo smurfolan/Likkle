@@ -289,6 +289,17 @@ namespace Likkle.BusinessServices
             foreach (var group in groupsUserCurrentlyBelongsTo)
             {
                 user.Groups.Remove(group);
+
+                if (!group.Users.Any())
+                    group.IsActive = false;
+
+                var allAreas = group.Areas;
+
+                foreach (var area in allAreas)
+                {
+                    if (area.Groups.All(gr => gr.IsActive == false))
+                        area.IsActive = false;
+                }
             }
 
             this._unitOfWork.Save();
