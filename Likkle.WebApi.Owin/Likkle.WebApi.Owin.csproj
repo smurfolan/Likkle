@@ -212,8 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <None Include="Properties\PublishProfiles\likkleapi - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\likkleapi.pubxml" />
+    <None Include="Properties\PublishProfiles\likkleapi-staging - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
