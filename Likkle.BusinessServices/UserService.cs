@@ -229,6 +229,7 @@ namespace Likkle.BusinessServices
         {
             var user = this._unitOfWork.UserRepository.GetUserById(id);
 
+            // Removes user from groups he is not currently around
             if(user.Groups != null && user.Groups.Any())
             {
                 var groupsTheUserIsCurrentlyIn = user.Groups.ToArray();
@@ -241,11 +242,11 @@ namespace Likkle.BusinessServices
 
                 this._unitOfWork.Save();
             }
-
+            
             var result = new UserLocationUpdatedResponseDto()
             {
                 SecodsToClosestBoundary = this._accelometerAlgorithmHelperService.SecondsToClosestBoundary(lat, lon),
-                SubscribedGroupIds = this.HistoryGroupsAroundCoordinates(id, lat, lon)
+                SubscribedGroupIds = this.GroupsToBeSubscribedAroundCoordinates(id, lat, lon)
             };
 
             return result;
@@ -319,7 +320,14 @@ namespace Likkle.BusinessServices
                         (int)area.Radius);
         }
 
-        private IEnumerable<Guid> HistoryGroupsAroundCoordinates(Guid userId, double lat, double lon)
+        /// <summary>
+        /// The method is called when user wants to report his latest location.
+        /// </summary>
+        /// <param name="userId">Unique identifier of the user reporting his latest location</param>
+        /// <param name="lat">Latest user latitude</param>
+        /// <param name="lon">Latest user longitude</param>
+        /// <returns>The method returns group ids that the user should subscribed at this paticular area.</returns>
+        private IEnumerable<Guid> GroupsToBeSubscribedAroundCoordinates(Guid userId, double lat, double lon)
         {
             var currentLocation = new GeoCoordinate(lat, lon);
 
@@ -354,8 +362,6 @@ namespace Likkle.BusinessServices
 
             if (groupsDependingOnUserSettingsAroundCoordinates.Any())
             {
-                // TODO: Think of a way for optimizing the next two methods.
-
                 var user = this._unitOfWork.UserRepository.GetUserById(userId);
 
                 if (user.Groups == null)

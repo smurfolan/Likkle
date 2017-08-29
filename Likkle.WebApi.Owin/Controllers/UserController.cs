@@ -272,7 +272,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <param name="id">Id of the user that is reporting his latest location.</param>
         /// <param name="lat">Latest user latitude</param>
         /// <param name="lon">Latest user longitude</param>
-        /// <returns>SecodsToClosestBoundary: used by the accelometer-based algorithm, SubscribedGroupIds: groups user subscribed when he was here before</returns>
+        /// <returns>The method returns an object which contains seconds to closest area boundary [SecodsToClosestBoundary] (to be used by the accelometer algorithm) and group ids [SubscribedGroupIds] that the user should subscribe at this paticular area.</returns>
         [HttpGet]
         [Route("{id}/UpdateLocation/{lat}/{lon}/")]
         public IHttpActionResult UpdateLocation(Guid id, double lat, double lon)
