@@ -229,6 +229,9 @@ namespace Likkle.BusinessServices
         {
             var user = this._unitOfWork.UserRepository.GetUserById(id);
 
+            if (user == null)
+                throw new ArgumentException($"User with id {id} is not available in the database.");
+
             // Removes user from groups he is not currently around
             if(user.Groups != null && user.Groups.Any())
             {

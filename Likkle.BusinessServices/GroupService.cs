@@ -137,9 +137,19 @@ namespace Likkle.BusinessServices
         {
             var groupsAroundCoordinates = this.GetGroups(lat, lon).Select(gr => gr.Id);
 
-            var allGroupsForUser = this._unitOfWork.UserRepository.GetUserById(uid).Groups.Select(gr => gr.Id);
+            var user = this._unitOfWork.UserRepository.GetUserById(uid);
 
-            return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
+            if (user == null)
+                throw new ArgumentException($"User with id {uid} is not available in our database.");
+
+            if (user.Groups != null && user.Groups.Any())
+            {
+                var allGroupsForUser = user.Groups.Select(gr => gr.Id);
+
+                return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
+            }
+
+            return new List<Guid>() { };
         }
 
         public PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon, Guid userId)
