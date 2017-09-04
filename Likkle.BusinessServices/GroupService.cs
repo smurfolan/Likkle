@@ -139,8 +139,8 @@ namespace Likkle.BusinessServices
 
             var user = this._unitOfWork.UserRepository.GetUserById(uid);
 
-            if (user == null)
-                throw new ArgumentException($"User with id {uid} is not available in our database.");
+            if(user == null)
+                throw new ArgumentException($"User with id {uid} does not exist in the DB.");
 
             if (user.Groups != null && user.Groups.Any())
             {

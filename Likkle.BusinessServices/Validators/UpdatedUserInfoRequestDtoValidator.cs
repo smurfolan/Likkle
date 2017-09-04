@@ -23,27 +23,7 @@ namespace Likkle.BusinessServices.Validators
             _userId = id;
 
             RuleFor(r => r.FirstName).NotNull();
-            RuleFor(r => r.Email).NotNull();
-
-            When(x => x.AutomaticSubscriptionSettings != null, () => {
-                RuleFor(r => r.AutomaticSubscriptionSettings)
-                    .Must(BeValidNotificationSettingsCombination)
-                    .WithMessage("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.");
-            });
-
-            When(x => x.SocialLinks != null, () => {
-                RuleFor(r => r.SocialLinks.FacebookUsername)
-                    .Must(CommonValidationRules.BeAValidFacebookUsername)
-                    .WithMessage("Facebook username must have the prefix: m.me/");
-
-                RuleFor(r => r.SocialLinks.TwitterUsername)
-                    .Must(CommonValidationRules.BeValidTwitterName)
-                    .WithMessage("Twitter username is not valid");
-
-                RuleFor(r => r.SocialLinks.InstagramUsername)
-                    .Must(CommonValidationRules.BeAValidInstagramUsername)
-                    .WithMessage("Instagram username is not valid");
-            });     
+            RuleFor(r => r.Email).NotNull();  
 
             RuleFor(r => r.PhoneNumber).Must(BeAValidPhoneNumber).WithMessage("Phone number provided is invalid");
             RuleFor(r => r.Email).EmailAddress().Must(BeUniqueEmail).WithMessage("User with the same email has been already added.");

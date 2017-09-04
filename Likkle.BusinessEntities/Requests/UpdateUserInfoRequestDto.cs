@@ -19,7 +19,5 @@ namespace Likkle.BusinessEntities.Requests
         public string PhoneNumber { get; set; }
 
         public IEnumerable<Guid> LanguageIds { get; set; }
-        public AutomaticSubscriptionSettingsDto AutomaticSubscriptionSettings { get; set; }
-        public SocialLinksDto SocialLinks { get; set; }
     }
 }

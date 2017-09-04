@@ -170,13 +170,7 @@ namespace Likkle.WebApi.Owin.Tets
                     firstLanguageId,
                     secondLanguageId
                 },
-                PhoneNumber = "Updated+359886585549",
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSettingsDto()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false,
-                    SubscribedTagIds = new List<Guid>()
-                }
+                PhoneNumber = "Updated+359886585549"
             };
 
             // act
