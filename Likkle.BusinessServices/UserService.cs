@@ -102,7 +102,9 @@ namespace Likkle.BusinessServices
 
         public void UpdateUserInfo(Guid uid, UpdateUserInfoRequestDto updatedInfo)
         {
-            var userEntity = this._unitOfWork.UserRepository.GetAllUsers().FirstOrDefault(u => u.Id == uid);
+            var userEntity = this._unitOfWork.UserRepository
+                .GetAllUsers()
+                .FirstOrDefault(u => u.Id == uid);
 
             if (userEntity == null)
                 throw new ArgumentException("User not available in Database");
@@ -123,26 +125,6 @@ namespace Likkle.BusinessServices
             }
             
             this._unitOfWork.Save();
-
-            if (updatedInfo.AutomaticSubscriptionSettings != null)
-            {
-                this.UpdateUserAutomaticSubscriptionSettings(uid, new EditUserAutomaticSubscriptionSettingsRequestDto()
-                {
-                    AutomaticallySubscribeToAllGroups = updatedInfo.AutomaticSubscriptionSettings.AutomaticallySubscribeToAllGroups,
-                    AutomaticallySubscribeToAllGroupsWithTag = updatedInfo.AutomaticSubscriptionSettings.AutomaticallySubscribeToAllGroupsWithTag,
-                    SubscribedTagIds = updatedInfo.AutomaticSubscriptionSettings.SubscribedTagIds
-                });
-            }
-
-            if (updatedInfo.SocialLinks != null)
-            {
-                this.UpdateSocialLinksForUser(uid, new UpdateSocialLinksRequestDto()
-                {
-                    FacebookUsername = updatedInfo.SocialLinks.FacebookUsername,
-                    TwitterUsername = updatedInfo.SocialLinks.TwitterUsername,
-                    InstagramUsername = updatedInfo.SocialLinks.InstagramUsername
-                });
-            }
         }
 
         public void UpdateUserAutomaticSubscriptionSettings(Guid uid, EditUserAutomaticSubscriptionSettingsRequestDto edittedUserNotificationSettings)
@@ -183,7 +165,9 @@ namespace Likkle.BusinessServices
 
         public AutomaticSubscriptionSettingsDto GetAutomaticSubscriptionSettingsForUserWithId(Guid uid)
         {
-            var automaticSubscriptionEntity = this._unitOfWork.UserRepository.GetUserById(uid).AutomaticSubscriptionSettings;
+            var user = this._unitOfWork.UserRepository.GetUserById(uid);
+
+            var automaticSubscriptionEntity = user.AutomaticSubscriptionSettings;
 
             var automaticSubscriptionSettingsDto =
                 this._mapper.Map<AutomaticSubscriptionSetting, AutomaticSubscriptionSettingsDto>(automaticSubscriptionEntity);
