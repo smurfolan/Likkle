@@ -146,9 +146,6 @@ namespace Likkle.BusinessServices
             {
                 var allGroupsForUser = user.Groups.Select(gr => gr.Id);
 
-            if (user.Groups.Any())
-            {
-                var allGroupsForUser = user.Groups.Select(gr => gr.Id);
                 return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
             }
 
