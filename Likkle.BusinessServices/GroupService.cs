@@ -142,13 +142,17 @@ namespace Likkle.BusinessServices
             if(user == null)
                 throw new ArgumentException($"User with id {uid} does not exist in the DB.");
 
+            if (user.Groups != null && user.Groups.Any())
+            {
+                var allGroupsForUser = user.Groups.Select(gr => gr.Id);
+
             if (user.Groups.Any())
             {
                 var allGroupsForUser = user.Groups.Select(gr => gr.Id);
                 return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
             }
 
-            return new List<Guid>();
+            return new List<Guid>() { };
         }
 
         public PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon, Guid userId)
