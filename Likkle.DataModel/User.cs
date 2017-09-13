@@ -27,8 +27,8 @@ namespace Likkle.DataModel
         public string InstagramUsername { get; set; }
         public string FacebookUsername { get; set; }
         public string TwitterUsername { get; set; }
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         // Navigation properties
         public virtual ICollection<Group> Groups { get; set; } 

@@ -7,8 +7,8 @@ namespace Likkle.DataModel.Migrations
     {
         public override void Up()
         {
-            AddColumn("dbo.Users", "Latitude", c => c.Decimal(nullable: false, precision: 18, scale: 2));
-            AddColumn("dbo.Users", "Longitude", c => c.Decimal(nullable: false, precision: 18, scale: 2));
+            AddColumn("dbo.Users", "Latitude", c => c.Double(nullable: false));
+            AddColumn("dbo.Users", "Longitude", c => c.Double(nullable: false));
         }
         
         public override void Down()

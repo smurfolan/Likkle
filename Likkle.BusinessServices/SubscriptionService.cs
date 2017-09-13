@@ -77,6 +77,11 @@ namespace Likkle.BusinessServices
             } 
         }
 
+        public void UpdateLatestWellKnownUserLocation(decimal latitude, decimal longitude)
+        {
+            throw new NotImplementedException();
+        }
+
         #region Private methods
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
