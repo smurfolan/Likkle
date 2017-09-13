@@ -16,13 +16,16 @@ namespace Likkle.WebApi.Owin.Controllers
     {
         private readonly IAreaService _areaService;
         private readonly ILikkleApiLogger _apiLogger;
+        private readonly ISubscriptionService _subscriptionService;
 
         public AreaController(
             IAreaService areaService, 
-            ILikkleApiLogger logger)
+            ILikkleApiLogger logger, 
+            ISubscriptionService subscriptionService)
         {
             this._areaService = areaService;
             this._apiLogger = logger;
+            _subscriptionService = subscriptionService;
         }
 
         /// <summary>
@@ -70,6 +73,7 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._areaService.GetMetadataForArea(lat, lon, areaId);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(lat, lon, User);
 
                 return Ok(result);
             }
@@ -127,6 +131,7 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._areaService.GetAreas(lat, lon);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(lat, lon, User);
 
                 return Ok(result);
             }
@@ -212,6 +217,8 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var newAreaId = this._areaService.InsertNewArea(area);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(area.Latitude, area.Longitude, User);
+
                 return Created("api/v1/areas/" + newAreaId, "Success");
             }
             catch (Exception ex)

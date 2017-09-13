@@ -1,4 +1,5 @@
-﻿using Likkle.BusinessEntities;
+﻿using System.Security.Principal;
+using Likkle.BusinessEntities;
 
 namespace Likkle.BusinessServices
 {
@@ -6,6 +7,6 @@ namespace Likkle.BusinessServices
     {
         void RelateUserToGroups(RelateUserToGroupsDto newRelations);
 
-        void UpdateLatestWellKnownUserLocation(decimal latitude, decimal longitude);
+        void UpdateLatestWellKnownUserLocation(double latitude, double longitude, IPrincipal user);
     }
 }

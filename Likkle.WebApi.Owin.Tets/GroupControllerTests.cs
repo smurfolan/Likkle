@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Web.Http.Results;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
@@ -40,7 +41,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.Get(Guid.NewGuid());
@@ -62,7 +64,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.Get(Guid.NewGuid());
@@ -90,7 +93,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.Get(23, 23);
@@ -122,7 +126,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.GetUsers(Guid.NewGuid());
@@ -147,7 +152,8 @@ namespace Likkle.WebApi.Owin.Tets
             // act
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             var actionResult = groupController.Post(new StandaloneGroupRequestDto());
 
@@ -163,15 +169,20 @@ namespace Likkle.WebApi.Owin.Tets
         {
             // arrange
             var mockedDataService = new Mock<IGroupService>();
+            var mockedSubscriptionService = new Mock<ISubscriptionService>();
 
             var newGroupId = Guid.NewGuid();
 
+            mockedSubscriptionService.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
             mockedDataService.Setup(x => x.InserGroupAsNewArea(It.IsAny<GroupAsNewAreaRequestDto>())).Returns(newGroupId);
 
             // act
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                mockedSubscriptionService.Object);
 
             var actionResult = await groupController.Post(new GroupAsNewAreaRequestDto());
 
@@ -190,7 +201,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.GetGroupCreationType(-91, 23, Guid.NewGuid());
@@ -210,7 +222,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var groupController = new GroupController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = groupController.Get(-91, 23);
@@ -220,6 +233,58 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(contentResult);
             Assert.AreEqual("Latitude and longitude values must be in the [-90, 90] range.", contentResult.Message);
             mockedDataService.Verify(m => m.GetGroups(It.IsAny<double>(), It.IsAny<double>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Getting_GroupCreationType()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+            var groupServiceMock = new Mock<IGroupService>();
+
+            groupServiceMock.Setup(
+                gs => gs.GetGroupCreationType(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<Guid>())).Returns(new PreGroupCreationResponseDto());
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var groupController = new GroupController(groupServiceMock.Object, null, subscriptionServiceMock.Object);
+
+            // act
+            var actionResult = groupController.GetGroupCreationType(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<Guid>());
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Posting_Group_As_New_Area()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+            var groupServiceMock = new Mock<IGroupService>();
+
+            groupServiceMock.Setup(
+                gs => gs.InserGroupAsNewArea(It.IsAny<GroupAsNewAreaRequestDto>())).Returns(Guid.NewGuid);
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var groupController = new GroupController(groupServiceMock.Object, null, subscriptionServiceMock.Object);
+
+            // act
+            var actionResult = groupController.Post(new GroupAsNewAreaRequestDto() {});
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
         }
     }
 }
