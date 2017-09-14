@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Web.Http.Controllers;
 using System.Web.Http.Results;
 using Likkle.BusinessEntities;
@@ -40,7 +41,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object, 
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.Get(Guid.NewGuid());
@@ -62,7 +64,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object, 
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.Get(Guid.NewGuid());
@@ -77,9 +80,13 @@ namespace Likkle.WebApi.Owin.Tets
         {
             // arrange
             var mockedDataService = new Mock<IAreaService>();
+            var mockedSubscriptionService = new Mock<ISubscriptionService>();
 
             var areaDtoResultId = Guid.NewGuid();
 
+            mockedSubscriptionService.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
             mockedDataService.Setup(x => x.GetAreas(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<AreaForLocationResponseDto>()
             {
                 new AreaForLocationResponseDto()
@@ -90,7 +97,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                mockedSubscriptionService.Object);
 
             //
             var actionResult = areaController.Get(23, 23);
@@ -106,15 +114,20 @@ namespace Likkle.WebApi.Owin.Tets
         {
             // arrange
             var mockedDataService = new Mock<IAreaService>();
+            var mockedSubscriptionService = new Mock<ISubscriptionService>();
 
             var newAreaId = Guid.NewGuid();
 
+            mockedSubscriptionService.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
             mockedDataService.Setup(x => x.InsertNewArea(It.IsAny<NewAreaRequest>())).Returns(newAreaId);
 
             // act
             var areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                mockedSubscriptionService.Object);
 
             var actionResult = areaController.Post(new NewAreaRequest()
             {
@@ -140,7 +153,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.Get(Guid.NewGuid());
@@ -164,7 +178,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.GetAreaMetadata(-91, 91, Guid.NewGuid());
@@ -195,7 +210,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.GetMultipleAreasMetadata(new MultipleAreasMetadataRequestDto());
@@ -210,7 +226,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             areaController = new AreaController(
                 mockedDataService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             actionResult = areaController.GetMultipleAreasMetadata(new MultipleAreasMetadataRequestDto());
@@ -239,7 +256,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaController = new AreaController(
                 mockedAreaService.Object,
-                _apiLogger.Object);
+                _apiLogger.Object,
+                null);
 
             // act
             var actionResult = areaController.Post(new NewAreaRequest()
@@ -253,6 +271,85 @@ namespace Likkle.WebApi.Owin.Tets
             var contentResult = actionResult as BadRequestErrorMessageResult;
             Assert.IsNotNull(contentResult);
             Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Getting_Single_Area_Metadata()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+            var areaServiceMock = new Mock<IAreaService>();
+
+            areaServiceMock.Setup(
+                    aser => aser.GetMetadataForArea(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<Guid>()))
+                .Returns(new AreaMetadataResponseDto());
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+
+            // act
+            var actionResult = areaController.GetAreaMetadata(22, 33, Guid.NewGuid());
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Getting_All_Active_Areas_Around_Coordinates()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+            var areaServiceMock = new Mock<IAreaService>();
+
+            areaServiceMock.Setup(
+                aser => aser.GetAreas(It.IsAny<double>(), It.IsAny<double>())).Returns(new List<AreaForLocationResponseDto>());
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+
+            // act
+            var actionResult = areaController.Get(22, 33);
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Inserting_New_Area()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+            var areaServiceMock = new Mock<IAreaService>();
+
+            areaServiceMock.Setup(
+                aser => aser.InsertNewArea(It.IsAny<NewAreaRequest>())).Returns(Guid.NewGuid);
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+
+            // act
+            var actionResult = areaController.Post(new NewAreaRequest());
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
         }
     }
 }

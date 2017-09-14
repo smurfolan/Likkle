@@ -14,13 +14,16 @@ namespace Likkle.WebApi.Owin.Controllers
     {
         private readonly IGroupService _groupService;
         private readonly ILikkleApiLogger _apiLogger;
+        private readonly ISubscriptionService _subscriptionService;
 
         public GroupController(
             IGroupService groupService,
-            ILikkleApiLogger logger)
+            ILikkleApiLogger logger, 
+            ISubscriptionService subscriptionService)
         {
             this._groupService = groupService;
             this._apiLogger = logger;
+            _subscriptionService = subscriptionService;
         }
 
         /// <summary>
@@ -115,6 +118,8 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._groupService.GetGroupCreationType(lat, lon, userId);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(lat, lon, User);
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -166,6 +171,7 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var newlyCreatedGroupId = await Task.FromResult(this._groupService.InserGroupAsNewArea(newGroup));
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(newGroup.Latitude, newGroup.Longitude, User);
 
                 return Created("api/v1/groups/" + newlyCreatedGroupId, "Success");
             }

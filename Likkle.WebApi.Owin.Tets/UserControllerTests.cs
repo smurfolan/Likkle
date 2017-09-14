@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Web.Http.Results;
 using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
@@ -24,7 +25,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._apiLogger = new Mock<ILikkleApiLogger>();
             this._mockedUserService = new Mock<IUserService>();
 
-            this._mockedUserService.Setup(us => us.GetAllUsers()).Returns(new List<UserDto>() {
+            this._mockedUserService.Setup(us => us.GetAllUsers()).Returns(new List<UserDto>()
+            {
                 new UserDto
                 {
                     Email = "Some@mail.com"
@@ -57,10 +59,10 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             var userController = new UserController(
-                userServiceMock.Object, 
-                this._apiLogger.Object, 
-                null, 
-                null, 
+                userServiceMock.Object,
+                this._apiLogger.Object,
+                null,
+                null,
                 phoneValidationManagerMock.Object);
 
             // act
@@ -69,7 +71,9 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             var contentResult = actionResult as BadRequestErrorMessageResult;
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("'First Name' must not be empty.; Phone number provided is invalid; User with the same STS id has been already added.; User with the same email has been already added.; ", contentResult.Message);
+            Assert.AreEqual(
+                "'First Name' must not be empty.; Phone number provided is invalid; User with the same STS id has been already added.; User with the same email has been already added.; ",
+                contentResult.Message);
         }
 
         [TestMethod]
@@ -90,7 +94,84 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.", contentResult.Message);
+            Assert.AreEqual(
+                "The options for AutomaticallySubscribeToAllGroups and AutomaticallySubscribeToAllGroupsWithTag can not be both set to 'true'.",
+                contentResult.Message);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_User_Updates_His_Location()
+        {
+            // arrange
+            var userServiceMock = new Mock<IUserService>();
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+
+            userServiceMock.Setup(us => us.UpdateUserLocation(It.IsAny<Guid>(), It.IsAny<double>(), It.IsAny<double>()));
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var userController = new UserController(userServiceMock.Object, null, subscriptionServiceMock.Object, null,
+                null);
+
+            // act
+            var actionResult = userController.UpdateLocation(Guid.NewGuid(), 22, 33);
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Getting_Subscriptions_Around_Coordinates()
+        {
+            // arrange
+            var groupServiceMock = new Mock<IGroupService>();
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+
+            groupServiceMock.Setup(
+                us => us.GetUserSubscriptions(It.IsAny<Guid>(), It.IsAny<double>(), It.IsAny<double>()));
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var userController = new UserController(null, null, subscriptionServiceMock.Object, groupServiceMock.Object,
+                null);
+
+            // act
+            var actionResult = userController.GetSubscriptions(Guid.NewGuid(), 22, 33);
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void User_Latest_Coordinates_Are_Updated_When_Changing_Group_Subscriptions()
+        {
+            // arrange
+            var subscriptionServiceMock = new Mock<ISubscriptionService>();
+
+            subscriptionServiceMock.Setup(ss => ss.RelateUserToGroups(It.IsAny<RelateUserToGroupsDto>()));
+
+            subscriptionServiceMock.Setup(
+                ss =>
+                    ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
+
+            var userController = new UserController(null, null, subscriptionServiceMock.Object, null, null);
+
+            // act
+            var actionResult = userController.Post(new RelateUserToGroupsDto() {GroupsUserSubscribes = new List<Guid>(), Longitude = 23, Latitude = 33, UserId = Guid.NewGuid()});
+
+            // assert
+            subscriptionServiceMock.Verify(
+                usm =>
+                    usm.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()),
+                Times.Once);
         }
     }
 }

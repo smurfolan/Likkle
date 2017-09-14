@@ -109,6 +109,8 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 this._subscriptionService.RelateUserToGroups(userToGroupsModel);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(userToGroupsModel.Latitude, userToGroupsModel.Longitude, User);
+
                 return Ok();
             }
             catch (Exception ex)
@@ -202,6 +204,8 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._groupService.GetUserSubscriptions(id, lat, lon);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(lat, lon, User);
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -283,6 +287,7 @@ namespace Likkle.WebApi.Owin.Controllers
             try
             {
                 var result = this._userService.UpdateUserLocation(id, lat, lon);
+                this._subscriptionService.UpdateLatestWellKnownUserLocation(lat, lon, User);
 
                 return Ok(result);
             }
