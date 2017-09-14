@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Principal;
 using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
@@ -106,35 +107,26 @@ namespace Likkle.BusinessServices
 
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
-            foreach (var user in users)
-            {
-                var autoSubscrSetings = user.AutomaticSubscriptionSettings;
-                if (autoSubscrSetings.AutomaticallySubscribeToAllGroups)
-                {
-                    user.Groups.Add(groupToSubscribe);
-                    // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
-                    continue;
-                }
-                else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
-                {
-                    var tagsUserSubscribes = autoSubscrSetings.Tags.Select(t => t.Id);
-                    var newGroupTags = newGroupMetadata.TagIds;
+            this.SubscribeUsersNearbyNewGroup(
+                users,
+                groupToSubscribe,
+                newGroupMetadata.TagIds);
 
-                    var thereIsIntersection = tagsUserSubscribes.Intersect(newGroupTags).Any();
+            this._unitOfWork.Save();
+        }
 
-                    if (thereIsIntersection)
-                    {
-                        user.Groups.Add(groupToSubscribe);
-                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
-                        continue;
-                    }
-                    else
-                    {
-                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'false')
-                        continue;
-                    }
-                }
-            }
+        public void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId)
+        {
+            var newAreaCenter = new GeoCoordinate(newAreaLat, newAreaLon);
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
+                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius);
+
+            this.SubscribeUsersNearbyNewGroup(
+                usersFallingUnderTheNewArea, 
+                groupToSubscribe, 
+                groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
 
             this._unitOfWork.Save();
         }
@@ -191,6 +183,39 @@ namespace Likkle.BusinessServices
                     UserId = user.Id,
                     UserWhoSubscribedGroup = user
                 });
+            }
+        }
+
+        private void SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        {
+            foreach (var user in users)
+            {
+                var autoSubscrSetings = user.AutomaticSubscriptionSettings;
+                if (autoSubscrSetings.AutomaticallySubscribeToAllGroups)
+                {
+                    user.Groups.Add(groupToSubscribe);
+                    // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                    continue;
+                }
+                else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    var tagsUserSubscribes = autoSubscrSetings.Tags.Select(t => t.Id);
+                    var newGroupTags = tagIds;
+
+                    var thereIsIntersection = tagsUserSubscribes.Intersect(newGroupTags).Any();
+
+                    if (thereIsIntersection)
+                    {
+                        user.Groups.Add(groupToSubscribe);
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                        continue;
+                    }
+                    else
+                    {
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'false')
+                        continue;
+                    }
+                }
             }
         }
         #endregion

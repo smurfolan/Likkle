@@ -569,5 +569,87 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(userTwo.Groups.Select(gr => gr.Id).Contains(groupTwoId));
             Assert.IsTrue(userTwo.Groups.Select(gr => gr.Id).Contains(groupThreeId));
         }
+
+        [TestMethod]
+        public void We_Can_AutoSubscribe_UsersForGroupAsNewArea()
+        {
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                FirstName = "Ralph",
+                LastName = "Lauren",
+                Email = "rlauren@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+                },
+                Latitude = 10.000002,
+                Longitude = 10.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var userThreeId = Guid.NewGuid();
+            var userThree = new User()
+            {
+                Id = userThreeId,
+                FirstName = "Rudolf",
+                LastName = "Raindeer",
+                Email = "rsdsdsen@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+                },
+                Latitude = 45.000002,
+                Longitude = 120.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var groupThreeId = Guid.NewGuid();
+            var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() { }, IsActive = true, Tags  = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { userOne, userTwo, userThree },
+                Groups = new FakeDbSet<Group>() { groupThree }
+            }
+            .Seed();
+            DataGenerator.SetupUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId);
+
+            // assert
+            Assert.IsTrue(userOne.Groups.Contains(groupThree));
+            Assert.IsTrue(userTwo.Groups.Contains(groupThree));
+            Assert.IsFalse(userThree.Groups.Contains(groupThree));
+        }
     }
 }

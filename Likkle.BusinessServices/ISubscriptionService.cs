@@ -3,6 +3,7 @@ using Likkle.BusinessEntities;
 using System.Collections.Generic;
 using System;
 using Likkle.BusinessEntities.Requests;
+using Likkle.BusinessEntities.Enums;
 
 namespace Likkle.BusinessServices
 {
@@ -11,5 +12,6 @@ namespace Likkle.BusinessServices
         void RelateUserToGroups(RelateUserToGroupsDto newRelations);
         void UpdateLatestWellKnownUserLocation(double latitude, double longitude, IPrincipal user);
         void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId);
+        void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId);
     }
 }
