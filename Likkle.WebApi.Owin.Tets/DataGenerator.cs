@@ -15,5 +15,13 @@ namespace Likkle.WebApi.Owin.Tets
             uowMock.Setup(uow => uow.UserRepository).Returns(new UserRepository(fakeContext));
             uowMock.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(fakeContext));
         }
+
+        public static void SetupUserAndGroupRepositories(
+            Mock<ILikkleUoW> uowMock,
+            FakeLikkleDbContext fakeContext)
+        {
+            uowMock.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(fakeContext));
+            uowMock.Setup(uow => uow.UserRepository).Returns(new UserRepository(fakeContext));
+        }
     }
 }
