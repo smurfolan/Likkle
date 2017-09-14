@@ -131,6 +131,31 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
+        public void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId)
+        {
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+
+            var allUsers = new List<User>() { };
+
+            foreach (var area in areas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+
+                allUsers.AddRange(usersToBeAdded);
+            }
+
+            var users = allUsers.Distinct();
+
+            this.SubscribeUsersNearbyNewGroup(users, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+
+            this._unitOfWork.Save();
+        }
+
         #region Private methods
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {

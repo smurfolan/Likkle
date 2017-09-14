@@ -13,5 +13,6 @@ namespace Likkle.BusinessServices
         void UpdateLatestWellKnownUserLocation(double latitude, double longitude, IPrincipal user);
         void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId);
         void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId);
+        void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId);
     }
 }

@@ -540,6 +540,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(secondNewArea.IsActive);
             Assert.IsTrue(dbUser.Groups.Any());
             Assert.IsTrue(dbUser.Groups.Any(gr => gr.Id == groupOneId));
+            this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersForRecreatedGroup(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Once);
         }
     }
 }

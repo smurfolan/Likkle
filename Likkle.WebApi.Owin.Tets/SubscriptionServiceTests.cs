@@ -651,5 +651,61 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(userTwo.Groups.Contains(groupThree));
             Assert.IsFalse(userThree.Groups.Contains(groupThree));
         }
+
+        [TestMethod]
+        public void We_Can_AutoSubscribe_UsersForRecreatedGroup()
+        {
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+            
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { }, IsActive = false, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = false,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { userOne },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupOneId);
+
+            // assert
+            Assert.IsTrue(userOne.Groups.Contains(groupOne));
+        }
     }
 }

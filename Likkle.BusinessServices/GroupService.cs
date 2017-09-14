@@ -205,6 +205,8 @@ namespace Likkle.BusinessServices
 
             user.Groups.Add(affectedGroup);
 
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id);
+
             this._unitOfWork.Save();
         }
 
