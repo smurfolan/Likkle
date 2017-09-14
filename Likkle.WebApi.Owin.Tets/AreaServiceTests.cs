@@ -25,7 +25,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
         private readonly Mock<IGeoCodingManager> _geoCodingManagerMock;
-
+        private readonly Mock<ISubscriptionService> _subscrServiceMock;
         public AreaServiceTests()
         {
             var fakeDbContext = new FakeLikkleDbContext().Seed();
@@ -53,6 +53,9 @@ namespace Likkle.WebApi.Owin.Tets
             _geoCodingManagerMock.Setup(gcm => gcm.GetApproximateAddress(It.IsAny<NewAreaRequest>()))
                 .Returns(Guid.NewGuid().ToString);
 
+            _subscrServiceMock = new Mock<ISubscriptionService>();
+            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()));
+
             var mapConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
             });
@@ -70,7 +73,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
-                this._geoCodingManagerMock.Object);
+                this._geoCodingManagerMock.Object,
+                this._subscrServiceMock.Object);
         }
 
         [TestMethod]

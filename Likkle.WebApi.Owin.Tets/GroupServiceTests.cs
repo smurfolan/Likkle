@@ -24,6 +24,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<IConfigurationProvider> _mockedConfigurationProvider;
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
         private readonly Mock<IGeoCodingManager> _geoCodingManagerMock;
+        private readonly Mock<ISubscriptionService> _subscrServiceMock;
 
         public GroupServiceTests()
         {
@@ -57,13 +58,17 @@ namespace Likkle.WebApi.Owin.Tets
             _geoCodingManagerMock.Setup(gcm => gcm.GetApproximateAddress(It.IsAny<NewAreaRequest>()))
                 .Returns(Guid.NewGuid().ToString);
 
+            _subscrServiceMock = new Mock<ISubscriptionService>();
+            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()));
+
             this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
             this._groupService = new GroupService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
-                this._geoCodingManagerMock.Object);
+                this._geoCodingManagerMock.Object,
+                this._subscrServiceMock.Object);
         }
 
         [TestMethod]
@@ -115,6 +120,7 @@ namespace Likkle.WebApi.Owin.Tets
             var newlyCreatedGroup = this._groupService.GetGroupById(newGroupId);
 
             Assert.IsNotNull(newlyCreatedGroup);
+            this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()), Times.Once);
         }
 
         [TestMethod]
@@ -207,6 +213,7 @@ namespace Likkle.WebApi.Owin.Tets
             var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(userId);
             Assert.IsNotNull(user.HistoryGroups);
             Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
+            this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()), Times.Once);
         }
 
         [TestMethod]
@@ -533,6 +540,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(secondNewArea.IsActive);
             Assert.IsTrue(dbUser.Groups.Any());
             Assert.IsTrue(dbUser.Groups.Any(gr => gr.Id == groupOneId));
+            this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersForRecreatedGroup(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Once);
         }
     }
 }

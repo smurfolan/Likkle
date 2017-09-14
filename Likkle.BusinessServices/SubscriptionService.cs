@@ -5,6 +5,8 @@ using System.Linq;
 using System.Security.Principal;
 using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Enums;
+using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -95,6 +97,65 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
+        public void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId)
+        {
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+            var users = areas.SelectMany(ar => ar.Groups)
+                        .Where(gr => gr.IsActive == true)
+                        .SelectMany(gr => gr.Users)
+                        .Distinct();
+
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            this.SubscribeUsersNearbyNewGroup(
+                users,
+                groupToSubscribe,
+                newGroupMetadata.TagIds);
+
+            this._unitOfWork.Save();
+        }
+
+        public void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId)
+        {
+            var newAreaCenter = new GeoCoordinate(newAreaLat, newAreaLon);
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
+                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius);
+
+            this.SubscribeUsersNearbyNewGroup(
+                usersFallingUnderTheNewArea, 
+                groupToSubscribe, 
+                groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
+
+            this._unitOfWork.Save();
+        }
+
+        public void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId)
+        {
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+
+            var allUsers = new List<User>() { };
+
+            foreach (var area in areas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+
+                allUsers.AddRange(usersToBeAdded);
+            }
+
+            var users = allUsers.Distinct();
+
+            this.SubscribeUsersNearbyNewGroup(users, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+
+            this._unitOfWork.Save();
+        }
+
         #region Private methods
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
@@ -150,6 +211,38 @@ namespace Likkle.BusinessServices
             }
         }
 
+        private void SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        {
+            foreach (var user in users)
+            {
+                var autoSubscrSetings = user.AutomaticSubscriptionSettings;
+                if (autoSubscrSetings.AutomaticallySubscribeToAllGroups)
+                {
+                    user.Groups.Add(groupToSubscribe);
+                    // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                    continue;
+                }
+                else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    var tagsUserSubscribes = autoSubscrSetings.Tags.Select(t => t.Id);
+                    var newGroupTags = tagIds;
+
+                    var thereIsIntersection = tagsUserSubscribes.Intersect(newGroupTags).Any();
+
+                    if (thereIsIntersection)
+                    {
+                        user.Groups.Add(groupToSubscribe);
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                        continue;
+                    }
+                    else
+                    {
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'false')
+                        continue;
+                    }
+                }
+            }
+        }
         #endregion
     }
 }
