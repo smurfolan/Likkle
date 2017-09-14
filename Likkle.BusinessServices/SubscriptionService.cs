@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Principal;
 using AutoMapper;
 using Likkle.BusinessEntities;
+using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 
@@ -95,6 +96,49 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
+        public void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId)
+        {
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+            var users = areas.SelectMany(ar => ar.Groups)
+                        .Where(gr => gr.IsActive == true)
+                        .SelectMany(gr => gr.Users)
+                        .Distinct();
+
+            var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            foreach (var user in users)
+            {
+                var autoSubscrSetings = user.AutomaticSubscriptionSettings;
+                if (autoSubscrSetings.AutomaticallySubscribeToAllGroups)
+                {
+                    user.Groups.Add(groupToSubscribe);
+                    // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                    continue;
+                }
+                else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    var tagsUserSubscribes = autoSubscrSetings.Tags.Select(t => t.Id);
+                    var newGroupTags = newGroupMetadata.TagIds;
+
+                    var thereIsIntersection = tagsUserSubscribes.Intersect(newGroupTags).Any();
+
+                    if (thereIsIntersection)
+                    {
+                        user.Groups.Add(groupToSubscribe);
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                        continue;
+                    }
+                    else
+                    {
+                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'false')
+                        continue;
+                    }
+                }
+            }
+
+            this._unitOfWork.Save();
+        }
+
         #region Private methods
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
@@ -149,7 +193,6 @@ namespace Likkle.BusinessServices
                 });
             }
         }
-
         #endregion
     }
 }

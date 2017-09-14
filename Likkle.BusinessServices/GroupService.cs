@@ -21,17 +21,20 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly IGeoCodingManager _geoCodingManager;
+        private readonly ISubscriptionService _subscriptionService;
 
         public GroupService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            IGeoCodingManager geoCodingManager)
+            IGeoCodingManager geoCodingManager,
+            ISubscriptionService subscriptionService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _geoCodingManager = geoCodingManager;
+            _subscriptionService = subscriptionService;
         }
 
         public IEnumerable<GroupMetadataResponseDto> GetGroups(double latitude, double longitude)
@@ -66,6 +69,8 @@ namespace Likkle.BusinessServices
             this._unitOfWork.GroupRepository.InsertGroup(newGroupEntity);
 
             this._unitOfWork.GroupRepository.Save();
+
+            this._subscriptionService.AutoSubscribeUsersFromExistingAreas(newGroup.AreaIds, newGroup, newGroupEntity.Id);
 
             return newGroupEntity.Id;
         }
