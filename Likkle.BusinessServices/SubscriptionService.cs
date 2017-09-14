@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Device.Location;
 using System.Linq;
+using System.Security.Principal;
 using AutoMapper;
 using Likkle.BusinessEntities;
 using Likkle.DataModel;
@@ -75,6 +76,23 @@ namespace Likkle.BusinessServices
                 this.DeactivateGroupsWithNoUsersInsideOfThem(unsubscribedGroups, newRelations.UserId);
                 this._unitOfWork.Save();
             } 
+        }
+
+        public void UpdateLatestWellKnownUserLocation(double latitude, double longitude, IPrincipal user)
+        {
+            var issuer = ((System.Security.Claims.ClaimsPrincipal) user).Claims.First(cl => cl.Type == "iss").Value;
+            var subject = ((System.Security.Claims.ClaimsPrincipal)user).Claims.First(cl => cl.Type == "sub").Value;
+
+            var stsId = $"{issuer}{subject}";
+
+            var userToBeUpdated = this._unitOfWork.UserRepository.GetUserByStsId(stsId);
+            if(userToBeUpdated == null)
+                throw new ArgumentException($"User with sts id {stsId} is not available in DB.");
+
+            userToBeUpdated.Latitude = latitude;
+            userToBeUpdated.Longitude = longitude;
+
+            this._unitOfWork.Save();
         }
 
         #region Private methods
