@@ -108,7 +108,12 @@ namespace Likkle.BusinessServices
 
             this._unitOfWork.GroupRepository.Save();
 
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(newGroup.Latitude, newGroup.Longitude, newGroup.Radius, newGroupEntity.Id);
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(
+                newAreaId, 
+                newGroup.Latitude, 
+                newGroup.Longitude, 
+                newGroup.Radius, 
+                newGroupEntity.Id);
 
             return newGroupEntity.Id;
         }

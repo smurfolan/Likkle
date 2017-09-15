@@ -644,7 +644,7 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId);
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(Guid.NewGuid(), 10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId);
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupThree));

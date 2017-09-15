@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Likkle.BusinessEntities;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 
 namespace Likkle.BusinessServices.Hubs
@@ -30,39 +27,5 @@ namespace Likkle.BusinessServices.Hubs
 
             return base.OnDisconnected(stopCalled);
         }
-
-        #region Client RPCs
-        public void NewGroupWasCreated(
-            IList<string> usersToBeNotified, 
-            IEnumerable<Guid> areaIdsToWhichGroupWasAttached, 
-            GroupDto newGroupCreated)
-        {
-            Clients.Groups(usersToBeNotified).newGroupWasCreatedAroundMe(areaIdsToWhichGroupWasAttached, newGroupCreated);
-        }
-
-        public void GroupWasRemoved(
-            IList<string> usersToBeNotified, 
-            Guid removedGroupId)
-        {
-            Clients.Groups(usersToBeNotified).groupAroundMeWasRemoved(removedGroupId);
-        }
-
-        public void UserLeftGroup(
-            IList<string> usersToBeNotified, 
-            Guid idOfGroupThatWasLeftByUser)
-        {
-            Clients.Groups(usersToBeNotified).userLeftGroup(idOfGroupThatWasLeftByUser);
-        }
-
-        public void UserJoinedGroup(
-            IList<string> usersToBeNotified, 
-            Guid idOfGroupThatWasJoinedByUser)
-        {
-            Clients.Groups(usersToBeNotified).userJoinedGroup(idOfGroupThatWasJoinedByUser);
-        }
-        #endregion
-
-        #region Server-side RPCs
-        #endregion
     }
 }
