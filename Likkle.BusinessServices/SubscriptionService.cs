@@ -11,6 +11,7 @@ using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 using Microsoft.AspNet.SignalR;
 using Likkle.BusinessServices.Hubs;
+using Likkle.BusinessEntities.SignalrDtos;
 
 namespace Likkle.BusinessServices
 {
@@ -120,13 +121,13 @@ namespace Likkle.BusinessServices
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areas);
-            var groupDto = this._mapper.Map<Group, GroupDto>(groupToSubscribe);
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subscr in subscriptionsResult)
             {
                 this._groupsActivityHub.Clients
                     .Group(subscr.Key.ToString())
-                    .groupAttachedToExistingAreasWasCreatedAroundMe(areaDtos/*should be areaDtos.Select(a => a.Id)*/, groupDto, subscr.Value);
+                    .groupAttachedToExistingAreasWasCreatedAroundMe(areaDtos.Select(a => a.Id) , groupDto, subscr.Value);
             }
         }
 
@@ -147,8 +148,8 @@ namespace Likkle.BusinessServices
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaEntity = this._unitOfWork.AreaRepository.GetAreaById(areaId);
-            var areaDto = this._mapper.Map<Area, AreaDto>(areaEntity);
-            var groupDto = this._mapper.Map<Group, GroupDto>(groupToSubscribe);
+            var areaDto = this._mapper.Map<Area, SGAreaDto>(areaEntity);
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subcr in subscriptionsResult)
             {
@@ -179,8 +180,8 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
-            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areas);
-            var groupDto = this._mapper.Map<Group, GroupDto>(groupToSubscribe);
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SGAreaDto>>(areas);
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subscr in subscriptionsResult)
             {
