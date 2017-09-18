@@ -211,6 +211,7 @@
     <Compile Include="Controllers\ApiDocumentationController.cs" />
     <Compile Include="Controllers\AreaController.cs" />
     <Compile Include="Controllers\GroupController.cs" />
+    <Compile Include="Controllers\SignalrTestingController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="DI\NinjectConfig.cs" />
     <Compile Include="Global.asax.cs">

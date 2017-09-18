@@ -9,8 +9,6 @@ using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
-using Microsoft.AspNet.SignalR;
-using Likkle.BusinessServices.Hubs;
 using Likkle.BusinessEntities.SignalrDtos;
 
 namespace Likkle.BusinessServices
