@@ -20,17 +20,18 @@ namespace Likkle.BusinessServices
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
-        private readonly IHubContext _groupsActivityHub;
+        private readonly ISignalrService _signalrService;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
-            IConfigurationWrapper config)
+            IConfigurationWrapper config, 
+            ISignalrService signalrService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
-            this._groupsActivityHub = GlobalHost.ConnectionManager.GetHubContext<BoongalooGroupsActivityHub>();
+            _signalrService = signalrService;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -102,9 +103,12 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
-        public void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId)
+        public void AutoSubscribeUsersFromExistingAreas(
+            IEnumerable<Guid> areaIds, 
+            StandaloneGroupRequestDto newGroupMetadata, 
+            Guid newGroupId)
         {
-            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
             var users = areas.SelectMany(ar => ar.Groups)
                         .Where(gr => gr.IsActive == true)
                         .SelectMany(gr => gr.Users)
@@ -120,18 +124,25 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
-            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areas);
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subscr in subscriptionsResult)
             {
-                this._groupsActivityHub.Clients
-                    .Group(subscr.Key.ToString())
-                    .groupAttachedToExistingAreasWasCreatedAroundMe(areaDtos.Select(a => a.Id) , groupDto, subscr.Value);
+                this._signalrService.GroupAttachedToExistingAreasWasCreatedAroundMe(
+                    subscr.Key.ToString(), 
+                    areaDtos.Select(a => a.Id), 
+                    groupDto, 
+                    subscr.Value);
             }
         }
 
-        public void AutoSubscribeUsersForGroupAsNewArea(Guid areaId, double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId)
+        public void AutoSubscribeUsersForGroupAsNewArea(
+            Guid areaId, 
+            double newAreaLat, 
+            double newAreaLon, 
+            RadiusRangeEnum newAreaRadius, 
+            Guid newGroupId)
         {
             var newAreaCenter = new GeoCoordinate(newAreaLat, newAreaLon);
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
@@ -148,22 +159,26 @@ namespace Likkle.BusinessServices
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaEntity = this._unitOfWork.AreaRepository.GetAreaById(areaId);
-            var areaDto = this._mapper.Map<Area, SGAreaDto>(areaEntity);
+            var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subcr in subscriptionsResult)
             {
-                this._groupsActivityHub.Clients
-                    .Group(subcr.Key.ToString())
-                    .groupAsNewAreaWasCreatedAroundMe(areaDto, groupDto, subcr.Value);
+                this._signalrService.GroupAsNewAreaWasCreatedAroundMe(
+                    subcr.Key.ToString(), 
+                    areaDto, 
+                    groupDto, 
+                    subcr.Value);
             }
         }
 
-        public void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId)
+        public void AutoSubscribeUsersForRecreatedGroup(
+            IEnumerable<Guid> areaIds, 
+            Guid newGroupId)
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
-            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
-            var allUsers = new List<User>() { };
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
+            var allUsers = new List<User>();
 
             foreach (var area in areas)
             {
@@ -180,14 +195,16 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
-            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SGAreaDto>>(areas);
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
             foreach (var subscr in subscriptionsResult)
             {
-                this._groupsActivityHub.Clients
-                    .Group(subscr.Key.ToString())
-                    .groupAroundMeWasRecreated(areaDtos, groupDto, subscr.Value);
+                this._signalrService.GroupAroundMeWasRecreated(
+                    subscr.Key.ToString(), 
+                    areaDtos, 
+                    groupDto, 
+                    subscr.Value);
             }
         }
 

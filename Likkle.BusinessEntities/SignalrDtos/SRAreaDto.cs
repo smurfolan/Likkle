@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Likkle.BusinessEntities.SignalrDtos
 {
-    public class SGAreaDto
+    public class SRAreaDto
     {
         public Guid Id { get; set; }
         public double Latitude { get; set; }

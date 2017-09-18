@@ -29,6 +29,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<IConfigurationWrapper> _configurationWrapperMock;
         private readonly Mock<IAccelometerAlgorithmHelperService> _accelometerAlgorithmHelperService;
         private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsServiceMock;
+        private readonly Mock<ISignalrService> _signalrServiceMock;
 
         public UserServiceTests()
         {
@@ -56,6 +57,8 @@ namespace Likkle.WebApi.Owin.Tets
                 a => a.SecondsToClosestBoundary(It.IsAny<double>(), It.IsAny<double>())).Returns(32.5);
 
             this._subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
+
+            this._signalrServiceMock = new Mock<ISignalrService>();
 
             this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
@@ -86,7 +89,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService = new SubscriptionService(
                 this._mockedLikkleUoW.Object, 
                 this._mockedConfigurationProvider.Object, 
-                this._configurationWrapperMock.Object);
+                this._configurationWrapperMock.Object,
+                this._signalrServiceMock.Object);
         }
 
         [TestMethod]

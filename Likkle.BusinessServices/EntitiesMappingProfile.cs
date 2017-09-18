@@ -36,7 +36,7 @@ namespace Likkle.BusinessServices
                 .ForMember(dest => dest.TagIds, opts => opts.MapFrom(src => src.Tags.Select(t => t.Id)))
                 .ForMember(dest => dest.UserIds, opts => opts.MapFrom(src => src.Users.Select(u => u.Id)));
 
-            CreateMap<Area, SGAreaDto>()
+            CreateMap<Area, SRAreaDto>()
                 .ForMember(dest => dest.GroupIds, opts => opts.MapFrom(src => src.Groups.Select(gr => gr.Id)));
         }
     }

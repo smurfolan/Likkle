@@ -89,10 +89,12 @@
     <Compile Include="IAreaService.cs" />
     <Compile Include="IConfigurationWrapper.cs" />
     <Compile Include="IGroupService.cs" />
+    <Compile Include="ISignalrService.cs" />
     <Compile Include="ISubscriptionService.cs" />
     <Compile Include="ISubscriptionSettingsService.cs" />
     <Compile Include="IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SignalrService.cs" />
     <Compile Include="SubscriptionService.cs" />
     <Compile Include="SubscriptionSettingsService.cs" />
     <Compile Include="UserService.cs" />
