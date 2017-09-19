@@ -69,7 +69,7 @@ namespace Likkle.WebApi.Owin.Tets
                 .Returns(Guid.NewGuid().ToString);
 
             _subscrServiceMock = new Mock<ISubscriptionService>();
-            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()));
+            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>(), It.IsAny<Guid>()));
 
             _signalrServiceMock = new Mock<ISignalrService>();
 
@@ -563,7 +563,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService.AutoSubscribeUsersFromExistingAreas(
                 new List<Guid>() { areaId }, 
                 new StandaloneGroupRequestDto() { TagIds = allTags.Where(t => t.Name == "Sport").Select(t => t.Id).ToList() },
-                groupThreeId);
+                groupThreeId,
+                Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Select(gr => gr.Id).Contains(groupOneId));
@@ -648,7 +649,7 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(Guid.NewGuid(), 10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId);
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(Guid.NewGuid(), 10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId, Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupThree));
@@ -706,10 +707,31 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupOneId);
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupOneId, Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupOne));
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersFromExistingAreas_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            // TODO: Test that when user creates a group as part of existing areas, everyone except for him gets notified.
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersForGroupAsNewArea_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            // TODO: Test that when user creates a group as new areaa, everyone except for him gets notified.
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersForRecreatedGroup_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            // TODO: Test that when user recreates a group, everyone except for him gets notified.
+            throw new NotImplementedException();
         }
     }
 }

@@ -104,13 +104,17 @@ namespace Likkle.BusinessServices
         public void AutoSubscribeUsersFromExistingAreas(
             IEnumerable<Guid> areaIds, 
             StandaloneGroupRequestDto newGroupMetadata, 
-            Guid newGroupId)
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
             var users = areas.SelectMany(ar => ar.Groups)
                         .Where(gr => gr.IsActive == true)
-                        .SelectMany(gr => gr.Users)
+                        .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
                         .Distinct();
+
+            if (users == null || !users.Any())
+                return;
 
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
@@ -140,13 +144,17 @@ namespace Likkle.BusinessServices
             double newAreaLat, 
             double newAreaLon, 
             RadiusRangeEnum newAreaRadius, 
-            Guid newGroupId)
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
             var newAreaCenter = new GeoCoordinate(newAreaLat, newAreaLon);
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
             var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
-                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius);
+                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius && (u.Id != invokedByUserId));
+
+            if (usersFallingUnderTheNewArea == null || !usersFallingUnderTheNewArea.Any())
+                return;
 
             // Subscribe users on the service
             var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
@@ -172,7 +180,8 @@ namespace Likkle.BusinessServices
 
         public void AutoSubscribeUsersForRecreatedGroup(
             IEnumerable<Guid> areaIds, 
-            Guid newGroupId)
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
@@ -183,10 +192,13 @@ namespace Likkle.BusinessServices
                 var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
                 var usersToBeAdded = this._unitOfWork.UserRepository
                     .GetAllUsers()
-                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius && (u.Id != invokedByUserId));
 
                 allUsers.AddRange(usersToBeAdded);
             }
+
+            if (allUsers == null || !allUsers.Any())
+                return;
 
             // Subscribe users on the service
             var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers.Distinct(), groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
