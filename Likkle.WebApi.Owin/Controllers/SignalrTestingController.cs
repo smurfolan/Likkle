@@ -122,5 +122,37 @@ namespace Likkle.WebApi.Owin.Controllers
                 return InternalServerError(ex);
             }
         }
+
+        [HttpGet]
+        [Route("groupWasJoinedByUser")]
+        public IHttpActionResult GetResultFromGroupWasJoinedByUser()
+        {
+            try
+            {
+                this._signalrService.GroupWasJoinedByUser(Guid.NewGuid(), new List<string>() { "52360a79-7f57-4a70-9590-c632196f8a56" });
+
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("groupWasLeftByUser")]
+        public IHttpActionResult GetResultFromGroupWasLeftByUser()
+        {
+            try
+            {
+                this._signalrService.GroupWasLeftByUser(Guid.NewGuid(), new List<string>() { "52360a79-7f57-4a70-9590-c632196f8a56" });
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
     }
 }

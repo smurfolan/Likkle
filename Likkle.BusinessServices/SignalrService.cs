@@ -47,5 +47,21 @@ namespace Likkle.BusinessServices
                     .Group(groupId)
                     .groupAttachedToExistingAreasWasCreatedAroundMe(areaIds, groupDto, isSubscribedByMe);
         }
+
+        public void GroupWasJoinedByUser(Guid groupId, List<string> usersToBeNotified)
+        {
+            this._groupsActivityHub.Clients
+                .Groups(usersToBeNotified)
+                .groupWasJoinedByUser(groupId);
+        }
+
+        public void GroupWasLeftByUser(
+            Guid groupId,
+            List<string> usersToBeNotified)
+        {
+            this._groupsActivityHub.Clients
+                .Groups(usersToBeNotified)
+                .groupWasLeftByUser(groupId);
+        }
     }
 }

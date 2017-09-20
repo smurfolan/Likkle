@@ -953,5 +953,17 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             this._signalrServiceMock.Verify(srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), It.IsAny<IEnumerable<SRAreaDto>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
         }
+
+        [TestMethod]
+        public void When_AutoIncreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void When_AutoDecreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

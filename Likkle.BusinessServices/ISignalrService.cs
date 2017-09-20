@@ -23,5 +23,12 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> areaIds,
             SRGroupDto groupDto, 
             bool isSubscribedByMe);
+
+        void GroupWasJoinedByUser(
+            Guid groupId, 
+            List<string> usersToBeNotified);
+        void GroupWasLeftByUser(
+            Guid group, 
+            List<string> usersToBeNotified);
     }
 }
