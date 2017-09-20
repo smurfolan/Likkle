@@ -817,15 +817,141 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void When_AutoSubscribe_UsersForGroupAsNewArea_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
-            // TODO: Test that when user creates a group as new areaa, everyone except for him gets notified.
-            throw new NotImplementedException();
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            // arrange
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                FirstName = "Ralph",
+                LastName = "Lauren",
+                Email = "Rasss@ta.fari",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = allTags.Where(t => t.Name == "Sport").ToList()
+                },
+                Latitude = 10.000002,
+                Longitude = 10.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { userOne }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { groupOne },
+                IsActive = false,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+           .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(areaId, area.Latitude, area.Longitude, area.Radius, groupOneId, userOneId);
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs.GroupAsNewAreaWasCreatedAroundMe(It.IsAny<string>(), It.IsAny<SRAreaDto>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
         }
 
         [TestMethod]
         public void When_AutoSubscribe_UsersForRecreatedGroup_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
-            // TODO: Test that when user recreates a group, everyone except for him gets notified.
-            throw new NotImplementedException();
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var areaTwoId = Guid.NewGuid();
+            var areaTwo = new Area()
+            {
+                Id = areaTwoId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.HunderdAndFiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne, areaTwo };
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+            
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { userOne },
+                Areas = new FakeDbSet<Area>() { areaOne, areaTwo }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaOneId, areaTwoId }, groupOneId, Guid.NewGuid());
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), It.IsAny<IEnumerable<SRAreaDto>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
         }
     }
 }
