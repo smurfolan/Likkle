@@ -30,6 +30,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<IAccelometerAlgorithmHelperService> _accelometerAlgorithmHelperService;
         private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsServiceMock;
         private readonly Mock<ISignalrService> _signalrServiceMock;
+        private readonly Mock<ISubscriptionService> _subscripionServiceMock;
 
         public UserServiceTests()
         {
@@ -57,6 +58,7 @@ namespace Likkle.WebApi.Owin.Tets
                 a => a.SecondsToClosestBoundary(It.IsAny<double>(), It.IsAny<double>())).Returns(32.5);
 
             this._subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
+            this._subscripionServiceMock = new Mock<ISubscriptionService>();
 
             this._signalrServiceMock = new Mock<ISignalrService>();
 
@@ -84,7 +86,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
                 this._accelometerAlgorithmHelperService.Object,
-                this._subscriptionSettingsServiceMock.Object);
+                this._subscriptionSettingsServiceMock.Object,
+                this._subscripionServiceMock.Object);
 
             this._subscriptionService = new SubscriptionService(
                 this._mockedLikkleUoW.Object, 
@@ -534,6 +537,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(0, user.Groups.Count);
             Assert.AreEqual(2, user.HistoryGroups.Count);
 
+            this._signalrServiceMock.Verify(srm => srm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Exactly(2));
+
             var updateResponse = this._userService.UpdateUserLocation(userId, 10.00009, 10.00009);
 
             // TODO: When implemented double SecondsToClosestBoundary(double latitude, double longitude); update the assertions here
@@ -637,6 +642,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(2));
+
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 15, 15);
 
@@ -646,6 +653,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(4));
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 20, 20);
 
@@ -657,6 +665,8 @@ namespace Likkle.WebApi.Owin.Tets
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(5));
+
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 25, 25);
 
@@ -667,6 +677,7 @@ namespace Likkle.WebApi.Owin.Tets
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(6));
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
 
@@ -678,6 +689,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupOne.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupThree.Id) &&
                             user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupSix.Id));
+
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoIncreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(2));
         }
 
         [TestMethod]
@@ -818,6 +831,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.HistoryGroups.Select(gr => gr.GroupId).Contains(groupTwo.Id));
             Assert.AreEqual(1, user.HistoryGroups.Count());
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Once);
+
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 15, 15);
 
@@ -826,6 +841,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsFalse(user.Groups.Any());
             Assert.AreEqual(1, user.HistoryGroups.Count());
             Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
+
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(2));
 
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 20, 20);
@@ -840,6 +857,8 @@ namespace Likkle.WebApi.Owin.Tets
                             user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupThree) &&
                             user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupFive));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(4));
+
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 25, 25);
 
@@ -853,6 +872,8 @@ namespace Likkle.WebApi.Owin.Tets
                             user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupThree) &&
                             user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed).Contains(groupFive));
 
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(6));
+
             // act
             groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
 
@@ -863,6 +884,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.Groups.Contains(groupTwo));
 
             var histGroups = user.HistoryGroups.Select(hgr => hgr.GroupThatWasPreviouslySubscribed);
+
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoIncreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(1));
 
             Assert.AreEqual(3, user.HistoryGroups.Count());
             Assert.IsTrue(histGroups.Contains(groupTwo) && histGroups.Contains(groupThree) && histGroups.Contains(groupFive));
@@ -943,6 +966,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.AreEqual(0, user.Groups.Count);
+            this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(2));
         }
     }
 }

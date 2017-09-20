@@ -282,7 +282,8 @@ namespace Likkle.BusinessServices
                 //    this._unitOfWork.HistoryGroupRepository.DeleteHistoryGroup(historyRecordToBeRemoved.Id);
             }
 
-            this.AutoDecreaseUsersInGroups(unsubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
+            if(unsubscribedGroups.Any())
+                this.AutoDecreaseUsersInGroups(unsubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
         private void ConnectUserToNewlySubscribedGroups(IEnumerable<Group> newlySubscribedGroups, User user)
@@ -300,7 +301,8 @@ namespace Likkle.BusinessServices
                 });
             }
 
-            this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
+            if(newlySubscribedGroups.Any())
+                this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
         private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)

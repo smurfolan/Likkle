@@ -20,19 +20,22 @@ namespace Likkle.BusinessServices
         private readonly IConfigurationWrapper _configuration;
         private readonly IAccelometerAlgorithmHelperService _accelometerAlgorithmHelperService;
         private readonly ISubscriptionSettingsService _subscriptionSettingsService;
+        private readonly ISubscriptionService _subscriptionService;
 
         public UserService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
             IAccelometerAlgorithmHelperService accelometerAlgorithmHelperService, 
-            ISubscriptionSettingsService subscriptionSettingsService)
+            ISubscriptionSettingsService subscriptionSettingsService,
+            ISubscriptionService subscriptionService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _accelometerAlgorithmHelperService = accelometerAlgorithmHelperService;
             _subscriptionSettingsService = subscriptionSettingsService;
+            this._subscriptionService = subscriptionService;
         }
 
         public IEnumerable<UserDto> GetAllUsers()
@@ -225,6 +228,8 @@ namespace Likkle.BusinessServices
                 {
                     if (!GroupIsAvailableAroundCoordinates(group, lat, lon))
                         user.Groups.Remove(group);
+
+                    this._subscriptionService.AutoDecreaseUsersInGroups(new List<Guid>() { group.Id }, user.Id);
                 }
 
                 this._unitOfWork.Save();
@@ -277,6 +282,7 @@ namespace Likkle.BusinessServices
             foreach (var group in groupsUserCurrentlyBelongsTo)
             {
                 user.Groups.Remove(group);
+                this._subscriptionService.AutoDecreaseUsersInGroups(new List<Guid>() { group.Id }, user.Id);
 
                 if (!group.Users.Any())
                     group.IsActive = false;
@@ -377,6 +383,7 @@ namespace Likkle.BusinessServices
                 foreach (var group in groupsThatWerePreviouslySubscribeHere)
                 {
                     user.Groups.Add(group.GroupThatWasPreviouslySubscribed);
+                    this._subscriptionService.AutoIncreaseUsersInGroups(new List<Guid>() { group.Id }, user.Id);
                 }
             }
         }
@@ -403,6 +410,8 @@ namespace Likkle.BusinessServices
                     UserId = user.Id,
                     UserWhoSubscribedGroup = user
                 });
+
+                this._subscriptionService.AutoDecreaseUsersInGroups(new List<Guid>() { newlySubscribedGroup.Id }, user.Id);
             }
 
             return user;

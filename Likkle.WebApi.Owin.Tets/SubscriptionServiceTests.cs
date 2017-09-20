@@ -94,7 +94,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
                 this._accelometerAlgorithmHelperService.Object,
-                this._subscriptionSettingsService.Object);
+                this._subscriptionSettingsService.Object,
+                this._subscrServiceMock.Object);
 
             this._areaService = new AreaService(
                 this._mockedLikkleUoW.Object,
