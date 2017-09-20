@@ -54,7 +54,7 @@ namespace Likkle.WebApi.Owin.Tets
                 .Returns(Guid.NewGuid().ToString);
 
             _subscrServiceMock = new Mock<ISubscriptionService>();
-            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()));
+            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>(), It.IsAny<Guid>()));
 
             var mapConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();

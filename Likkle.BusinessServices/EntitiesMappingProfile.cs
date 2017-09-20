@@ -4,6 +4,7 @@ using Likkle.BusinessEntities;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
 using Likkle.DataModel;
+using Likkle.BusinessEntities.SignalrDtos;
 
 namespace Likkle.BusinessServices
 {
@@ -29,6 +30,14 @@ namespace Likkle.BusinessServices
                 .ForMember(dest => dest.TagIds, opts => opts.MapFrom(src => src.Tags.Select(t => t.Id)));
             CreateMap<Area, AreaForLocationResponseDto>();
             CreateMap<SocialLinksResponseDto, SocialLinksDto>();
+
+            // SignalR mappings
+            CreateMap<Group, SRGroupDto>()
+                .ForMember(dest => dest.TagIds, opts => opts.MapFrom(src => src.Tags.Select(t => t.Id)))
+                .ForMember(dest => dest.UserIds, opts => opts.MapFrom(src => src.Users.Select(u => u.Id)));
+
+            CreateMap<Area, SRAreaDto>()
+                .ForMember(dest => dest.GroupIds, opts => opts.MapFrom(src => src.Groups.Select(gr => gr.Id)));
         }
     }
 }

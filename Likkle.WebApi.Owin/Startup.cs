@@ -28,6 +28,7 @@ namespace Likkle.WebApi.Owin
 
             app.UseNinjectMiddleware(() => NinjectConfig.CreateKernel.Value);
             app.UseNinjectWebApi(config);
+            app.MapSignalR();
         }
     }
 }

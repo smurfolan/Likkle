@@ -46,6 +46,7 @@ namespace Likkle.WebApi.Owin.DI
             kernel.Bind<IConfigurationWrapper>().To<ConfigurationWrapper>();
             kernel.Bind<IGeoCodingManager>().To<GeoCodingManager>();
             kernel.Bind<IPhoneValidationManager>().To<PhoneValidationManager>();
+            kernel.Bind<ISignalrService>().To<SignalrService>();
 
             var mapperConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();

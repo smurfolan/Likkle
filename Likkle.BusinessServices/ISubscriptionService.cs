@@ -10,9 +10,25 @@ namespace Likkle.BusinessServices
     public interface ISubscriptionService
     {
         void RelateUserToGroups(RelateUserToGroupsDto newRelations);
-        void UpdateLatestWellKnownUserLocation(double latitude, double longitude, IPrincipal user);
-        void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId);
-        void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId);
-        void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId);
+        void UpdateLatestWellKnownUserLocation(
+            double latitude, 
+            double longitude, 
+            IPrincipal user);
+        void AutoSubscribeUsersFromExistingAreas(
+            IEnumerable<Guid> areaIds, 
+            StandaloneGroupRequestDto newGroupMetadata, 
+            Guid newGroupId, 
+            Guid invokedByUserId);
+        void AutoSubscribeUsersForGroupAsNewArea(
+            Guid areaId, 
+            double newAreaLat, 
+            double newAreaLon, 
+            RadiusRangeEnum newAreaRadius, 
+            Guid newGroupId, 
+            Guid invokedByUserId);
+        void AutoSubscribeUsersForRecreatedGroup(
+            IEnumerable<Guid> areaIds, 
+            Guid newGroupId,
+            Guid invokedByUserId);
     }
 }

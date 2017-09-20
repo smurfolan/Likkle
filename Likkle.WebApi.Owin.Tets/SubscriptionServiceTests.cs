@@ -12,6 +12,7 @@ using Likkle.DataModel.TestingPurposes;
 using Likkle.DataModel.UnitOfWork;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Likkle.BusinessEntities.SignalrDtos;
 
 namespace Likkle.WebApi.Owin.Tets
 {
@@ -31,6 +32,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsService;
         private readonly Mock<IGeoCodingManager> _geoCodingManagerMock;
         private readonly Mock<ISubscriptionService> _subscrServiceMock;
+        private readonly Mock<ISignalrService> _signalrServiceMock;
 
         public SubscriptionServiceTests()
         {
@@ -68,14 +70,17 @@ namespace Likkle.WebApi.Owin.Tets
                 .Returns(Guid.NewGuid().ToString);
 
             _subscrServiceMock = new Mock<ISubscriptionService>();
-            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>()));
+            _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>(), It.IsAny<Guid>()));
+
+            _signalrServiceMock = new Mock<ISignalrService>();
 
             this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
             this._subscriptionService = new SubscriptionService(
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
-                this._configurationWrapperMock.Object);
+                this._configurationWrapperMock.Object,
+                this._signalrServiceMock.Object);
 
             this._groupService = new GroupService(
                 this._mockedLikkleUoW.Object,
@@ -559,7 +564,8 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService.AutoSubscribeUsersFromExistingAreas(
                 new List<Guid>() { areaId }, 
                 new StandaloneGroupRequestDto() { TagIds = allTags.Where(t => t.Name == "Sport").Select(t => t.Id).ToList() },
-                groupThreeId);
+                groupThreeId,
+                Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Select(gr => gr.Id).Contains(groupOneId));
@@ -644,7 +650,7 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId);
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(Guid.NewGuid(), 10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThreeId, Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupThree));
@@ -702,10 +708,250 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupOneId);
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupOneId, Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupOne));
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersFromExistingAreas_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            // TODO: Test that when user creates a group as part of existing areas, everyone except for him gets notified.
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                FirstName = "Fires",
+                LastName = "Fires",
+                Email = "mal@maigtgtl.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userThreeId = Guid.NewGuid();
+            var userThree = new User()
+            {
+                Id = userThreeId,
+                FirstName = "Three",
+                LastName = "Three",
+                Email = "masl@maigtgtsl.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { userOne, userTwo, userThree }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            userOne.Groups.Add(groupOne);
+            userTwo.Groups.Add(groupOne);
+            userThree.Groups.Add(groupOne);
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = false,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Users = new FakeDbSet<User>() { userOne, userTwo, userThree },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+           .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersFromExistingAreas(new List<Guid>() { areaId }, new StandaloneGroupRequestDto() { }, groupTwoId, userOneId);
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs.GroupAttachedToExistingAreasWasCreatedAroundMe(It.IsAny<string>(), It.IsAny<IEnumerable<Guid>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Exactly(2));
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersForGroupAsNewArea_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            // arrange
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                FirstName = "Ralph",
+                LastName = "Lauren",
+                Email = "Rasss@ta.fari",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = allTags.Where(t => t.Name == "Sport").ToList()
+                },
+                Latitude = 10.000002,
+                Longitude = 10.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { userOne }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { groupOne },
+                IsActive = false,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+           .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(areaId, area.Latitude, area.Longitude, area.Radius, groupOneId, userOneId);
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs.GroupAsNewAreaWasCreatedAroundMe(It.IsAny<string>(), It.IsAny<SRAreaDto>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void When_AutoSubscribe_UsersForRecreatedGroup_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        {
+            // arrange
+            var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
+
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var areaTwoId = Guid.NewGuid();
+            var areaTwo = new Area()
+            {
+                Id = areaTwoId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.HunderdAndFiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne, areaTwo };
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+            
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne },
+                Users = new FakeDbSet<User>() { userOne },
+                Areas = new FakeDbSet<Area>() { areaOne, areaTwo }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaOneId, areaTwoId }, groupOneId, Guid.NewGuid());
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), It.IsAny<IEnumerable<SRAreaDto>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
         }
     }
 }

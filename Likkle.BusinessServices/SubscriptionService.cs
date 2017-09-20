@@ -9,6 +9,7 @@ using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
+using Likkle.BusinessEntities.SignalrDtos;
 
 namespace Likkle.BusinessServices
 {
@@ -17,15 +18,18 @@ namespace Likkle.BusinessServices
         private readonly ILikkleUoW _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
+        private readonly ISignalrService _signalrService;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
-            IConfigurationWrapper config)
+            IConfigurationWrapper config, 
+            ISignalrService signalrService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
+            _signalrService = signalrService;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -97,63 +101,121 @@ namespace Likkle.BusinessServices
             this._unitOfWork.Save();
         }
 
-        public void AutoSubscribeUsersFromExistingAreas(IEnumerable<Guid> areaIds, StandaloneGroupRequestDto newGroupMetadata, Guid newGroupId)
+        public void AutoSubscribeUsersFromExistingAreas(
+            IEnumerable<Guid> areaIds, 
+            StandaloneGroupRequestDto newGroupMetadata, 
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
-            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
             var users = areas.SelectMany(ar => ar.Groups)
                         .Where(gr => gr.IsActive == true)
-                        .SelectMany(gr => gr.Users)
+                        .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
                         .Distinct();
+
+            if (users == null || !users.Any())
+                return;
 
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
-            this.SubscribeUsersNearbyNewGroup(
+            // Subscribe users on the service
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
                 users,
                 groupToSubscribe,
                 newGroupMetadata.TagIds);
-
             this._unitOfWork.Save();
+
+            // Use SignalR to notify all the clients that need to receive information about the newly created group.
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
+
+            foreach (var subscr in subscriptionsResult)
+            {
+                this._signalrService.GroupAttachedToExistingAreasWasCreatedAroundMe(
+                    subscr.Key.ToString(), 
+                    areaDtos.Select(a => a.Id), 
+                    groupDto, 
+                    subscr.Value);
+            }
         }
 
-        public void AutoSubscribeUsersForGroupAsNewArea(double newAreaLat, double newAreaLon, RadiusRangeEnum newAreaRadius, Guid newGroupId)
+        public void AutoSubscribeUsersForGroupAsNewArea(
+            Guid areaId, 
+            double newAreaLat, 
+            double newAreaLon, 
+            RadiusRangeEnum newAreaRadius, 
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
             var newAreaCenter = new GeoCoordinate(newAreaLat, newAreaLon);
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
             var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
-                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius);
+                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius && (u.Id != invokedByUserId));
 
-            this.SubscribeUsersNearbyNewGroup(
+            if (usersFallingUnderTheNewArea == null || !usersFallingUnderTheNewArea.Any())
+                return;
+
+            // Subscribe users on the service
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
                 usersFallingUnderTheNewArea, 
                 groupToSubscribe, 
                 groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
-
             this._unitOfWork.Save();
+
+            // Use SignalR to notify all the clients that need to receive information about the newly created group.
+            var areaEntity = this._unitOfWork.AreaRepository.GetAreaById(areaId);
+            var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
+
+            foreach (var subcr in subscriptionsResult)
+            {
+                this._signalrService.GroupAsNewAreaWasCreatedAroundMe(
+                    subcr.Key.ToString(), 
+                    areaDto, 
+                    groupDto, 
+                    subcr.Value);
+            }
         }
 
-        public void AutoSubscribeUsersForRecreatedGroup(IEnumerable<Guid> areaIds, Guid newGroupId)
+        public void AutoSubscribeUsersForRecreatedGroup(
+            IEnumerable<Guid> areaIds, 
+            Guid newGroupId,
+            Guid invokedByUserId)
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
-
-            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id));
-
-            var allUsers = new List<User>() { };
+            var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
+            var allUsers = new List<User>();
 
             foreach (var area in areas)
             {
                 var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
                 var usersToBeAdded = this._unitOfWork.UserRepository
                     .GetAllUsers()
-                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius && (u.Id != invokedByUserId));
 
                 allUsers.AddRange(usersToBeAdded);
             }
 
-            var users = allUsers.Distinct();
+            if (allUsers == null || !allUsers.Any())
+                return;
 
-            this.SubscribeUsersNearbyNewGroup(users, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
-
+            // Subscribe users on the service
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers.Distinct(), groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
+
+            // Use SignalR to notify all the clients that need to receive information about the recreated group.
+            var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
+            var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
+
+            foreach (var subscr in subscriptionsResult)
+            {
+                this._signalrService.GroupAroundMeWasRecreated(
+                    subscr.Key.ToString(), 
+                    areaDtos, 
+                    groupDto, 
+                    subscr.Value);
+            }
         }
 
         #region Private methods
@@ -211,15 +273,17 @@ namespace Likkle.BusinessServices
             }
         }
 
-        private void SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
         {
+            var result = new Dictionary<Guid, bool>() { };
+
             foreach (var user in users)
             {
                 var autoSubscrSetings = user.AutomaticSubscriptionSettings;
                 if (autoSubscrSetings.AutomaticallySubscribeToAllGroups)
                 {
                     user.Groups.Add(groupToSubscribe);
-                    // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                    result.Add(user.Id, true);
                     continue;
                 }
                 else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
@@ -232,16 +296,18 @@ namespace Likkle.BusinessServices
                     if (thereIsIntersection)
                     {
                         user.Groups.Add(groupToSubscribe);
-                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'true')
+                        result.Add(user.Id, true);
                         continue;
                     }
                     else
                     {
-                        // TODO: Call SignalR's NewGroupWasCreated method (with 'IsSubscribedByMe' property set to 'false')
+                        result.Add(user.Id, false);
                         continue;
                     }
                 }
             }
+
+            return result;
         }
         #endregion
     }

@@ -70,7 +70,7 @@ namespace Likkle.BusinessServices
 
             this._unitOfWork.GroupRepository.Save();
 
-            this._subscriptionService.AutoSubscribeUsersFromExistingAreas(newGroup.AreaIds, newGroup, newGroupEntity.Id);
+            this._subscriptionService.AutoSubscribeUsersFromExistingAreas(newGroup.AreaIds, newGroup, newGroupEntity.Id, newGroup.UserId);
 
             return newGroupEntity.Id;
         }
@@ -108,7 +108,13 @@ namespace Likkle.BusinessServices
 
             this._unitOfWork.GroupRepository.Save();
 
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(newGroup.Latitude, newGroup.Longitude, newGroup.Radius, newGroupEntity.Id);
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(
+                newAreaId, 
+                newGroup.Latitude, 
+                newGroup.Longitude, 
+                newGroup.Radius, 
+                newGroupEntity.Id,
+                newGroup.UserId);
 
             return newGroupEntity.Id;
         }
@@ -205,7 +211,7 @@ namespace Likkle.BusinessServices
 
             user.Groups.Add(affectedGroup);
 
-            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id);
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id, userId);
 
             this._unitOfWork.Save();
         }
