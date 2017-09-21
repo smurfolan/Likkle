@@ -218,6 +218,32 @@ namespace Likkle.BusinessServices
             }
         }
 
+        public void AutoIncreaseUsersInGroups(
+            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
+            Guid invokedByUserId)
+        {
+            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
+
+            UseSignalrToChangeGroupsParticipantsNumber(
+                groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
+                invokedByUserId, 
+                allAreas,
+                true);
+        }
+
+        public void AutoDecreaseUsersInGroups(
+            IEnumerable<Guid> groupsThatNeedToDecreaseTheNumberOfTheirUsers, 
+            Guid invokedByUserId)
+        {
+            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
+
+            UseSignalrToChangeGroupsParticipantsNumber(
+                groupsThatNeedToDecreaseTheNumberOfTheirUsers,
+                invokedByUserId,
+                allAreas,
+                false);
+        }
+
         #region Private methods
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
@@ -255,6 +281,9 @@ namespace Likkle.BusinessServices
                 //if (historyRecordToBeRemoved != null)
                 //    this._unitOfWork.HistoryGroupRepository.DeleteHistoryGroup(historyRecordToBeRemoved.Id);
             }
+
+            if(unsubscribedGroups.Any())
+                this.AutoDecreaseUsersInGroups(unsubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
         private void ConnectUserToNewlySubscribedGroups(IEnumerable<Group> newlySubscribedGroups, User user)
@@ -271,6 +300,9 @@ namespace Likkle.BusinessServices
                     UserWhoSubscribedGroup = user
                 });
             }
+
+            if(newlySubscribedGroups.Any())
+                this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
         private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
@@ -308,6 +340,33 @@ namespace Likkle.BusinessServices
             }
 
             return result;
+        }
+
+        private void UseSignalrToChangeGroupsParticipantsNumber(
+            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers,
+            Guid invokedByUserId,
+            IEnumerable<Area> allAreas,
+            bool isIncrementalOperation)
+        {
+            foreach (var group in groupsThatNeedToIncreaseTheNumberOfTheirUsers)
+            {
+                var areasIncludingThisGroup = allAreas
+                    .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
+                    .ToList();
+
+                var usersToBeNotified = areasIncludingThisGroup
+                    .SelectMany(a => a.Groups)
+                    .SelectMany(gr => gr.Users)
+                    .Where(u => u.Id != invokedByUserId)
+                    .Select(u => u.Id.ToString())
+                    .Distinct()
+                    .ToList();
+
+                if (isIncrementalOperation)
+                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified);
+                else
+                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified);
+            }
         }
         #endregion
     }

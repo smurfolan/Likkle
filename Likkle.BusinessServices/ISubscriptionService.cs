@@ -30,5 +30,13 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> areaIds, 
             Guid newGroupId,
             Guid invokedByUserId);
+
+        void AutoIncreaseUsersInGroups(
+            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
+            Guid invokedByUserId);
+
+        void AutoDecreaseUsersInGroups(
+            IEnumerable<Guid> groupsThatNeedToDecreaseTheNumberOfTheirUsers, 
+            Guid invokedByUserId);
     }
 }
