@@ -132,7 +132,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 this._signalrService.GroupWasJoinedByUser(Guid.NewGuid(), new List<string>()
                 {
                     "52360a79-7f57-4a70-9590-c632196f8a56"/*Kevin*/,
-                    "b535df55 -6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
+                    "b535df55-6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
                 });
 
                 return Ok();
@@ -152,7 +152,7 @@ namespace Likkle.WebApi.Owin.Controllers
                 this._signalrService.GroupWasLeftByUser(Guid.NewGuid(), new List<string>()
                 {
                     "52360a79-7f57-4a70-9590-c632196f8a56"/*Kevin*/,
-                    "b535df55 -6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
+                    "b535df55-6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
                 });
 
                 return Ok();
