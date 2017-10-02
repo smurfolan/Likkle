@@ -110,7 +110,7 @@ namespace Likkle.WebApi.Owin.Controllers
                     new SRGroupDto() {
                         Id = Guid.NewGuid(),
                         Name = "Random group name",
-                        TagIds = new List<Guid>() { Guid.NewGuid(), Guid.NewGuid() },
+                        TagIds = new List<Guid>() { Guid.Parse("0c53eeff-06a1-4104-a86e-1bd3c8028a00"), Guid.Parse("ca97f757-f249-4d7d-ac80-814498348688") },
                         UserIds = new List<Guid>() { Guid.NewGuid(), Guid.NewGuid() }
                     },
                     false);
