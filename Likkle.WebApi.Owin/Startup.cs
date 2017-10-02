@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens;
 using IdentityServer3.AccessTokenValidation;
 using Likkle.WebApi.Owin.DI;
+using Microsoft.Owin.Cors;
 using Ninject.Web.Common.OwinHost;
 using Ninject.Web.WebApi.OwinHost;
 using Owin;
@@ -28,7 +29,12 @@ namespace Likkle.WebApi.Owin
 
             app.UseNinjectMiddleware(() => NinjectConfig.CreateKernel.Value);
             app.UseNinjectWebApi(config);
-            app.MapSignalR();
+
+            app.Map("/signalr", map =>
+            {
+                map.UseCors(CorsOptions.AllowAll);
+                map.RunSignalR();
+            });
         }
     }
 }
