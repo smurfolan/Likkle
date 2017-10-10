@@ -29,8 +29,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: GET /api/v1/groups/{id:Guid}
         /// </summary>
-        /// <param name="id">Unique identifier of a group</param>
-        /// <returns>Specific group by its id.</returns>
+        /// <param name="id">Unique identifier of the group we want to fetch.</param>
+        /// <returns>Group DTO for the id which was passed.</returns>
         [HttpGet]
         [Route("{id}")]
         public IHttpActionResult Get(Guid id)
@@ -59,7 +59,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the active groups that contain this point(lat/lon) as part of their diameter</returns>
+        /// <returns>All the active groups that contain this point(lat/lon) as part of their diameter.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}")]
         public IHttpActionResult Get(double lat, double lon)
@@ -83,8 +83,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: GET api/v1/groups/{id:Guid}/users
         /// </summary>
-        /// <param name="id">Unique identifier of the group you are getting the users from</param>
-        /// <returns>All the users for a specific group that are actually inside of it (The area a group belongs to).</returns>
+        /// <param name="id">Unique identifier of the group you are getting all the users from.</param>
+        /// <returns>All the users for a specific group that are actually inside of it.</returns>
         [HttpGet]
         [Route("{id}/users")]
         public IHttpActionResult GetUsers(Guid id)
@@ -102,7 +102,7 @@ namespace Likkle.WebApi.Owin.Controllers
         }
 
         /// <summary>
-        /// EXAMPLE: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType/{userId}
+        /// Example: GET /api/v1/groups/{lat:double}/{lon:double}/GroupCreationType/{userId}
         /// </summary>
         /// <param name="lat">Latitude of the point where we are now and we try to create new group.</param>
         /// <param name="lon">Longitude of the point where we are now and we try to create new group.</param>
@@ -187,7 +187,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="groupId"></param>
         /// <param name="request">Body sample: { userId: '1991bf5a-276a-4ac8-9de9-3e2134439086' }</param>
-        /// <returns>Activates group that was previously active as in parallel activates all inactive areas it used to belong to</returns>
+        /// <returns>Activates group that was previously active as in parallel activates all inactive areas it used to belong to.</returns>
         [HttpPut]
         [Route("{groupId}/Activate")]
         public IHttpActionResult Put(Guid groupId, [FromBody]GroupActivationRequestDto request)

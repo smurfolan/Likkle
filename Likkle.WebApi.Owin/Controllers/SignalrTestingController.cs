@@ -7,6 +7,10 @@ using Likkle.BusinessServices;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
+    /// <summary>
+    /// Testing purposes controller. It is used to fire an event on SignalR which afects some of the connected users.
+    /// In the specific case Kevin and Bubka.
+    /// </summary>
     [RoutePrefix("api/v1/signalrtesting")]
     public class SignalrTestingController : ApiController
     {

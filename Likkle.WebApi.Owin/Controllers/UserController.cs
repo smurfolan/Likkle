@@ -41,8 +41,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: GET /api/v1/users/{id:Guid}
         /// </summary>
-        /// <param name="id">Unique identifier of a user</param>
-        /// <returns>Specific user by its id.</returns>
+        /// <param name="id">Unique identifier of the user we want to fetch.</param>
+        /// <returns>Specific user DTO by its id.</returns>
         [HttpGet]
         [Route("{id}")]
         public IHttpActionResult Get(Guid id)
@@ -70,7 +70,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: GET api/v1/users/bystsid/{stsId:string}
         /// </summary>
         /// <param name="stsId">Base64 encoded STS id.</param>
-        /// <returns>If there's such user in the system - UserDto is returned, otherwise null.</returns>
+        /// <returns>If there's such user in the system - User DTO is returned, otherwise null.</returns>
         [HttpGet]
         [Route("bystsid/{stsId}")]
         public IHttpActionResult GetUserByStsId(string stsId)
@@ -189,13 +189,12 @@ namespace Likkle.WebApi.Owin.Controllers
             }
         }
 
-        // TODO: Manually test this!!!
         /// <summary>
         /// Example: GET api/v1/users/{id:Guid}/around/{lat:double}/{lon:double}/subscriptions
         /// </summary>
-        /// <param name="id">Id of the user we want to get the subscribtions</param>
-        /// <param name="lat">Latitude of the current user location</param>
-        /// <param name="lon">Longitude of the current user location</param>
+        /// <param name="id">Id of the user we want to get the subscribtions for.</param>
+        /// <param name="lat">Latitude of the current user location.</param>
+        /// <param name="lon">Longitude of the current user location.</param>
         /// <returns>List of Guids which indicate the group ids to which the user is subscribed and these specific groups are around current user location.</returns>
         [HttpGet]
         [Route("{id}/around/{lat}/{lon}/subscriptions")]
@@ -218,9 +217,9 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: PUT api/v1/users/{id:Guid}/UpdateAutomaticSubscriptionSettings
         /// </summary>
-        /// <param name="id">Unique identifier of the user whose notification settings we are updating</param>
+        /// <param name="id">Unique identifier of the user whose notification settings we are about to update.</param>
         /// <param name="subscriptionSettings">Body sample: {"automaticallySubscribeToAllGroups" : true, "automaticallySubscribeToAllGroupsWithTag" :  false, "subscribedTagIds" : ['72f3a2cf-a9ab-4f93-a581-7ae07e812ef4', '72f3a2cf-a9ab-4f93-a581-7ae07e812234']}</param>
-        /// <returns></returns>
+        /// <returns>Http.200 if the update went well, Http.500 if something went wrong on the server and Http.400 if validation failed.</returns>
         [HttpPut]
         [Route("{id}/UpdateAutomaticSubscriptionSettings")]
         public IHttpActionResult Put(Guid id, [FromBody] EditUserAutomaticSubscriptionSettingsRequestDto subscriptionSettings)
@@ -245,7 +244,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: api/v1/users/{id:Guid}/AutomaticSubscriptionSettings
         /// </summary>
-        /// <param name="id">Unique identifier for user. NOT Identity Server Id.</param>
+        /// <param name="id">Unique identifier for user (A guid). This is not StsId.</param>
         /// <returns>Latest notification settings set up by the user.</returns>
         [HttpGet]
         [Route("{id}/AutomaticSubscriptionSettings")]
@@ -274,9 +273,9 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: GET api/v1/users/{id:Guid}/UpdateLocation/{lat:double}/{lon:double}/
         /// </summary>
         /// <param name="id">Id of the user that is reporting his latest location.</param>
-        /// <param name="lat">Latest user latitude</param>
-        /// <param name="lon">Latest user longitude</param>
-        /// <returns>The method returns an object which contains seconds to closest area boundary [SecodsToClosestBoundary] (to be used by the accelometer algorithm) and group ids [SubscribedGroupIds] that the user should subscribe at this paticular area.</returns>
+        /// <param name="lat">Latest user latitude.</param>
+        /// <param name="lon">Latest user longitude.</param>
+        /// <returns>DTO which contains seconds to closest area boundary [SecodsToClosestBoundary] (to be used by the accelometer algorithm) and group ids [SubscribedGroupIds] that the user should subscribe at this paticular area.</returns>
         [HttpGet]
         [Route("{id}/UpdateLocation/{lat}/{lon}/")]
         public IHttpActionResult UpdateLocation(Guid id, double lat, double lon)
@@ -301,8 +300,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: GET api/v1/users/{id:Guid}/SocialLinks
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">Id of the user whose social links we are about to fetch.</param>
+        /// <returns>DTO containing all the social links information for this user.</returns>
         [HttpGet]
         [Route("{id}/SocialLinks")]
         public IHttpActionResult GetSocialLinks(Guid id)
@@ -325,7 +324,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="updatedSocialLinks">Body sample: {'FacebookUsername': 'm.me/smfbuser', 'InstagramUsername': 'krstnznam', 'TwitterUsername': '@stefhano'}</param>
-        /// <returns></returns>
+        /// <returns>Http.201 if everything went well, Http.500 if internal server error happened and Http.400 if validation for the request failed.</returns>
         [HttpPut]
         [Route("{id}/UpdateSocialLinks")]
         public async Task<IHttpActionResult> UpdateSocialLinks(Guid id, UpdateSocialLinksRequestDto updatedSocialLinks)
@@ -358,7 +357,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: PUT api/v1/users/{id:Guid}/Disable
         /// </summary>
-        /// <returns>Returns 200 if user was successfuly updated and 500 if there was a server error.</returns>
+        /// <returns>Returns 200 if user was successfuly disabled and 500 if there was a server error.</returns>
         [HttpPut]
         [Route("{id}/Disable")]
         public IHttpActionResult DisableUser(Guid id)
