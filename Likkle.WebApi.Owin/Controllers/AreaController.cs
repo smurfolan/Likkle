@@ -31,8 +31,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: GET /api/v1/areas/{id:Guid}
         /// </summary>
-        /// <param name="id">Id of the area we need fetch.</param>
-        /// <returns>Area DTO for the id which was passed.</returns>
+        /// <param name="id">Id of the area.</param>
+        /// <returns>Returns area by its id.</returns>
         [HttpGet]
         [Route("{id}")]
         public IHttpActionResult Get(Guid id)
@@ -86,7 +86,7 @@ namespace Likkle.WebApi.Owin.Controllers
 
         //TODO: Since it is not a good practice to use POST request for getting data, consider optimizing this for GET.
         /// <summary>
-        /// Example: POST /api/v1/areas/batchmetadata/
+        /// EXAMPLE: POST /api/v1/areas/batchmetadata/
         /// </summary>
         /// <param name="areas">Body sample: {'latitude': 11.111, 'longitude': 22.222, areaIds: ['9ee28efe-55f5-45fb-9aa1-600aa8b08114', 'b75ea52f-2b2b-4415-b385-6696cd7b0824']}</param>
         /// <returns>List of metadata for each area that has a contact with the lat/lon point.</returns>
@@ -120,7 +120,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
-        /// <returns>All the active areas around specific coordinates(lat/lon).</returns>
+        /// <returns>All the active areas around coordinates.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/")]
         public IHttpActionResult Get(double lat, double lon)
@@ -147,8 +147,8 @@ namespace Likkle.WebApi.Owin.Controllers
         /// </summary>
         /// <param name="lat">Latitude of the center of the screen</param>
         /// <param name="lon">Longitude of the center of the screen</param>
-        /// <param name="rad">Radius in which we are getting all the areas. It is in kilometers.</param>
-        /// <returns>All active areas in a radius around point(lat/lon).</returns>
+        /// <param name="rad">Radius in which we are getting all the areas. It is in kilometers</param>
+        /// <returns>All active areas in a radius around point.</returns>
         [HttpGet]
         [Route("{lat:double}/{lon:double}/{rad:int}")]
         public IHttpActionResult Get(double lat, double lon, int rad)
@@ -173,7 +173,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: GET api/v1/areas/{id:Guid}/users
         /// </summary>
         /// <param name="id">Id of the area.</param>
-        /// <returns>All the users falling into the specific area we passed as an argument.</returns>
+        /// <returns>All the users falling into specific area</returns>
         [HttpGet]
         [Route("{id}/users")]
         public IHttpActionResult GetUsers(Guid id)
@@ -194,7 +194,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// Example: POST api/v1/areas
         /// </summary>
         /// <param name="area">Sample post: {'radius':50, 'latitude': 23.1233123,'longitude': 43.1231232}</param>
-        /// <returns>HTTP Status of 201 code if area was successfuly created. Http Status 500 if there was a server error.</returns>
+        /// <returns>HTTP Status of 201 code if area was successfuly created.</returns>
         [HttpPost]
         [Route("")]
         public IHttpActionResult Post([FromBody]NewAreaRequest area)
