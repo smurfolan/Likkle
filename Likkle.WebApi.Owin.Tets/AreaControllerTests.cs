@@ -9,8 +9,8 @@ using Likkle.BusinessEntities.Enums;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
+using Likkle.BusinessServices.Utils;
 using Likkle.WebApi.Owin.Controllers;
-using Likkle.WebApi.Owin.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

@@ -8,11 +8,11 @@ using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessEntities.Responses;
 using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Controllers;
-using Likkle.WebApi.Owin.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
+using Likkle.BusinessServices.Utils;
 
 namespace Likkle.WebApi.Owin.Tets
 {

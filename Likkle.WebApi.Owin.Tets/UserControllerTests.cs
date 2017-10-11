@@ -7,7 +7,6 @@ using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
 using Likkle.BusinessServices.Utils;
 using Likkle.WebApi.Owin.Controllers;
-using Likkle.WebApi.Owin.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Threading.Tasks;

@@ -38,6 +38,9 @@
       <HintPath>..\packages\FluentValidation.6.4.1\lib\Net45\FluentValidation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
@@ -101,7 +104,9 @@
     <Compile Include="Utils\ActionLevelExceptionManager.cs" />
     <Compile Include="Utils\GeoCodingManager.cs" />
     <Compile Include="Utils\IGeoCodingManager.cs" />
+    <Compile Include="Utils\ILikkleApiLogger.cs" />
     <Compile Include="Utils\IPhoneValidationManager.cs" />
+    <Compile Include="Utils\LikkleApiLogger.cs" />
     <Compile Include="Utils\PhoneNumberValidationResponse.cs" />
     <Compile Include="Utils\PhoneValidationManager.cs" />
     <Compile Include="Utils\ReverseGeoCoordinateResponse.cs" />

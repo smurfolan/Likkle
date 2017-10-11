@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Http.Controllers;
 
-namespace Likkle.WebApi.Owin.Helpers
+namespace Likkle.BusinessServices.Utils
 {
     public interface ILikkleApiLogger
     {

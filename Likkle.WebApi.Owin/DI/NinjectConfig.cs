@@ -5,7 +5,6 @@ using Likkle.BusinessServices;
 using Likkle.BusinessServices.Utils;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
-using Likkle.WebApi.Owin.Helpers;
 using Ninject;
 
 namespace Likkle.WebApi.Owin.DI

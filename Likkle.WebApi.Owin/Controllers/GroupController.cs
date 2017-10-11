@@ -2,13 +2,13 @@
 using System.Web.Http;
 using Likkle.BusinessEntities.Requests;
 using Likkle.BusinessServices;
-using Likkle.WebApi.Owin.Helpers;
 using System.Threading.Tasks;
 using System.Web;
+using Likkle.BusinessServices.Utils;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {

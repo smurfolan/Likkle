@@ -10,6 +10,7 @@ using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 using Likkle.BusinessEntities.SignalrDtos;
+using Likkle.BusinessServices.Utils;
 
 namespace Likkle.BusinessServices
 {
@@ -19,17 +20,20 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly ISignalrService _signalrService;
+        private readonly ILikkleApiLogger _apiLogger;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            ISignalrService signalrService)
+            ISignalrService signalrService, 
+            ILikkleApiLogger apiLogger)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _signalrService = signalrService;
+            _apiLogger = apiLogger;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -125,6 +129,14 @@ namespace Likkle.BusinessServices
                 newGroupMetadata.TagIds);
             this._unitOfWork.Save();
 
+            // TEST
+            _apiLogger.LogInfo($"The number of the subscribed users except for me is: {users.Count()}");
+            foreach (var user in users)
+            {
+                _apiLogger.LogInfo($"User: {user.FirstName}");
+            }
+            // TEST
+
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
@@ -136,6 +148,10 @@ namespace Likkle.BusinessServices
                     areaDtos.Select(a => a.Id), 
                     groupDto, 
                     subscr.Value);
+
+                // TEST
+                _apiLogger.LogInfo($"Message was sent to {subscr.Key}");
+                // TEST
             }
         }
 
@@ -163,6 +179,14 @@ namespace Likkle.BusinessServices
                 groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
             this._unitOfWork.Save();
 
+            // TEST
+            _apiLogger.LogInfo($"The number of the subscribed users except for me is: {usersFallingUnderTheNewArea.Count()}");
+            foreach (var user in usersFallingUnderTheNewArea)
+            {
+                _apiLogger.LogInfo($"User: {user.FirstName}");
+            }
+            // TEST
+
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaEntity = this._unitOfWork.AreaRepository.GetAreaById(areaId);
             var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
@@ -175,6 +199,10 @@ namespace Likkle.BusinessServices
                     areaDto, 
                     groupDto, 
                     subcr.Value);
+
+                // TEST
+                _apiLogger.LogInfo($"Message was sent to {subcr.Key}");
+                // TEST
             }
         }
 

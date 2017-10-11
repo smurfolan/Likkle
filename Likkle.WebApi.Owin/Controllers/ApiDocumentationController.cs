@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
 using System.Xml;
-using Likkle.WebApi.Owin.Helpers;
+using Likkle.BusinessServices.Utils;
 
 namespace Likkle.WebApi.Owin.Controllers
 {

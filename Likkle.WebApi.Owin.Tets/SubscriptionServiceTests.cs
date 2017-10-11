@@ -84,7 +84,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
-                this._signalrServiceMock.Object);
+                this._signalrServiceMock.Object,
+                null);
 
             this._groupService = new GroupService(
                 this._mockedLikkleUoW.Object,
