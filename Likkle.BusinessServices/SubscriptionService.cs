@@ -112,10 +112,17 @@ namespace Likkle.BusinessServices
             Guid invokedByUserId)
         {
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-            var users = areas.SelectMany(ar => ar.Groups)
-                        .Where(gr => gr.IsActive == true)
-                        .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
-                        .Distinct();
+            var users = new List<User>();
+
+            foreach (var area in areas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius && (u.Id != invokedByUserId));
+
+                users.AddRange(usersToBeAdded);
+            }
 
             // TEST
             _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupAttachedToExistingAreas operation was invoked by {invokedByUserId} is: {users.Count()}");
