@@ -117,6 +117,10 @@ namespace Likkle.BusinessServices
                         .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
                         .Distinct();
 
+            // TEST
+            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupAttachedToExistingAreas operation was invoked by {invokedByUserId} is: {users.Count()}");
+            // TEST
+
             if (users == null || !users.Any())
                 return;
 
@@ -129,14 +133,6 @@ namespace Likkle.BusinessServices
                 newGroupMetadata.TagIds);
             this._unitOfWork.Save();
 
-            // TEST
-            _apiLogger.LogInfo($"The number of the subscribed users except for me is: {users.Count()}");
-            foreach (var user in users)
-            {
-                _apiLogger.LogInfo($"User: {user.FirstName}");
-            }
-            // TEST
-
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
@@ -148,10 +144,6 @@ namespace Likkle.BusinessServices
                     areaDtos.Select(a => a.Id), 
                     groupDto, 
                     subscr.Value);
-
-                // TEST
-                _apiLogger.LogInfo($"Message was sent to {subscr.Key}");
-                // TEST
             }
         }
 
@@ -169,6 +161,10 @@ namespace Likkle.BusinessServices
             var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
                 .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius && (u.Id != invokedByUserId));
 
+            // TEST
+            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupAsNewArea operation was invoked by {invokedByUserId} is: {usersFallingUnderTheNewArea.Count()}");
+            // TEST
+
             if (usersFallingUnderTheNewArea == null || !usersFallingUnderTheNewArea.Any())
                 return;
 
@@ -178,14 +174,6 @@ namespace Likkle.BusinessServices
                 groupToSubscribe, 
                 groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
             this._unitOfWork.Save();
-
-            // TEST
-            _apiLogger.LogInfo($"The number of the subscribed users except for me is: {usersFallingUnderTheNewArea.Count()}");
-            foreach (var user in usersFallingUnderTheNewArea)
-            {
-                _apiLogger.LogInfo($"User: {user.FirstName}");
-            }
-            // TEST
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaEntity = this._unitOfWork.AreaRepository.GetAreaById(areaId);
@@ -199,10 +187,6 @@ namespace Likkle.BusinessServices
                     areaDto, 
                     groupDto, 
                     subcr.Value);
-
-                // TEST
-                _apiLogger.LogInfo($"Message was sent to {subcr.Key}");
-                // TEST
             }
         }
 
@@ -224,6 +208,10 @@ namespace Likkle.BusinessServices
 
                 allUsers.AddRange(usersToBeAdded);
             }
+
+            // TEST
+            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupWasRecreated operation was invoked by {invokedByUserId} is: {allUsers.Count()}");
+            // TEST
 
             if (allUsers == null || !allUsers.Any())
                 return;
