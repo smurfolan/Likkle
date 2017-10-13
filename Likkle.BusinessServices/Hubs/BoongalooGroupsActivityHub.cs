@@ -20,6 +20,14 @@ namespace Likkle.BusinessServices.Hubs
             return base.OnConnected();
         }
 
+        public override Task OnReconnected()
+        {
+            var userId = Context.QueryString[UserIdQueryStringParamName];
+            Groups.Add(Context.ConnectionId, userId);
+
+            return base.OnReconnected();
+        }
+
         public override Task OnDisconnected(bool stopCalled)
         {
             var userId = Context.QueryString[UserIdQueryStringParamName];
