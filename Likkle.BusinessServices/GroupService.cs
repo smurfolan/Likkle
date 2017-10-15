@@ -148,21 +148,28 @@ namespace Likkle.BusinessServices
 
         public IEnumerable<Guid> GetUserSubscriptions(Guid uid, double lat, double lon)
         {
-            var groupsAroundCoordinates = this.GetGroups(lat, lon).Select(gr => gr.Id);
+            var groupsAroundCoordinates = this
+                .GetGroups(lat, lon)
+                .Select(gr => gr.Id)
+                .ToList();
 
             var user = this._unitOfWork.UserRepository.GetUserById(uid);
 
             if(user == null)
                 throw new ArgumentException($"User with id {uid} does not exist in the DB.");
 
-            if (user.Groups != null && user.Groups.Any())
-            {
-                var allGroupsForUser = user.Groups.Select(gr => gr.Id);
+            // TEST
+            var historyGroups = user
+                .HistoryGroups
+                .Select(gr => gr.GroupId)
+                .ToList();
+            // TEST
 
-                return allGroupsForUser.Where(gr => groupsAroundCoordinates.Contains(gr));
-            }
+            if (!historyGroups.Any())
+                return new List<Guid>() { };
 
-            return new List<Guid>() { };
+            var allGroupsForUser = historyGroups;
+            return allGroupsForUser.Intersect(groupsAroundCoordinates); 
         }
 
         public PreGroupCreationResponseDto GetGroupCreationType(double lat, double lon, Guid userId)
