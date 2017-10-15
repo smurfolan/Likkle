@@ -10,7 +10,6 @@ using Likkle.BusinessEntities.Requests;
 using Likkle.DataModel;
 using Likkle.DataModel.UnitOfWork;
 using Likkle.BusinessEntities.SignalrDtos;
-using Likkle.BusinessServices.Utils;
 
 namespace Likkle.BusinessServices
 {
@@ -20,20 +19,17 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly ISignalrService _signalrService;
-        private readonly ILikkleApiLogger _apiLogger;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            ISignalrService signalrService, 
-            ILikkleApiLogger apiLogger)
+            ISignalrService signalrService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _signalrService = signalrService;
-            _apiLogger = apiLogger;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -123,11 +119,7 @@ namespace Likkle.BusinessServices
 
                 users.AddRange(usersToBeAdded);
             }
-
-            // TEST
-            _apiLogger.LogInfo($"Number of users available in the selected areas: {users.Count()}. ");
-            // TEST
-
+            
             if (!users.Any())
                 return;
 
@@ -139,11 +131,7 @@ namespace Likkle.BusinessServices
                 groupToSubscribe,
                 newGroupMetadata.TagIds);
             this._unitOfWork.Save();
-
-            // TEST
-            _apiLogger.LogInfo($"Actual number of users to be notified after aut. subscr. settings were considered: {subscriptionsResult.Count()}.");
-            // TEST
-
+            
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
@@ -204,10 +192,16 @@ namespace Likkle.BusinessServices
             Guid invokedByUserId)
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
+
+            // Areas that need to be re-activated because they are now inactive.
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
+
+            // Active and inactive areas this group was part of. We need them in order to find users falling under these area(s).
+            var areasWhichThisGroupWasPartOf = groupToSubscribe.Areas.ToList();
+
             var allUsers = new List<User>();
 
-            foreach (var area in areas)
+            foreach (var area in areasWhichThisGroupWasPartOf)
             {
                 var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
                 var usersToBeAdded = this._unitOfWork.UserRepository
@@ -216,14 +210,14 @@ namespace Likkle.BusinessServices
 
                 allUsers.AddRange(usersToBeAdded);
             }
-
-            if (allUsers == null || !allUsers.Any())
+            
+            if (!allUsers.Any())
                 return;
 
             // Subscribe users on the service
             var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers.Distinct(), groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
-
+            
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);

@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web.Script.Serialization;
 using Likkle.BusinessEntities.SignalrDtos;
 using Likkle.BusinessServices.Hubs;
 using Microsoft.AspNet.SignalR;
-using Likkle.BusinessServices.Utils;
 
 namespace Likkle.BusinessServices
 {
     public class SignalrService : ISignalrService
     {
         private readonly IHubContext _groupsActivityHub;
-        private readonly ILikkleApiLogger _apiLogger;
 
-        public SignalrService(ILikkleApiLogger apiLogger)
+        public SignalrService()
         {
-            _apiLogger = apiLogger;
             this._groupsActivityHub = GlobalHost.ConnectionManager.GetHubContext<BoongalooGroupsActivityHub>();
         }
 
@@ -47,22 +43,14 @@ namespace Likkle.BusinessServices
             SRGroupDto groupDto,
             bool isSubscribedByMe)
         {
-            var groupDtoAsJson = new JavaScriptSerializer().Serialize(groupDto);
-
-            // TEST
-            _apiLogger.LogInfo($"Areas:{areaIds}, Group:{groupDtoAsJson}, isSubsrcibedByMe:{isSubscribedByMe}");
-            // TEST
-
             this._groupsActivityHub.Clients
                     .Group(groupId)
                     .groupAttachedToExistingAreasWasCreatedAroundMe(areaIds, groupDto, isSubscribedByMe);
-
-            // TEST
-            _apiLogger.LogInfo($"User with id {groupId} was pinged by SignalR with event name: GroupAttachedToExistingAreasWasCreatedAroundMe");
-            // TEST
         }
 
-        public void GroupWasJoinedByUser(Guid groupId, List<string> usersToBeNotified)
+        public void GroupWasJoinedByUser(
+            Guid groupId, 
+            List<string> usersToBeNotified)
         {
             this._groupsActivityHub.Clients
                 .Groups(usersToBeNotified)
