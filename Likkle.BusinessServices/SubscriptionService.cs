@@ -125,10 +125,10 @@ namespace Likkle.BusinessServices
             }
 
             // TEST
-            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupAttachedToExistingAreas operation was invoked by {invokedByUserId} is: {users.Count()}");
+            _apiLogger.LogInfo($"Number of users available in the selected areas: {users.Count()}. ");
             // TEST
 
-            if (users == null || !users.Any())
+            if (!users.Any())
                 return;
 
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
@@ -139,6 +139,10 @@ namespace Likkle.BusinessServices
                 groupToSubscribe,
                 newGroupMetadata.TagIds);
             this._unitOfWork.Save();
+
+            // TEST
+            _apiLogger.LogInfo($"Actual number of users to be notified after aut. subscr. settings were considered: {subscriptionsResult.Count()}.");
+            // TEST
 
             // Use SignalR to notify all the clients that need to receive information about the newly created group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
@@ -166,13 +170,10 @@ namespace Likkle.BusinessServices
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
             var usersFallingUnderTheNewArea = this._unitOfWork.UserRepository.GetAllUsers()
-                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius && (u.Id != invokedByUserId));
+                .Where(u => newAreaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)newAreaRadius && (u.Id != invokedByUserId))
+                .ToList();
 
-            // TEST
-            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupAsNewArea operation was invoked by {invokedByUserId} is: {usersFallingUnderTheNewArea.Count()}");
-            // TEST
-
-            if (usersFallingUnderTheNewArea == null || !usersFallingUnderTheNewArea.Any())
+            if (!usersFallingUnderTheNewArea.Any())
                 return;
 
             // Subscribe users on the service
@@ -215,10 +216,6 @@ namespace Likkle.BusinessServices
 
                 allUsers.AddRange(usersToBeAdded);
             }
-
-            // TEST
-            _apiLogger.LogInfo($"Number of users(except for me) to be notified after GroupWasRecreated operation was invoked by {invokedByUserId} is: {allUsers.Count()}");
-            // TEST
 
             if (allUsers == null || !allUsers.Any())
                 return;
@@ -311,7 +308,8 @@ namespace Likkle.BusinessServices
 
         private void ConnectUserToNewlySubscribedGroups(IEnumerable<Group> newlySubscribedGroups, User user)
         {
-            foreach (var newlySubscribedGroup in newlySubscribedGroups)
+            var subscribedGroups = newlySubscribedGroups as Group[] ?? newlySubscribedGroups.ToArray();
+            foreach (var newlySubscribedGroup in subscribedGroups)
             {
                 user.Groups.Add(newlySubscribedGroup);
                 user.HistoryGroups.Add(new HistoryGroup()
@@ -324,11 +322,14 @@ namespace Likkle.BusinessServices
                 });
             }
 
-            if(newlySubscribedGroups.Any())
-                this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
+            if(subscribedGroups.Any())
+                this.AutoIncreaseUsersInGroups(subscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
-        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(
+            IEnumerable<User> users, 
+            Group groupToSubscribe, 
+            IEnumerable<Guid> tagIds)
         {
             var result = new Dictionary<Guid, bool>() { };
 
@@ -341,7 +342,7 @@ namespace Likkle.BusinessServices
                     result.Add(user.Id, true);
                     continue;
                 }
-                else if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                if (autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
                 {
                     var tagsUserSubscribes = autoSubscrSetings.Tags.Select(t => t.Id);
                     var newGroupTags = tagIds;
@@ -354,11 +355,14 @@ namespace Likkle.BusinessServices
                         result.Add(user.Id, true);
                         continue;
                     }
-                    else
-                    {
-                        result.Add(user.Id, false);
-                        continue;
-                    }
+
+                    result.Add(user.Id, false);
+                    continue;
+                }
+                if (!autoSubscrSetings.AutomaticallySubscribeToAllGroups &&
+                    !autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    result.Add(user.Id, false);
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web.Script.Serialization;
 using Likkle.BusinessEntities.SignalrDtos;
 using Likkle.BusinessServices.Hubs;
 using Microsoft.AspNet.SignalR;
@@ -37,11 +38,7 @@ namespace Likkle.BusinessServices
         {
             this._groupsActivityHub.Clients
                     .Group(groupId)
-                    .groupAsNewAreaWasCreatedAroundMe(areaDto, groupDto, isSubscribedByMe);
-
-            // TEST
-            _apiLogger.LogInfo($"User with id {groupId} was pinged by SignalR with event name: GroupAsNewAreaWasCreatedAroundMe");
-            // TEST
+                    .groupAsNewAreaWasCreatedAroundMe(areaDto, groupDto, isSubscribedByMe); 
         }
 
         public void GroupAttachedToExistingAreasWasCreatedAroundMe(
@@ -50,6 +47,12 @@ namespace Likkle.BusinessServices
             SRGroupDto groupDto,
             bool isSubscribedByMe)
         {
+            var groupDtoAsJson = new JavaScriptSerializer().Serialize(groupDto);
+
+            // TEST
+            _apiLogger.LogInfo($"Areas:{areaIds}, Group:{groupDtoAsJson}, isSubsrcibedByMe:{isSubscribedByMe}");
+            // TEST
+
             this._groupsActivityHub.Clients
                     .Group(groupId)
                     .groupAttachedToExistingAreasWasCreatedAroundMe(areaIds, groupDto, isSubscribedByMe);
@@ -64,10 +67,6 @@ namespace Likkle.BusinessServices
             this._groupsActivityHub.Clients
                 .Groups(usersToBeNotified)
                 .groupWasJoinedByUser(groupId);
-
-            // TEST
-            _apiLogger.LogInfo($"User with id {groupId} was pinged by SignalR with event name: GroupWasJoinedByUser");
-            // TEST
         }
 
         public void GroupWasLeftByUser(
@@ -77,10 +76,6 @@ namespace Likkle.BusinessServices
             this._groupsActivityHub.Clients
                 .Groups(usersToBeNotified)
                 .groupWasLeftByUser(groupId);
-
-            // TEST
-            _apiLogger.LogInfo($"User with id {groupId} was pinged by SignalR with event name: GroupWasLeftByUser");
-            // TEST
         }
     }
 }
