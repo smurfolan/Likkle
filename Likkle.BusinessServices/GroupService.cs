@@ -89,7 +89,8 @@ namespace Likkle.BusinessServices
             areaEntity.ApproximateAddress = this._geoCodingManager.GetApproximateAddress(new NewAreaRequest()
             {
                 Latitude = newGroup.Latitude,
-                Longitude = newGroup.Longitude
+                Longitude = newGroup.Longitude,
+                Radius = newGroup.Radius
             });
 
             var newAreaId = this._unitOfWork.AreaRepository.InsertArea(areaEntity);

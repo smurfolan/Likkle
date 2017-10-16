@@ -5,13 +5,17 @@ using Likkle.BusinessServices;
 using Likkle.WebApi.Owin.Helpers;
 using System.Threading.Tasks;
 using System.Web;
+using Likkle.BusinessServices.Validators;
+using System.Text;
+using System.Linq;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
+        private readonly IAreaService _areaService;
         private readonly IGroupService _groupService;
         private readonly ILikkleApiLogger _apiLogger;
         private readonly ISubscriptionService _subscriptionService;
@@ -19,8 +23,10 @@ namespace Likkle.WebApi.Owin.Controllers
         public GroupController(
             IGroupService groupService,
             ILikkleApiLogger logger, 
-            ISubscriptionService subscriptionService)
+            ISubscriptionService subscriptionService,
+            IAreaService areaService)
         {
+            this._areaService = areaService;
             this._groupService = groupService;
             this._apiLogger = logger;
             _subscriptionService = subscriptionService;
@@ -167,6 +173,24 @@ namespace Likkle.WebApi.Owin.Controllers
             // TODO: Validate if really the passed groups belong to the passed coordinates
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var validator = new NewAreaRequestValidator(this._areaService);
+            var results = validator.Validate(
+                new NewAreaRequest()
+                {
+                    Latitude = newGroup.Latitude,
+                    Longitude = newGroup.Longitude,
+                    Radius = newGroup.Radius
+                });
+
+            var detailedError = new StringBuilder();
+            foreach (var error in results.Errors.Select(e => e.ErrorMessage))
+            {
+                detailedError.Append(error + "; ");
+            }
+
+            if (!results.IsValid)
+                return BadRequest(detailedError.ToString()); // TODO: Think of returning the errors in a better way
 
             try
             {
