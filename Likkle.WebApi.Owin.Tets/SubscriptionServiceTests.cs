@@ -33,6 +33,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<IGeoCodingManager> _geoCodingManagerMock;
         private readonly Mock<ISubscriptionService> _subscrServiceMock;
         private readonly Mock<ISignalrService> _signalrServiceMock;
+        private readonly Mock<IAreaService> _areaServiceMock;
 
         private readonly IEnumerable<Tag> _allTags;
 
@@ -75,6 +76,7 @@ namespace Likkle.WebApi.Owin.Tets
             _subscrServiceMock.Setup(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>(), It.IsAny<Guid>()));
 
             _signalrServiceMock = new Mock<ISignalrService>();
+            _areaServiceMock = new Mock<IAreaService>();
 
             this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
@@ -84,7 +86,8 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedLikkleUoW.Object,
                 this._mockedConfigurationProvider.Object,
                 this._configurationWrapperMock.Object,
-                this._signalrServiceMock.Object);
+                this._signalrServiceMock.Object,
+                this._areaServiceMock.Object);
 
             this._groupService = new GroupService(
                 this._mockedLikkleUoW.Object,

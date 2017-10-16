@@ -124,6 +124,28 @@ namespace Likkle.BusinessServices
             return this._unitOfWork.AreaRepository.Insert(areaEntity);
         }
 
+        public IEnumerable<Guid> GetUsersFallingUnderSpecificAreas(IEnumerable<Guid> areaIds)
+        {
+            var observedAreas = this._unitOfWork
+                .AreaRepository
+                .GetAreas()
+                .Where(a => areaIds.Contains(a.Id));
+
+            var allUsers = new List<User>();
+
+            foreach (var area in observedAreas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+
+                allUsers.AddRange(usersToBeAdded);
+            }
+
+            return allUsers.Select(u => u.Id);
+        }
+
         #region Private methods
         private static AreaMetadataResponseDto GetAreaMetadata(
             GeoCoordinate clientLocation,

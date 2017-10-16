@@ -15,7 +15,7 @@ namespace Likkle.BusinessServices
         AreaMetadataResponseDto GetMetadataForArea(double latitude, double longitude, Guid areaId);
         IEnumerable<AreaMetadataResponseDto> GetMultipleAreasMetadata(MultipleAreasMetadataRequestDto areas);
         IEnumerable<AreaForLocationResponseDto> GetAreas(double lat, double lon, int rad);
-
         Guid InsertNewArea(NewAreaRequest newArea);
+        IEnumerable<Guid> GetUsersFallingUnderSpecificAreas(IEnumerable<Guid> areaIds);
     }
 }

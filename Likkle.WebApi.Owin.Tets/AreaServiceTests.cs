@@ -485,5 +485,12 @@ namespace Likkle.WebApi.Owin.Tets
         {
             throw new NotImplementedException();
         }
+
+        [TestMethod]
+        public void We_Can_Get_All_Users_Falling_Under_Specific_Areas()
+        {
+            // TODO: Test GetUsersFallingUnderSpecificAreas
+            throw new NotImplementedException();
+        }
     }
 }

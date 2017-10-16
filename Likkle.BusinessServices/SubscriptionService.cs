@@ -19,17 +19,20 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly ISignalrService _signalrService;
+        private readonly IAreaService _areaService;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            ISignalrService signalrService)
+            ISignalrService signalrService,
+            IAreaService areaService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _signalrService = signalrService;
+            this._areaService = areaService;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -236,12 +239,9 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
             Guid invokedByUserId)
         {
-            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
-
             UseSignalrToChangeGroupsParticipantsNumber(
                 groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
-                invokedByUserId, 
-                allAreas,
+                invokedByUserId,
                 true);
         }
 
@@ -249,12 +249,9 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> groupsThatNeedToDecreaseTheNumberOfTheirUsers, 
             Guid invokedByUserId)
         {
-            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
-
             UseSignalrToChangeGroupsParticipantsNumber(
                 groupsThatNeedToDecreaseTheNumberOfTheirUsers,
                 invokedByUserId,
-                allAreas,
                 false);
         }
 
@@ -364,22 +361,23 @@ namespace Likkle.BusinessServices
         }
 
         private void UseSignalrToChangeGroupsParticipantsNumber(
-            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers,
+            IEnumerable<Guid> groupsThatNeedToChangeTheNumberOfTheirUsers,
             Guid invokedByUserId,
-            IEnumerable<Area> allAreas,
             bool isIncrementalOperation)
         {
-            foreach (var group in groupsThatNeedToIncreaseTheNumberOfTheirUsers)
+            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
+
+            foreach (var group in groupsThatNeedToChangeTheNumberOfTheirUsers)
             {
                 var areasIncludingThisGroup = allAreas
                     .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
                     .ToList();
 
-                var usersToBeNotified = areasIncludingThisGroup
-                    .SelectMany(a => a.Groups)
-                    .SelectMany(gr => gr.Users)
-                    .Where(u => u.Id != invokedByUserId)
-                    .Select(u => u.Id.ToString())
+                // 1. Find all users under these areas based on their last locaton and exclude invokedByUserId
+                var usersToBeNotified = this._areaService
+                    .GetUsersFallingUnderSpecificAreas(areasIncludingThisGroup.Select(a => a.Id))
+                    .Where(uid => uid != invokedByUserId)
+                    .Select(u => u.ToString())
                     .Distinct()
                     .ToList();
 
