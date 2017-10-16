@@ -33,9 +33,9 @@ namespace Likkle.BusinessServices.Utils
             var reverseGeoCoordinateResponse = tcs.Task.Result.results.FirstOrDefault();
 
 
-            return reverseGeoCoordinateResponse != null 
-                ? $"{reverseGeoCoordinateResponse.formatted_address} ({(int)newArea.Radius} meters radius)"  
-                : $"{newArea.Latitude}, {newArea.Longitude}";
+            return (reverseGeoCoordinateResponse != null 
+                ? $"{reverseGeoCoordinateResponse.formatted_address}"  
+                : $"{newArea.Latitude}, {newArea.Longitude}") + $" ({(int)newArea.Radius} meters radius)";
         }
     }
 }
