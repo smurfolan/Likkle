@@ -160,16 +160,16 @@ namespace Likkle.BusinessServices
                 throw new ArgumentException($"User with id {uid} does not exist in the DB.");
 
             // TEST
-            var historyGroups = user
-                .HistoryGroups
-                .Select(gr => gr.GroupId)
+            var groups = user
+                .Groups
+                .Select(gr => gr.Id)
                 .ToList();
             // TEST
 
-            if (!historyGroups.Any())
+            if (!groups.Any())
                 return new List<Guid>() { };
 
-            var allGroupsForUser = historyGroups;
+            var allGroupsForUser = groups;
             return allGroupsForUser.Intersect(groupsAroundCoordinates); 
         }
 
