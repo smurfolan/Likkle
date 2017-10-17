@@ -285,7 +285,8 @@ namespace Likkle.WebApi.Owin.Tets
                 FirstName = "Stefcho",
                 LastName = "Stefchev",
                 Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                Groups = new List<Group>() { }
             };
 
             var populatedDatabase = new FakeLikkleDbContext()
@@ -513,8 +514,11 @@ namespace Likkle.WebApi.Owin.Tets
                 IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
-                    AutomaticallySubscribeToAllGroups = true, AutomaticallySubscribeToAllGroupsWithTag = false
-                }
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001
             };
 
             var userTwoId = Guid.NewGuid();
@@ -530,7 +534,9 @@ namespace Likkle.WebApi.Owin.Tets
                     AutomaticallySubscribeToAllGroups = false,
                     AutomaticallySubscribeToAllGroupsWithTag = true,
                     Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
-                }
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001
             };
 
             var groupOneId = Guid.NewGuid();
@@ -551,7 +557,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Latitude = 10,
                 Longitude = 10,
                 Groups = new List<Group>() { groupOne, groupTwo },
-                IsActive = true
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -580,6 +587,9 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(userTwo.Groups.Select(gr => gr.Id).Contains(groupOneId));
             Assert.IsTrue(userTwo.Groups.Select(gr => gr.Id).Contains(groupTwoId));
             Assert.IsTrue(userTwo.Groups.Select(gr => gr.Id).Contains(groupThreeId));
+
+            this._signalrServiceMock
+                .Verify(ssm => ssm.GroupAttachedToExistingAreasWasCreatedAroundMe(It.IsAny<string>(), It.IsAny<IEnumerable<Guid>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Exactly(2));
         }
 
         [TestMethod]

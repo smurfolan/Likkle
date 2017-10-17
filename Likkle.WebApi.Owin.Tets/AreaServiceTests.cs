@@ -489,8 +489,38 @@ namespace Likkle.WebApi.Owin.Tets
         [TestMethod]
         public void We_Can_Get_All_Users_Falling_Under_Specific_Areas()
         {
-            // TODO: Test GetUsersFallingUnderSpecificAreas
-            throw new NotImplementedException();
+            // arrange
+            var userOneId = Guid.NewGuid();
+            var userOne = new User(){ Id = userOneId, Latitude = 10.000001, Longitude = 10.000001 };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User(){ Id = userTwoId, Latitude = 10.000005, Longitude = 10.000005 };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId, Latitude = 10.000012,Longitude = 10.000012, Radius = RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { userOne, userTwo }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+
+            // act
+            var result = this._areaService.GetUsersFallingUnderSpecificAreas(new List<Guid>() { area.Id });
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Count());
+            Assert.IsTrue(result.Contains(userOneId));
+            Assert.IsTrue(result.Contains(userTwoId));
         }
     }
 }

@@ -31,6 +31,7 @@ namespace Likkle.WebApi.Owin.Tets
         private readonly Mock<ISubscriptionSettingsService> _subscriptionSettingsServiceMock;
         private readonly Mock<ISignalrService> _signalrServiceMock;
         private readonly Mock<ISubscriptionService> _subscripionServiceMock;
+        private readonly Mock<IAreaService> _areaServiceMock;
 
         public UserServiceTests()
         {
@@ -59,6 +60,8 @@ namespace Likkle.WebApi.Owin.Tets
 
             this._subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
             this._subscripionServiceMock = new Mock<ISubscriptionService>();
+
+            this._areaServiceMock = new Mock<IAreaService>();
 
             this._signalrServiceMock = new Mock<ISignalrService>();
 
@@ -94,7 +97,7 @@ namespace Likkle.WebApi.Owin.Tets
                 this._mockedConfigurationProvider.Object, 
                 this._configurationWrapperMock.Object,
                 this._signalrServiceMock.Object,
-                null);
+                this._areaServiceMock.Object);
         }
 
         [TestMethod]
@@ -532,6 +535,11 @@ namespace Likkle.WebApi.Owin.Tets
 
             Assert.AreEqual(2, user.Groups.Count);
             Assert.AreEqual(2, user.HistoryGroups.Count);
+
+            this._areaServiceMock
+                .Verify(asm => asm.GetUsersFallingUnderSpecificAreas(It.IsAny<IEnumerable<Guid>>()), Times.Exactly(2));
+            this._signalrServiceMock
+                .Verify(ssm => ssm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Exactly(2));
 
             this._userService.UpdateUserLocation(userId, 20, 20);
 
