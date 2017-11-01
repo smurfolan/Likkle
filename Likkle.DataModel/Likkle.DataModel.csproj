@@ -77,6 +77,10 @@
     <Compile Include="Migrations\201709131447038_UserLocationProperties.Designer.cs">
       <DependentUpon>201709131447038_UserLocationProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711011430551_VisibleToThePublic_NewFieldForGroup.cs" />
+    <Compile Include="Migrations\201711011430551_VisibleToThePublic_NewFieldForGroup.Designer.cs">
+      <DependentUpon>201711011430551_VisibleToThePublic_NewFieldForGroup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Repositories\HistoryGroupRepository.cs" />
     <Compile Include="Repositories\IHistoryGroupRepository.cs" />
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
@@ -174,6 +178,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201709131447038_UserLocationProperties.resx">
       <DependentUpon>201709131447038_UserLocationProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711011430551_VisibleToThePublic_NewFieldForGroup.resx">
+      <DependentUpon>201711011430551_VisibleToThePublic_NewFieldForGroup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

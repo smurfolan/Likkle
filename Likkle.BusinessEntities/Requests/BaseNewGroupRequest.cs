@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Likkle.BusinessEntities.Requests
 {
@@ -14,6 +11,9 @@ namespace Likkle.BusinessEntities.Requests
 
         [Required]
         public IEnumerable<Guid> TagIds { get; set; }
+
+        [Required]
+        public bool VisibleToThePublic { get; set; }
 
         public Guid UserId { get; set; }
     }
