@@ -7,13 +7,12 @@ namespace Likkle.BusinessEntities.Responses
     {
         // Distance from the client to the area
         public double DistanceTo { get; set; }
-
         public string ApproximateAddress { get; set; }
-
         // What is the total number of all the people currently inside the area
         public int NumberOfParticipants { get; set; }
-
         // What are the people talking about in this area
         public IEnumerable<Guid> TagIds { get; set; }
+        // Indicates what is the number of the groups that were created as "Public" in this area
+        public int NumberOfGroupsVisibleToThePublic { get; set; }
     }
 }
