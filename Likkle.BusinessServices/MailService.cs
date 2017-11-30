@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,12 @@ namespace Likkle.BusinessServices
             this._configuration = configuration;
         }
 
-        public async Task SendEmailForThrownException(string recipientEmail, string exceptionBody)
+        public void ReportExceptionOnEmail(string recipient, string exceptionBody)
+        {
+            Task.Run(async () => await this.SendEmailForThrownException(recipient, exceptionBody));
+        }
+
+        private async Task SendEmailForThrownException(string recipientEmail, string exceptionBody)
         {
             _smtpClient = new SmtpClient()
             {

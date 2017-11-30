@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
-
-namespace Likkle.BusinessServices
+﻿namespace Likkle.BusinessServices
 {
     public interface IMailService
     {
-        Task SendEmailForThrownException(string recipient, string exceptionBody);
+        void ReportExceptionOnEmail(string recipient, string exceptionBody);
     }
 }

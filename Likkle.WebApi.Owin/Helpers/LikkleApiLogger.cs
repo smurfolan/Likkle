@@ -4,7 +4,6 @@ using System.Web.Http.Controllers;
 using log4net;
 using Likkle.BusinessServices.Utils;
 using Likkle.BusinessServices;
-using System.Threading.Tasks;
 
 namespace Likkle.WebApi.Owin.Helpers
 {
@@ -40,7 +39,7 @@ namespace Likkle.WebApi.Owin.Helpers
             this.LogError(mainErrorMessage, ex);
 
             if (this._configuration.MailSupportOnException)
-                Task.Run(async () => await this._mailService.SendEmailForThrownException(this._configuration.SupportEmail, $"{mainErrorMessage} ---> Stack trace: {ex.StackTrace.ToString()}")); 
+                this._mailService.ReportExceptionOnEmail(this._configuration.SupportEmail, $"{mainErrorMessage} ---> Stack trace: {ex.StackTrace?.ToString()}"); 
                     
             return
                 $"(ErrID:{formattedActionException.ErrorId}) {formattedActionException.ErrorMessage} {formattedActionException.KindMessage}";

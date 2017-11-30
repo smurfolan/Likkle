@@ -20,10 +20,11 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Send_System_Exception_On_Email_If_Configured_In_Settings()
+        public void We_Send_System_Exception_On_Email_If_Configured_As_True()
         {
             // arrange
             this._configurationWrapperMock.Setup(cwm => cwm.MailSupportOnException).Returns(true);
+            this._configurationWrapperMock.Setup(cwm => cwm.SupportEmail).Returns("some@rando.ma");
 
             // act
             var logger = new LikkleApiLogger(this._configurationWrapperMock.Object, this._mailServiceMock.Object);
@@ -42,7 +43,33 @@ namespace Likkle.WebApi.Owin.Tets
                 new System.Exception());
 
             // assert
-            this._mailServiceMock.Verify(msm => msm.SendEmailForThrownException(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            this._mailServiceMock.Verify(msm => msm.ReportExceptionOnEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void We_Dont_Send_System_Exception_On_Email_If_Configured_As_False()
+        {
+            // arrange
+            this._configurationWrapperMock.Setup(cwm => cwm.MailSupportOnException).Returns(false);
+
+            // act
+            var logger = new LikkleApiLogger(this._configurationWrapperMock.Object, this._mailServiceMock.Object);
+            logger.OnActionException(
+                new HttpActionContext(
+                    new HttpControllerContext()
+                    {
+                        Request = new HttpRequestMessage()
+                        {
+                            Method = HttpMethod.Get,
+                            RequestUri = new System.Uri("https://www.google.bg/")
+                        }
+                    },
+                    new ReflectedHttpActionDescriptor() { }
+                ),
+                new System.Exception());
+
+            // assert
+            this._mailServiceMock.Verify(msm => msm.ReportExceptionOnEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }
