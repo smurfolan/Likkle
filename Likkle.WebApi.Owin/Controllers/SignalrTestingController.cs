@@ -12,6 +12,12 @@ namespace Likkle.WebApi.Owin.Controllers
     {
         private readonly ISignalrService _signalrService;
 
+        private readonly List<string> ListOfSpecificUsersToBeNotified = new List<string>()
+        {
+            "fb872173-930e-493d-a9f1-643d75f6be09"/*Jackdev*/,
+            "59a45318-5720-450a-b28b-73fb4920b871"/*Jacksim*/
+        };
+
         public SignalrTestingController(ISignalrService signalrService)
         {
             _signalrService = signalrService;
@@ -129,11 +135,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                this._signalrService.GroupWasJoinedByUser(Guid.NewGuid(), new List<string>()
-                {
-                    "5b8e69b6-fc13-494d-9228-4215de85254f"/*Kevin*/,
-                    "b535df55-6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
-                });
+                this._signalrService.GroupWasJoinedByUser(Guid.NewGuid(), this.ListOfSpecificUsersToBeNotified);
 
                 return Ok();
             }
@@ -149,11 +151,7 @@ namespace Likkle.WebApi.Owin.Controllers
         {
             try
             {
-                this._signalrService.GroupWasLeftByUser(Guid.NewGuid(), new List<string>()
-                {
-                    "5b8e69b6-fc13-494d-9228-4215de85254f"/*Kevin*/,
-                    "b535df55-6a8e-4ef5-aecc-71797cabbda5"/*Bubka*/
-                });
+                this._signalrService.GroupWasLeftByUser(Guid.NewGuid(), this.ListOfSpecificUsersToBeNotified);
 
                 return Ok();
             }
