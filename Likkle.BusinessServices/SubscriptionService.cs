@@ -168,7 +168,7 @@ namespace Likkle.BusinessServices
             var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subcr in subscriptionsResult)
+            foreach (var subcr in GetUsersToBePingedBySignalR(usersFallingUnderTheNewArea, subscriptionsResult))
             {
                 this._signalrService.GroupAsNewAreaWasCreatedAroundMe(
                     subcr.Key.ToString(), 
@@ -367,6 +367,29 @@ namespace Likkle.BusinessServices
                 else
                     this._signalrService.GroupWasLeftByUser(group, usersToBeNotified);
             }
+        }
+
+        private Dictionary<Guid, bool> GetUsersToBePingedBySignalR(
+            IEnumerable<User> usersFallingUnderTheNewArea, 
+            Dictionary<Guid, bool> usersThatWereAutomaticallySubscribed)
+        {
+            var automaticallySubscribedUsers = usersThatWereAutomaticallySubscribed.Select(u => u.Key);
+
+            Dictionary<Guid, bool> result = new Dictionary<Guid, bool>();
+
+            foreach (var user in usersFallingUnderTheNewArea)
+            {
+                if (automaticallySubscribedUsers.Contains(user.Id))
+                {
+                    result.Add(user.Id, true);
+                }
+                else
+                {
+                    result.Add(user.Id, false);
+                }
+            }
+
+            return result;
         }
         #endregion
     }

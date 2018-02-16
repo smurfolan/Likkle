@@ -660,6 +660,113 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
+        public void We_Can_AutoSubscribe_UsersForGroupAsNewArea_And_Ping_Correct_Set_Of_Users_Via_SignalR()
+        {
+            // arrange
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000002,
+                Longitude = 10.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var userThreeId = Guid.NewGuid();
+            var userThree = new User()
+            {
+                Id = userThreeId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+                },
+                Latitude = 10.000003,
+                Longitude = 10.000003,
+                Groups = new List<Group>() { }
+            };
+
+            var userFourId = Guid.NewGuid();
+            var userFour = new User()
+            {
+                Id = userFourId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000004,
+                Longitude = 10.000004,
+                Groups = new List<Group>() { }
+            };
+
+            var groupId = Guid.NewGuid();
+            var group = new Group() {
+                Id = groupId,
+                Users = new List<User>() { },
+                IsActive = true,
+                Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+            };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.HunderdAndFiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { group },
+                Users = new FakeDbSet<User>() { userOne, userTwo, userThree, userFour },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(
+                area.Id, 
+                area.Latitude, 
+                area.Longitude, 
+                area.Radius, 
+                groupId, 
+                userOne.Id);
+
+            // assert
+            _signalrServiceMock.Verify(m => m.GroupAsNewAreaWasCreatedAroundMe(
+                It.IsIn<string>(new string[] { userTwoId.ToString(), userThreeId.ToString(), userFourId.ToString() }),
+                It.IsAny<SRAreaDto>(), 
+                It.IsAny<SRGroupDto>(), 
+                It.IsAny<bool>()), 
+                Times.Exactly(3));
+        }
+
+        [TestMethod]
         public void We_Can_AutoSubscribe_UsersForRecreatedGroup()
         {
             // arrange
