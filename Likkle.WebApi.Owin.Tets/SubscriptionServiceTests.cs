@@ -115,7 +115,7 @@ namespace Likkle.WebApi.Owin.Tets
             var groupOneId = Guid.NewGuid();
             var groupTwoId = Guid.NewGuid();
 
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>(), IsActive = true};
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>(), IsActive = true };
             var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>(), IsActive = true };
 
             var area = new Area()
@@ -207,7 +207,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             groupOne.Users = new List<User>() { user };
             groupTwo.Users = new List<User>() { user };
-            user.HistoryGroups = new List<HistoryGroup>() {firstHistoryGroup, secondHistoryGroup};
+            user.HistoryGroups = new List<HistoryGroup>() { firstHistoryGroup, secondHistoryGroup };
 
             // act
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsRequest);
@@ -369,7 +369,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(user.Groups.Count(), 0);
             Assert.AreEqual(user.HistoryGroups.Count(), 2);
         }
-        
+
         // TODO: Extract common parts from this method and the one below
         [TestMethod]
         public void Group_Gets_Inactive_When_No_Users_Belong_To_It()
@@ -535,7 +535,7 @@ namespace Likkle.WebApi.Owin.Tets
             var groupThreeId = Guid.NewGuid();
 
             var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { userOne, userTwo }, IsActive = true };
-            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() { userTwo}, IsActive = true };
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() { userTwo }, IsActive = true };
             var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() { }, IsActive = true };
 
             userOne.Groups = new List<Group>() { groupOne };
@@ -565,7 +565,7 @@ namespace Likkle.WebApi.Owin.Tets
 
             // act
             this._subscriptionService.AutoSubscribeUsersFromExistingAreas(
-                new List<Guid>() { areaId }, 
+                new List<Guid>() { areaId },
                 new StandaloneGroupRequestDto() { TagIds = _allTags.Where(t => t.Name == "Sport").Select(t => t.Id).ToList() },
                 groupThreeId,
                 Guid.NewGuid());
@@ -640,7 +640,7 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             var groupThreeId = Guid.NewGuid();
-            var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() { }, IsActive = true, Tags  = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupThree = new Group() { Id = groupThreeId, Name = "GroupThree", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -657,6 +657,108 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(userOne.Groups.Contains(groupThree));
             Assert.IsTrue(userTwo.Groups.Contains(groupThree));
             Assert.IsFalse(userThree.Groups.Contains(groupThree));
+        }
+
+        [TestMethod]
+        public void We_Can_AutoSubscribe_UsersForGroupRecreated_And_Ping_Correct_Set_Of_Users_Via_SignalR()
+        {
+            // arrange
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Groups = new List<Group>() { }
+            };
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000002,
+                Longitude = 10.000002,
+                Groups = new List<Group>() { }
+            };
+
+            var userThreeId = Guid.NewGuid();
+            var userThree = new User()
+            {
+                Id = userThreeId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = false,
+                    AutomaticallySubscribeToAllGroupsWithTag = true,
+                    Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+                },
+                Latitude = 10.000003,
+                Longitude = 10.000003,
+                Groups = new List<Group>() { }
+            };
+
+            var userFourId = Guid.NewGuid();
+            var userFour = new User()
+            {
+                Id = userFourId,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Latitude = 10.000004,
+                Longitude = 10.000004,
+                Groups = new List<Group>() { }
+            };
+
+            var groupId = Guid.NewGuid();
+            var group = new Group()
+            {
+                Id = groupId,
+                Users = new List<User>() { },
+                IsActive = true,
+                Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
+            };
+
+            var areaId = Guid.NewGuid();
+            var area = new Area()
+            {
+                Id = areaId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.HunderdAndFiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { group },
+                Users = new FakeDbSet<User>() { userOne, userTwo, userThree, userFour },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaId }, groupId, userOneId);
+
+            // assert
+            _signalrServiceMock.Verify(m => m.GroupAroundMeWasRecreated(
+                It.IsIn<string>(new string[] { userTwoId.ToString(), userThreeId.ToString(), userFourId.ToString() }), 
+                It.Is<List<SRAreaDto>>(a => a.Count() == 1), 
+                It.Is<SRGroupDto>(g => g.Id == groupId), 
+                It.IsAny<bool>()),
+                Times.Exactly(3));
         }
 
         [TestMethod]
@@ -1050,7 +1152,12 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(new List<Guid>() { areaOneId, areaTwoId }, groupOneId, Guid.NewGuid());
 
             // assert
-            this._signalrServiceMock.Verify(srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), It.IsAny<IEnumerable<SRAreaDto>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
+            this._signalrServiceMock.Verify(
+                srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), 
+                It.IsAny<IEnumerable<SRAreaDto>>(), 
+                It.IsAny<SRGroupDto>(), 
+                It.IsAny<bool>()), 
+                Times.Once);
         }
 
         [TestMethod]
