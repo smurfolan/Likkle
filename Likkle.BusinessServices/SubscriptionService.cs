@@ -156,6 +156,8 @@ namespace Likkle.BusinessServices
             if (usersFallingUnderTheNewArea == null || !usersFallingUnderTheNewArea.Any())
                 return;
 
+            usersFallingUnderTheNewArea = usersFallingUnderTheNewArea.Distinct().ToList();
+
             // Subscribe users on the service
             var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
                 usersFallingUnderTheNewArea, 
@@ -200,15 +202,17 @@ namespace Likkle.BusinessServices
             if (allUsers == null || !allUsers.Any())
                 return;
 
+            allUsers = allUsers.Distinct().ToList();
+
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers.Distinct(), groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subscr in subscriptionsResult)
+            foreach (var subscr in GetUsersToBePingedBySignalR(allUsers, subscriptionsResult))
             {
                 this._signalrService.GroupAroundMeWasRecreated(
                     subscr.Key.ToString(), 
