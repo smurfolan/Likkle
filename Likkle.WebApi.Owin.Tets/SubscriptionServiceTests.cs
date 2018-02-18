@@ -1318,5 +1318,103 @@ namespace Likkle.WebApi.Owin.Tets
         {
             throw new NotImplementedException();
         }
+
+        [TestMethod]
+        public void When_AutoDecreaseUsersInGroup_Is_Called_HistoryGroups_Are_AlsoConsidered()
+        {
+            // arrange
+            var groupOneId = Guid.NewGuid();
+            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var groupTwoId = Guid.NewGuid();
+            var groupTwo = new Group() { Id = groupTwoId, Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var userOneId = Guid.NewGuid();
+            var userOne = new User()
+            {
+                Id = userOneId,
+                FirstName = "Stefcho",
+                LastName = "Stefchev",
+                Email = "mail@mail.ma",
+                IdsrvUniqueId = Guid.NewGuid().ToString(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
+            groupOne.Users.Add(userOne);
+            groupTwo.Users.Add(userOne);
+
+            var userTwoId = Guid.NewGuid();
+            var userTwo = new User()
+            {
+                Id = userTwoId,
+                Groups = new List<Group>() { },
+                Latitude = 10.000001,
+                Longitude = 10.000001
+            };
+
+            var areaOneId = Guid.NewGuid();
+            var areaOne = new Area()
+            {
+                Id = areaOneId,
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo },
+                IsActive = true,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            groupOne.Areas = new List<Area>() { areaOne };
+            groupTwo.Areas = new List<Area>() { areaOne };
+
+            var historyGroupOneId = Guid.NewGuid();
+            var historyGroupOne = new HistoryGroup()
+            {
+                GroupId = groupOneId,
+                UserId = userOneId,
+                Id = historyGroupOneId,
+                GroupThatWasPreviouslySubscribed = groupOne,
+                UserWhoSubscribedGroup = userOne
+            };
+
+            var historyGroupTwoId = Guid.NewGuid();
+            var historyGroupTwo = new HistoryGroup()
+            {
+                GroupId = groupTwoId,
+                UserId = userOneId,
+                Id = historyGroupTwoId,
+                GroupThatWasPreviouslySubscribed = groupTwo,
+                UserWhoSubscribedGroup = userOne
+            };
+
+            var historyGroupThreeId = Guid.NewGuid();
+            var historyGroupThree = new HistoryGroup()
+            {
+                GroupId = groupTwoId,
+                UserId = userTwoId,
+                Id = historyGroupThreeId,
+                GroupThatWasPreviouslySubscribed = groupTwo,
+                UserWhoSubscribedGroup = userTwo
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Areas = new FakeDbSet<Area>() { areaOne },
+                HistoryGroups = new FakeDbSet<HistoryGroup> { historyGroupOne, historyGroupTwo, historyGroupThree }
+            }
+            .Seed();
+            DataGenerator.SetupMockedRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            this._subscriptionService.AutoDecreaseUsersInGroups(new List<Guid>() { groupTwoId }, userOneId);
+
+            // assert
+            this._signalrServiceMock.Verify(srs => srs. GroupWasLeftByUser(groupTwoId, new List<string>() { userTwoId.ToString() }), Times.Once);
+        }
     }
 }
