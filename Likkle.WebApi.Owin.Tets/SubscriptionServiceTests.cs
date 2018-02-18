@@ -1202,6 +1202,8 @@ namespace Likkle.WebApi.Owin.Tets
                 },
                 Groups = new List<Group>() { groupOne, groupTwo }
             };
+            groupOne.Users.Add(userOne);
+            groupTwo.Users.Add(userOne);
 
             var userTwoId = Guid.NewGuid();
             var userTwo = new User()
@@ -1218,6 +1220,7 @@ namespace Likkle.WebApi.Owin.Tets
                 },
                 Groups = new List<Group>() { groupOne }
             };
+            groupOne.Users.Add(userTwo);
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -1274,6 +1277,8 @@ namespace Likkle.WebApi.Owin.Tets
                 },
                 Groups = new List<Group>() { groupOne, groupTwo }
             };
+            groupOne.Users.Add(userOne);
+            groupTwo.Users.Add(userOne);
 
             var userTwoId = Guid.NewGuid();
             var userTwo = new User()
@@ -1290,6 +1295,7 @@ namespace Likkle.WebApi.Owin.Tets
                 },
                 Groups = new List<Group>() { groupOne }
             };
+            groupOne.Users.Add(userTwo);
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -1305,6 +1311,12 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             this._signalrServiceMock.Verify(srs => srs.GroupWasLeftByUser(groupTwoId, It.IsAny<List<string>>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void When_AutoDecreaseUsersInGroups_Is_Called_And_No_Users_Are_Available_There_SignalR_IsNot_Called()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -347,12 +347,12 @@ namespace Likkle.BusinessServices
         }
 
         private void UseSignalrToChangeGroupsParticipantsNumber(
-            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers,
+            IEnumerable<Guid> groupsThatNeedToChangeTheNumberOfTheirUsers,
             Guid invokedByUserId,
             IEnumerable<Area> allAreas,
             bool isIncrementalOperation)
         {
-            foreach (var group in groupsThatNeedToIncreaseTheNumberOfTheirUsers)
+            foreach (var group in groupsThatNeedToChangeTheNumberOfTheirUsers)
             {
                 var areasIncludingThisGroup = allAreas
                     .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
@@ -365,6 +365,9 @@ namespace Likkle.BusinessServices
                     .Select(u => u.Id.ToString())
                     .Distinct()
                     .ToList();
+
+                if (usersToBeNotified == null || !usersToBeNotified.Any())
+                    return;
 
                 if (isIncrementalOperation)
                     this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified);
