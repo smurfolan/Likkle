@@ -358,12 +358,12 @@ namespace Likkle.BusinessServices
                     .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
                     .ToList();
 
-                //===========
                 var groupsWhichAreOrWereConnectedToAreas = areasIncludingThisGroup
                     .SelectMany(a => a.Groups).Select(gr => gr.Id);
 
-                var usersThatWereEverInThisArea = this._unitOfWork.HistoryGroupRepository
-                    .AllHistoryGroups()
+                var usersThatWereEverInThisArea = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .SelectMany(u => u.HistoryGroups)
                     .Where(hgr => groupsWhichAreOrWereConnectedToAreas.Contains(hgr.GroupId))
                     .Select(u => u.UserWhoSubscribedGroup)
                     .Where(uId => uId.Id != invokedByUserId)
@@ -372,17 +372,6 @@ namespace Likkle.BusinessServices
                 var usersToBeNotified = this.GetFilteredUsersInArea(
                     areasIncludingThisGroup, 
                     usersThatWereEverInThisArea);
-                
-                //============
-                /*
-                 var usersToBeNotified = areasIncludingThisGroup
-                    .SelectMany(a => a.Groups)
-                    .SelectMany(gr => gr.Users)
-                    .Where(u => u.Id != invokedByUserId)
-                    .Select(u => u.Id.ToString())
-                    .Distinct()
-                    .ToList();
-                 */
 
                 if (usersToBeNotified == null || !usersToBeNotified.Any())
                     return;
