@@ -365,21 +365,21 @@ namespace Likkle.BusinessServices
                     .GetAllUsers()
                     .SelectMany(u => u.HistoryGroups)
                     .Where(hgr => groupsWhichAreOrWereConnectedToAreas.Contains(hgr.GroupId))
-                    .Select(u => u.UserWhoSubscribedGroup)
-                    .Where(uId => uId.Id != invokedByUserId)
-                    .Distinct();
+                    .Select(u => u.UserWhoSubscribedGroup);
 
                 var usersToBeNotified = this.GetFilteredUsersInArea(
                     areasIncludingThisGroup, 
-                    usersThatWereEverInThisArea);
+                    usersThatWereEverInThisArea)
+                    .Where(uId => uId!= invokedByUserId.ToString())
+                    .Distinct();
 
                 if (usersToBeNotified == null || !usersToBeNotified.Any())
                     return;
 
                 if (isIncrementalOperation)
-                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified.ToList());
                 else
-                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified.ToList());
             }
         }
 
@@ -390,7 +390,7 @@ namespace Likkle.BusinessServices
         /// <param name="areasIncludingThisGroup"></param>
         /// <param name="usersThatWereEverInThisArea"></param>
         /// <returns></returns>
-        private List<string> GetFilteredUsersInArea(
+        private IEnumerable<string> GetFilteredUsersInArea(
             List<Area> areasIncludingThisGroup, 
             IEnumerable<User> usersThatWereEverInThisArea)
         {
@@ -409,6 +409,18 @@ namespace Likkle.BusinessServices
                 if (inReach)
                     result.Add(user.Id.ToString());
             }
+
+            // Include also users that have never subscribed the groups there but are currently in the area
+            var usersWhoNeverSubscribeGroupsHere = this._unitOfWork.UserRepository
+                .GetAllUsers()
+                .Where(user => areasIncludingThisGroup.Any(
+                        area =>
+                            (new GeoCoordinate(user.Latitude, user.Longitude)).GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                                (int)area.Radius))
+                .ToList()
+                .Select(u => u.Id.ToString());
+
+            result.AddRange(usersWhoNeverSubscribeGroupsHere);
 
             return result;
         }
