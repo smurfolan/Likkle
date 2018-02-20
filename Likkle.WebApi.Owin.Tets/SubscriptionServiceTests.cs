@@ -1450,6 +1450,21 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000002
             };
 
+            var userThree = new User()
+            {
+                Id = Guid.NewGuid(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false
+                },
+                Groups = new List<Group>() { },
+                HistoryGroups = new List<HistoryGroup>(),
+                Latitude = 20.000002,
+                Longitude = 20.000002
+            };
+            userOne.HistoryGroups.Add(new HistoryGroup { GroupId = groupOne.Id, UserId = userThree.Id, UserWhoSubscribedGroup = userThree });
+
             var areaOne = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -1464,7 +1479,7 @@ namespace Likkle.WebApi.Owin.Tets
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Groups = new FakeDbSet<Group>() { groupOne },
-                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Users = new FakeDbSet<User>() { userOne, userTwo,userThree },
                 Areas = new FakeDbSet<Area>() { areaOne }
             }
             .Seed();
