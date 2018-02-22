@@ -32,16 +32,19 @@ namespace Likkle.BusinessServices.Hubs
         /// - If the client stops running without having a chance to call the Stop method, the server waits for the client to reconnect, and then ends the SignalR connection after the disconnect timeout period.
         /// - If the server stops running, the client tries to reconnect (re-create the transport connection), and then ends the SignalR connection after the disconnect timeout period.
         /// </summary>
-        /// <param name="stopCalled"></param>
+        /// <param name="stopCalled">true if the client explicitly closed the connection</param>
         /// <returns></returns>
         public override Task OnDisconnected(bool stopCalled)
         {
             // NOTE: We have 4 cases in which a connection can be stopped. 
             // In only one of them (client calls the Stop method) we could actually determine who is the user and remove him from Groups
-            var userId = Context.QueryString[UserIdQueryStringParamName];
-            if (!string.IsNullOrEmpty(userId))
+            if (stopCalled)
             {
-                Groups.Remove(Context.ConnectionId, userId);
+                var userId = Context.QueryString[UserIdQueryStringParamName];
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    Groups.Remove(Context.ConnectionId, userId);
+                }
             }
             
             return base.OnDisconnected(stopCalled);
