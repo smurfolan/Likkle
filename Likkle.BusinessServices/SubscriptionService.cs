@@ -347,31 +347,84 @@ namespace Likkle.BusinessServices
         }
 
         private void UseSignalrToChangeGroupsParticipantsNumber(
-            IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers,
+            IEnumerable<Guid> groupsThatNeedToChangeTheNumberOfTheirUsers,
             Guid invokedByUserId,
             IEnumerable<Area> allAreas,
             bool isIncrementalOperation)
         {
-            foreach (var group in groupsThatNeedToIncreaseTheNumberOfTheirUsers)
+            foreach (var group in groupsThatNeedToChangeTheNumberOfTheirUsers)
             {
                 var areasIncludingThisGroup = allAreas
                     .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
                     .ToList();
 
-                var usersToBeNotified = areasIncludingThisGroup
-                    .SelectMany(a => a.Groups)
-                    .SelectMany(gr => gr.Users)
-                    .Where(u => u.Id != invokedByUserId)
-                    .Select(u => u.Id.ToString())
-                    .Distinct()
-                    .ToList();
+                var groupsWhichAreOrWereConnectedToAreas = areasIncludingThisGroup
+                    .SelectMany(a => a.Groups).Select(gr => gr.Id);
+
+                var usersThatWereEverInThisArea = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .SelectMany(u => u.HistoryGroups)
+                    .Where(hgr => groupsWhichAreOrWereConnectedToAreas.Contains(hgr.GroupId))
+                    .Select(u => u.UserWhoSubscribedGroup);
+
+                var usersToBeNotified = this.GetFilteredUsersInArea(
+                    areasIncludingThisGroup, 
+                    usersThatWereEverInThisArea)
+                    .Where(uId => uId!= invokedByUserId.ToString())
+                    .Distinct();
+
+                if (usersToBeNotified == null || !usersToBeNotified.Any())
+                    return;
 
                 if (isIncrementalOperation)
-                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified.ToList());
                 else
-                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified.ToList());
             }
         }
+
+        /// <summary>
+        /// With this method we try to filter somehow only the users who are currently in some of the observed areas
+        /// We don't want to disturb the ones who are not available here.
+        /// </summary>
+        /// <param name="areasIncludingThisGroup"></param>
+        /// <param name="usersThatWereEverInThisArea"></param>
+        /// <returns></returns>
+        private IEnumerable<string> GetFilteredUsersInArea(
+            List<Area> areasIncludingThisGroup, 
+            IEnumerable<User> usersThatWereEverInThisArea)
+        {
+            var result = new List<string>();
+
+            foreach (var user in usersThatWereEverInThisArea)
+            {
+                var currentUserLocation = new GeoCoordinate(user.Latitude, user.Longitude);
+
+                var inReach =
+                    areasIncludingThisGroup.Any(
+                        area =>
+                            currentUserLocation.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                                (int)area.Radius);
+
+                if (inReach)
+                    result.Add(user.Id.ToString());
+            }
+
+            // Include also users that have never subscribed the groups there but are currently in the area
+            var usersWhoNeverSubscribeGroupsHere = this._unitOfWork.UserRepository
+                .GetAllUsers()
+                .Where(user => areasIncludingThisGroup.Any(
+                        area =>
+                            (new GeoCoordinate(user.Latitude, user.Longitude)).GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                                (int)area.Radius))
+                .ToList()
+                .Select(u => u.Id.ToString());
+
+            result.AddRange(usersWhoNeverSubscribeGroupsHere);
+
+            return result;
+        }
+        
 
         private Dictionary<Guid, bool> GetUsersToBePingedBySignalR(
             IEnumerable<User> usersFallingUnderTheNewArea, 

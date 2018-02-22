@@ -481,7 +481,8 @@ namespace Likkle.WebApi.Owin.Tets
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
-                }
+                },
+                Groups = new List<Group>()
             };
 
             var groupOneId = Guid.NewGuid();
@@ -526,6 +527,8 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsDto);
+
+            // assert
             Assert.IsNotNull(user.Groups);
             Assert.IsNotNull(user.HistoryGroups);
 
@@ -533,16 +536,16 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.AreEqual(2, user.HistoryGroups.Count);
 
             this._userService.UpdateUserLocation(userId, 20, 20);
-
+            
             Assert.AreEqual(0, user.Groups.Count);
             Assert.AreEqual(2, user.HistoryGroups.Count);
 
-            this._signalrServiceMock.Verify(srm => srm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Exactly(2));
+            this._signalrServiceMock.Verify(srm => srm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Never);
 
             var updateResponse = this._userService.UpdateUserLocation(userId, 10.00009, 10.00009);
-
-            // TODO: When implemented double SecondsToClosestBoundary(double latitude, double longitude); update the assertions here
+            
             Assert.AreEqual(2, updateResponse.SubscribedGroupIds.Count());
+            Assert.AreEqual(32.5, updateResponse.SecodsToClosestBoundary);
         }
 
         [TestMethod]
