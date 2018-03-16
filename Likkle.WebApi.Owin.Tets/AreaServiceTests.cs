@@ -78,14 +78,10 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Insert_Grou_As_New_Area()
+        public void InserGroupAsNewArea_We_Can_Insert_Group_As_New_Area()
         {
             // arrange
-            var dbUser = new User()
-            {
-                Id = Guid.NewGuid(),
-                AutomaticSubscriptionSettings = null
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -98,27 +94,12 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
 
-            var newGroupRequest = new GroupAsNewAreaRequestDto()
-            {
-                Longitude = 10,
-                Latitude = 10,
-                Name = "Group 1",
-                Radius = RadiusRangeEnum.FiftyMeters,
-                TagIds =
-                    new List<Guid>()
-                    {
-                        Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
-                        Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8")
-                    },
-                UserId = dbUser.Id
-            };
-
             var allAreasCount = this._areaService.GetAllAreas().Count();
 
             Assert.AreEqual(allAreasCount, 0);
 
             // act
-            var newGroupId = this._groupService.InserGroupAsNewArea(newGroupRequest);
+            var newGroupId = this._groupService.InserGroupAsNewArea(new GroupAsNewAreaRequestDto());
 
             // assert
             allAreasCount = this._areaService.GetAllAreas().Count();
@@ -131,52 +112,32 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_AreaMetadata()
+        public void GetMetadataForArea_We_Can_Get_AreaMetadata()
         {
             // arrange
-            var myLocationLatitude = 10;
-            var myLocationLongitude = 10;
-
             var workingTag = new Tag()
             {
-                Id = Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
-                Name = "Help"
+                Id = FakeLikkleDbContext.GetAllAvailableTags().ToArray()[0].Key,
+                Name = FakeLikkleDbContext.GetAllAvailableTags().ToArray()[0].Value
             };
 
-            var groupOne = new Group()
-            {
-                Id = Guid.NewGuid(),
-                Name = "GroupOne",
-                Users = new List<User>(),
-                Tags = new List<Tag>() { workingTag }
-            };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), Tags = new List<Tag>() { workingTag } };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), Tags = new List<Tag>() { workingTag } };
             
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo }
+                Groups = new List<Group>() { groupTwo }
             };
-
-            groupOne.Areas = new List<Area>() { area };
-            groupTwo.Areas = new List<Area>() { area };
             
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
+            groupTwo.Areas = new List<Area>() { area };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
-                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Groups = new FakeDbSet<Group>() { groupTwo },
                 Areas = new FakeDbSet<Area>() { area },
-                Users = new FakeDbSet<User>() { user }
+                Users = new FakeDbSet<User>() { new User() }
             }
             .Seed();
 
@@ -185,7 +146,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            var areaMetadata = this._areaService.GetMetadataForArea(myLocationLatitude, myLocationLongitude, area.Id);
+            var areaMetadata = this._areaService.GetMetadataForArea(10, 10, area.Id);
 
             // assert
             Assert.IsNotNull(areaMetadata);
@@ -194,75 +155,32 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_Metadata_For_Multiple_Areas()
+        public void GetMultipleAreasMetadata_We_Can_Get_Metadata_For_Multiple_Areas()
         {
             // arrange
-            var myLocationLatitude = 10;
-            var myLocationLongitude = 10;
-
-            var workingTag = new Tag()
-            {
-                Id = Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
-                Name = "Help"
-            };
-
-            var groupOne = new Group()
-            {
-                Id = Guid.NewGuid(),
-                Name = "GroupOne",
-                Users = new List<User>(),
-                Tags = new List<Tag>() { workingTag }
-            };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), Tags = new List<Tag>() { workingTag } };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() };
+            var firstArea = new Area() { Id = Guid.NewGuid(), Latitude = 10, Longitude = 10 };
             
-            var firstArea = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                Radius = RadiusRangeEnum.FiftyMeters
-            };
+            var secondArea = new Area() { Id = Guid.NewGuid(), Latitude = 10.00001, Longitude = 10.00001 };
             
-            var secondArea = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = 10.00001,
-                Longitude = 10.00001,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                Radius = RadiusRangeEnum.FiveHundredMeters
-            };
-
-            groupOne.Areas = new List<Area>() { firstArea, secondArea };
             groupTwo.Areas = new List<Area>() { firstArea, secondArea };
             
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
             var populatedDatabase = new FakeLikkleDbContext()
             {
-                Groups = new FakeDbSet<Group>() { groupOne, groupTwo },
+                Groups = new FakeDbSet<Group>() { groupTwo },
                 Areas = new FakeDbSet<Area>() { firstArea, secondArea },
-                Users = new FakeDbSet<User>() { user }
+                Users = new FakeDbSet<User>() { new User() }
             }
             .Seed();
 
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
             var multipleAreasMetadataRequestDto = new MultipleAreasMetadataRequestDto()
             {
                 AreaIds = new List<Guid>() { firstArea.Id, secondArea.Id },
-                Latitude = myLocationLatitude,
-                Longitude = myLocationLongitude
+                Latitude = 10,
+                Longitude = 10
             };
 
             var multipleAreasMetadata = this._areaService.GetMultipleAreasMetadata(multipleAreasMetadataRequestDto);
@@ -280,19 +198,19 @@ namespace Likkle.WebApi.Owin.Tets
             var firstUser = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
+                //FirstName = "Stefcho",
+                //LastName = "Stefchev",
+                //Email = "mail@mail.ma",
+                //IdsrvUniqueId = Guid.NewGuid().ToString()
             };
             
             var secondUser = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Other",
-                LastName = "Name",
-                Email = "null@null.bg",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
+                //FirstName = "Other",
+                //LastName = "Name",
+                //Email = "null@null.bg",
+                //IdsrvUniqueId = Guid.NewGuid().ToString()
             };
 
             var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { firstUser } };
