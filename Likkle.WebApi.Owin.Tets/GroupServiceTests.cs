@@ -34,16 +34,12 @@ namespace Likkle.WebApi.Owin.Tets
 
             this._mockedLikkleUoW.Setup(uow => uow.AreaRepository)
                 .Returns(new AreaRepository(fakeDbContext));
-
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository)
                 .Returns(new UserRepository(fakeDbContext));
-
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository)
                 .Returns(new GroupRepository(fakeDbContext));
-
             this._mockedLikkleUoW.Setup(uow => uow.TagRepository)
                 .Returns(new TagRepository(fakeDbContext));
-
             this._mockedLikkleUoW.Setup(uow => uow.LanguageRepository)
                 .Returns(new LanguageRepository(fakeDbContext));
 
@@ -72,24 +68,11 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Insert_New_Group()
+        public void InsertNewGroup_We_Can_Insert_New_Group()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
-
-            var newAreaId = Guid.NewGuid();
-            var newArea = new Area()
-            {
-                Id = newAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
+            var newArea = new Area() { Id = Guid.NewGuid() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -105,10 +88,9 @@ namespace Likkle.WebApi.Owin.Tets
 
             var newGroupRequest = new StandaloneGroupRequestDto()
             {
-                Name = "New group",
-                TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
-                AreaIds = new List<Guid>() { newAreaId },
-                UserId = userId
+                TagIds = new List<Guid>() { FakeLikkleDbContext.GetAllAvailableTags().ToArray()[0].Key, FakeLikkleDbContext.GetAllAvailableTags().ToArray()[1].Key },
+                AreaIds = new List<Guid>() { newArea.Id },
+                UserId = dbUser.Id
             };
 
             // act
@@ -124,31 +106,10 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Fetch_All_Users_From_Group()
+        public void GetUsersFromGroup_We_Can_Fetch_All_Users_From_Group()
         {
             // arrange
-            var firstUserId = Guid.NewGuid();
-            var firstUser = new User()
-            {
-                Id = firstUserId,
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
-            var secondUserId = Guid.NewGuid();
-            var secondUser = new User()
-            {
-                Id = secondUserId,
-                FirstName = "Other",
-                LastName = "Name",
-                Email = "null@null.bg",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
-            var groupId = Guid.NewGuid();
-            var group = new Group() { Id = groupId, Name = "Group", Users = new List<User>() { firstUser, secondUser } };
+            var group = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { new User(), new User() } };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -159,7 +120,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
 
             // act
-            var allUsersInGroup = this._groupService.GetUsersFromGroup(groupId);
+            var allUsersInGroup = this._groupService.GetUsersFromGroup(group.Id);
 
             // assert
             Assert.IsNotNull(allUsersInGroup);
@@ -167,24 +128,11 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void StandaloneGroup_We_Create_Gets_Into_Our_HistoryGroups()
+        public void InsertNewGroup_StandaloneGroup_We_Create_Gets_Into_Our_HistoryGroups()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
-
-            var newAreaId = Guid.NewGuid();
-            var newArea = new Area()
-            {
-                Id = newAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
+            var newArea = new Area() { Id = Guid.NewGuid() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -200,41 +148,27 @@ namespace Likkle.WebApi.Owin.Tets
 
             var newGroupRequest = new StandaloneGroupRequestDto()
             {
-                Name = "New group",
-                TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
-                AreaIds = new List<Guid>() { newAreaId },
-                UserId = userId
+                TagIds = new List<Guid>() { FakeLikkleDbContext.GetAllAvailableTags().ToArray()[0].Key, FakeLikkleDbContext.GetAllAvailableTags().ToArray()[1].Key },
+                AreaIds = new List<Guid>() { newArea.Id },
+                UserId = dbUser.Id
             };
 
             // act 
             var newGroupId = this._groupService.InsertNewGroup(newGroupRequest);
 
             // assert
-            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(userId);
+            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(dbUser.Id);
             Assert.IsNotNull(user.HistoryGroups);
             Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
             this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersFromExistingAreas(It.IsAny<IEnumerable<Guid>>(), It.IsAny<StandaloneGroupRequestDto>(), It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Once);
         }
 
         [TestMethod]
-        public void GroupAsNewArea_We_Create_Gets_Into_Our_HistoryGroups()
+        public void InserGroupAsNewArea_GroupAsNewArea_We_Create_Gets_Into_Our_HistoryGroups()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
-
-            var newAreaId = Guid.NewGuid();
-            var newArea = new Area()
-            {
-                Id = newAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
+            var newArea = new Area() { Id = Guid.NewGuid() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -248,77 +182,43 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
 
-            var newGroupRequest = new GroupAsNewAreaRequestDto()
-            {
-                Name = "New group",
-                TagIds = new List<Guid>() { Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8") },
-                Radius = RadiusRangeEnum.FiveHundredMeters,
-                UserId = userId,
-                Latitude = 10,
-                Longitude = 10
-            };
+            var newGroupRequest = new GroupAsNewAreaRequestDto() { UserId = dbUser.Id };
 
             // act 
             var newGroupId = this._groupService.InserGroupAsNewArea(newGroupRequest);
 
             // assert
-            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(userId);
+            var user = this._mockedLikkleUoW.Object.UserRepository.GetUserById(dbUser.Id);
             Assert.IsNotNull(user.HistoryGroups);
             Assert.IsTrue(user.HistoryGroups.Select(hg => hg.GroupId).Contains(newGroupId));
         }
 
         [TestMethod]
-        public void We_Can_Get_List_Of_Previously_Created_Groups_When_At_A_Place_With_Previous_Activity()
+        public void GetGroupCreationType_We_Can_Get_List_Of_Previously_Created_Groups_When_At_A_Place_With_Previous_Activity()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
-
-            var groupOneId = Guid.NewGuid();
-            var groupOne = new Group()
-            {
-                Id = groupOneId,
-                Name = "Group one",
-                IsActive = false
-            };
-
-            var groupTwoId = Guid.NewGuid();
-            var groupTwo = new Group()
-            {
-                Id = groupTwoId,
-                Name = "Group two",
-                IsActive = true
-            };
-
-            var groupThreeId = Guid.NewGuid();
-            var groupThree = new Group()
-            {
-                Id = groupThreeId,
-                Name = "Group three",
-                IsActive = false
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
+            var groupOne = new Group() { Id = Guid.NewGuid(), IsActive = false };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), IsActive = true };
+            var groupThree = new Group() { Id = Guid.NewGuid(), IsActive = false };
 
             dbUser.HistoryGroups = new List<HistoryGroup>() {
                 new HistoryGroup()
                 {
                     DateTimeGroupWasSubscribed = DateTime.UtcNow.AddDays(-2),
-                    GroupId = groupOneId,
+                    GroupId = groupOne.Id,
                     GroupThatWasPreviouslySubscribed = groupOne,
                     Id = Guid.NewGuid(),
-                    UserId = userId,
+                    UserId = dbUser.Id,
                     UserWhoSubscribedGroup = dbUser
                 },
                 new HistoryGroup()
                 {
                     DateTimeGroupWasSubscribed = DateTime.UtcNow.AddDays(-2),
-                    GroupId = groupThreeId,
+                    GroupId = groupThree.Id,
                     GroupThatWasPreviouslySubscribed = groupThree,
                     Id = Guid.NewGuid(),
-                    UserId = userId,
+                    UserId = dbUser.Id,
                     UserWhoSubscribedGroup = dbUser
                 }
             };
@@ -327,21 +227,19 @@ namespace Likkle.WebApi.Owin.Tets
             groupTwo.Users = new List<User>() { dbUser };
             groupThree.Users = new List<User>() { dbUser };
 
-            var areaOneId = Guid.NewGuid();
             var areaOne = new Area()
             {
-                Id = areaOneId,
+                Id = Guid.NewGuid(),
                 Latitude = 10.0000000,
                 Longitude = 10.0000000,
                 Radius = RadiusRangeEnum.FiftyMeters,
                 IsActive = true,
                 Groups = new List<Group>() { groupOne, groupTwo }
             };
-
-            var areaTwoId = Guid.NewGuid();
+            
             var areaTwo = new Area()
             {
-                Id = areaTwoId,
+                Id = Guid.NewGuid(),
                 Latitude = 10.0000001,
                 Longitude = 10.0000001,
                 Radius = RadiusRangeEnum.HunderdAndFiftyMeters,
@@ -367,7 +265,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
 
             // act
-            var result = this._groupService.GetGroupCreationType(10, 10, userId);
+            var result = this._groupService.GetGroupCreationType(10, 10, dbUser.Id);
 
             // assert
             Assert.IsNotNull(result);
@@ -377,40 +275,13 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Get_AutomaticallyGroupAsNewArea_Response_When_Never_Created_Or_Subscribed_Group_Here()
+        public void GetGroupCreationType_We_Get_AutomaticallyGroupAsNewArea_Response_When_Never_Created_Or_Subscribed_Group_Here()
         {
             // arrange 
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
-
-            var newAreaId = Guid.NewGuid();
-            var newArea = new Area()
-            {
-                Id = newAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters,
-                IsActive = true
-            };
-
-            var populatedDatabase = new FakeLikkleDbContext()
-            {
-                Users = new FakeDbSet<User>() { dbUser },
-                Areas = new FakeDbSet<Area>() { newArea }
-            }
-            .Seed();
-
-            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.TagRepository).Returns(new TagRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            var dbUser = new User() { Id = Guid.NewGuid() };
 
             // act
-            var result = this._groupService.GetGroupCreationType(20, 20, userId);
+            var result = this._groupService.GetGroupCreationType(20, 20, dbUser.Id);
 
             // assert
             Assert.IsNotNull(result);
@@ -418,34 +289,17 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Get_Choice_Screen_When_Creating_A_group_In_Existing_Active_Area()
+        public void GetGroupCreationType_We_Get_Choice_Screen_When_Creating_A_group_In_Existing_Active_Area()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                AutomaticSubscriptionSettings = null
-            };
+            var dbUser = new User() { Id = Guid.NewGuid() };
 
-            var groupOneId = Guid.NewGuid();
-            var groupOne = new Group()
-            {
-                Id = groupOneId,
-                IsActive = true
-            };
-
-            var groupTwoId = Guid.NewGuid();
-            var groupTwo = new Group()
-            {
-                Id = groupTwoId,
-                IsActive = true
-            };
-
-            var newAreaId = Guid.NewGuid();
+            var groupOne = new Group() { Id = Guid.NewGuid(), IsActive = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), IsActive = true };
             var newArea = new Area()
+
             {
-                Id = newAreaId,
+                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
                 Radius = RadiusRangeEnum.FiftyMeters,
@@ -470,7 +324,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
 
             // act
-            var result = this._groupService.GetGroupCreationType(10, 10, userId);
+            var result = this._groupService.GetGroupCreationType(10, 10, dbUser.Id);
 
             // assert
             Assert.IsNotNull(result);
@@ -478,50 +332,19 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Activate_Previously_Not_Active_Group()
+        public void ActivateGroup_We_Can_Activate_Previously_Not_Active_Group()
         {
             // arrange
-            var userId = Guid.NewGuid();
-            var dbUser = new User()
-            {
-                Id = userId,
-                Groups = new List<Group>()
-            };
-
-            var groupOneId = Guid.NewGuid();
-            var groupOne = new Group()
-            {
-                Id = groupOneId,
-                IsActive = true
-            };
-
-            var newAreaId = Guid.NewGuid();
-            var newArea = new Area()
-            {
-                Id = newAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiftyMeters,
-                IsActive = false,
-                Groups = new List<Group>() { groupOne }
-            };
-
-            var secondNewAreaId = Guid.NewGuid();
-            var secondNewArea = new Area()
-            {
-                Id = secondNewAreaId,
-                Latitude = 10,
-                Longitude = 10,
-                Radius = RadiusRangeEnum.FiveHundredMeters,
-                IsActive = false,
-                Groups = new List<Group>() {groupOne}
-            };
+            var dbUser = new User() { Id = Guid.NewGuid(), Groups = new List<Group>() };       
+            var groupOne = new Group() { Id = Guid.NewGuid(), IsActive = true };
+            
+            var newArea = new Area();          
+            var secondNewArea = new Area();
 
             groupOne.Areas = new List<Area>() { newArea, secondNewArea };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
-                Areas = new FakeDbSet<Area>() { newArea, secondNewArea },
                 Groups = new FakeDbSet<Group>() { groupOne },
                 Users = new FakeDbSet<User>() { dbUser }
             }
@@ -532,14 +355,14 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            this._groupService.ActivateGroup(groupOneId, userId);
+            this._groupService.ActivateGroup(groupOne.Id, dbUser.Id);
 
             // assert
             Assert.IsTrue(groupOne.IsActive);
             Assert.IsTrue(newArea.IsActive);
             Assert.IsTrue(secondNewArea.IsActive);
             Assert.IsTrue(dbUser.Groups.Any());
-            Assert.IsTrue(dbUser.Groups.Any(gr => gr.Id == groupOneId));
+            Assert.IsTrue(dbUser.Groups.Any(gr => gr.Id == groupOne.Id));
             this._subscrServiceMock.Verify(ssm => ssm.AutoSubscribeUsersForRecreatedGroup(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Once);
         }
     }
