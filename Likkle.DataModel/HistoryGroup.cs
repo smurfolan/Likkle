@@ -12,6 +12,7 @@ namespace Likkle.DataModel
 
         public DateTime DateTimeGroupWasSubscribed { get; set; }
 
+        // Navigation properties
         public Guid UserId { get; set; }
         [Required]
         public virtual User UserWhoSubscribedGroup { get; set; }
