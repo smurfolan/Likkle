@@ -14,8 +14,8 @@ namespace Likkle.WebApi.Owin.Controllers
 
         private readonly List<string> ListOfSpecificUsersToBeNotified = new List<string>()
         {
-            "fb872173-930e-493d-a9f1-643d75f6be09"/*Jackdev*/,
-            "59a45318-5720-450a-b28b-73fb4920b871"/*Jacksim*/
+            "5b8e69b6-fc13-494d-9228-4215de85254f"/*Kevin*/,
+            "98898988-9187-49b4-96a1-81ffd28a4bcf"/*Robin*/
         };
 
         public SignalrTestingController(ISignalrService signalrService)
