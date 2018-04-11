@@ -3,12 +3,22 @@ using System.Reflection;
 using System.Web.Http.Controllers;
 using log4net;
 using Likkle.BusinessServices.Utils;
+using Likkle.BusinessServices;
 
 namespace Likkle.WebApi.Owin.Helpers
 {
     public class LikkleApiLogger : ILikkleApiLogger
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly IConfigurationWrapper _configuration;
+        private readonly IMailService _mailService;
+        public LikkleApiLogger(
+            IConfigurationWrapper config, 
+            IMailService mailService)
+        {
+            this._configuration = config;
+            this._mailService = mailService;
+        }
 
         public void LogInfo(string message)
         {
@@ -24,10 +34,13 @@ namespace Likkle.WebApi.Owin.Helpers
         {
             var formattedActionException = ActionLevelExceptionManager.GetActionExceptionMessage(httpRequest);
 
-            this.LogError($"[{formattedActionException.ErrorId}]{formattedActionException.ErrorMessage}", ex);
+            var mainErrorMessage = $"[{formattedActionException.ErrorId}]{formattedActionException.ErrorMessage}, {ex.Message}";
 
-            // TODO: Mail support person who is stated in the Web.config
+            this.LogError(mainErrorMessage, ex);
 
+            if (this._configuration.MailSupportOnException)
+                this._mailService.ReportExceptionOnEmail(this._configuration.SupportEmail, $"{mainErrorMessage} ---> Stack trace: {ex.StackTrace?.ToString()}"); 
+                    
             return
                 $"(ErrID:{formattedActionException.ErrorId}) {formattedActionException.ErrorMessage} {formattedActionException.KindMessage}";
         }

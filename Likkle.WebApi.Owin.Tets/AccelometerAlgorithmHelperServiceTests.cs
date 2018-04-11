@@ -35,20 +35,18 @@ namespace Likkle.WebApi.Owin.Tets
         public void We_Can_Get_Seconds_To_Closest_Boundary()
         {
             // arrange
-            var smallAreaId = Guid.NewGuid();
             var smallArea = new Area()
             {
-                Id = smallAreaId,
+                Id = Guid.NewGuid(),
                 Latitude = 42.626229,
                 Longitude = 23.38143,
                 IsActive = true,
                 Radius = RadiusRangeEnum.FiftyMeters
             };
-
-            var biggerAreaId = Guid.NewGuid();
+            
             var biggerArea = new Area()
             {
-                Id = biggerAreaId,
+                Id = Guid.NewGuid(),
                 Latitude = 42.62523,
                 Longitude = 23.381371,
                 IsActive = true,

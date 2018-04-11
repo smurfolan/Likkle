@@ -12,15 +12,12 @@ namespace Likkle.DataModel
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [ForeignKey("User")]
         public Guid Id { get; set; }
-
         public bool AutomaticallySubscribeToAllGroups { get; set; }
-
         public bool AutomaticallySubscribeToAllGroupsWithTag { get; set; }
 
         // Navigation properties
         [Required]
         public virtual User User { get; set; }
-
         public virtual ICollection<Tag> Tags { get; set; }
     }
 }
