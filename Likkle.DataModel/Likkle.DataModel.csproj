@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Area.cs" />
+    <Compile Include="BaseEntity.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="HistoryGroup.cs" />
     <Compile Include="Migrations\201704181231478_HistoryOfSubscribedGroupsByUser.cs" />
@@ -76,6 +77,10 @@
     <Compile Include="Migrations\201709131447038_UserLocationProperties.cs" />
     <Compile Include="Migrations\201709131447038_UserLocationProperties.Designer.cs">
       <DependentUpon>201709131447038_UserLocationProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803300904177_BaseEntityAdded.cs" />
+    <Compile Include="Migrations\201803300904177_BaseEntityAdded.Designer.cs">
+      <DependentUpon>201803300904177_BaseEntityAdded.cs</DependentUpon>
     </Compile>
     <Compile Include="Repositories\HistoryGroupRepository.cs" />
     <Compile Include="Repositories\IHistoryGroupRepository.cs" />
@@ -174,6 +179,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201709131447038_UserLocationProperties.resx">
       <DependentUpon>201709131447038_UserLocationProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803300904177_BaseEntityAdded.resx">
+      <DependentUpon>201803300904177_BaseEntityAdded.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

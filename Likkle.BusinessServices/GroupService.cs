@@ -208,6 +208,8 @@ namespace Likkle.BusinessServices
 
             var inactiveAreasThisGroupBelongsTo = affectedGroup.Areas.Where(a => a.IsActive == false);
 
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id, userId);
+
             foreach (var inactiveArea in inactiveAreasThisGroupBelongsTo)
             {
                 inactiveArea.IsActive = true;
@@ -218,8 +220,6 @@ namespace Likkle.BusinessServices
             var user = this._unitOfWork.UserRepository.GetUserById(userId);
 
             user.Groups.Add(affectedGroup);
-
-            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id, userId);
 
             this._unitOfWork.Save();
         }

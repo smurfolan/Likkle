@@ -36,115 +36,94 @@ namespace Likkle.WebApi.Owin.Tets
         public UserServiceTests()
         {
             var fakeDbContext = new FakeLikkleDbContext().Seed();
-
-            this._mockedLikkleUoW = new Mock<ILikkleUoW>();
-
-            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository)
+            _mockedLikkleUoW = new Mock<ILikkleUoW>();
+            _mockedLikkleUoW.Setup(uow => uow.AreaRepository)
                 .Returns(new AreaRepository(fakeDbContext));
-
-            this._mockedLikkleUoW.Setup(uow => uow.UserRepository)
+            _mockedLikkleUoW.Setup(uow => uow.UserRepository)
                 .Returns(new UserRepository(fakeDbContext));
-
-            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository)
+            _mockedLikkleUoW.Setup(uow => uow.GroupRepository)
                 .Returns(new GroupRepository(fakeDbContext));
-
-            this._mockedLikkleUoW.Setup(uow => uow.TagRepository)
+            _mockedLikkleUoW.Setup(uow => uow.TagRepository)
                 .Returns(new TagRepository(fakeDbContext));
-
-            this._mockedLikkleUoW.Setup(uow => uow.LanguageRepository)
+            _mockedLikkleUoW.Setup(uow => uow.LanguageRepository)
                 .Returns(new LanguageRepository(fakeDbContext));
 
-            this._accelometerAlgorithmHelperService = new Mock<IAccelometerAlgorithmHelperService>();
-            this._accelometerAlgorithmHelperService.Setup(
+            _accelometerAlgorithmHelperService = new Mock<IAccelometerAlgorithmHelperService>();
+            _accelometerAlgorithmHelperService.Setup(
                 a => a.SecondsToClosestBoundary(It.IsAny<double>(), It.IsAny<double>())).Returns(32.5);
 
-            this._subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
-            this._subscripionServiceMock = new Mock<ISubscriptionService>();
+            _subscriptionSettingsServiceMock = new Mock<ISubscriptionSettingsService>();
+            _subscripionServiceMock = new Mock<ISubscriptionService>();
 
-            this._areaServiceMock = new Mock<IAreaService>();
+            _signalrServiceMock = new Mock<ISignalrService>();
 
-            this._signalrServiceMock = new Mock<ISignalrService>();
 
-            this._mockedConfigurationProvider = new Mock<IConfigurationProvider>();
+            _mockedConfigurationProvider = new Mock<IConfigurationProvider>();
 
             var mapConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
             });
-            this._mockedConfigurationProvider.Setup(mc => mc.CreateMapper()).Returns(mapConfiguration.CreateMapper);
+            _mockedConfigurationProvider.Setup(mc => mc.CreateMapper()).Returns(mapConfiguration.CreateMapper);
 
-            this._subscriptionSettingsService = new SubscriptionSettingsService(
-                this._mockedLikkleUoW.Object,
-                this._mockedConfigurationProvider.Object);
+            _subscriptionSettingsService = new SubscriptionSettingsService(
+                _mockedLikkleUoW.Object,
+                _mockedConfigurationProvider.Object);
 
-            this._configurationWrapperMock = new Mock<IConfigurationWrapper>();
+            _configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
             // Only this call to the mocked service returns the actual result but not mocked one.
-            this._subscriptionSettingsServiceMock
+            _subscriptionSettingsServiceMock
                 .Setup(ss => ss.GroupsForUserAroundCoordinatesBasedOnUserSettings(It.IsAny<Guid>(), It.IsAny<double>(), It.IsAny<double>()))
-                .Returns((Guid userId, double lat, double lon) => this._subscriptionSettingsService.GroupsForUserAroundCoordinatesBasedOnUserSettings(userId, lat, lon));
+                .Returns((Guid userId, double lat, double lon) => _subscriptionSettingsService.GroupsForUserAroundCoordinatesBasedOnUserSettings(userId, lat, lon));
                 
+            _userService = new UserService(
+                _mockedLikkleUoW.Object,
+                _mockedConfigurationProvider.Object,
+                _configurationWrapperMock.Object,
+                _accelometerAlgorithmHelperService.Object,
+                _subscriptionSettingsServiceMock.Object,
+                _subscripionServiceMock.Object);
 
-            this._userService = new UserService(
-                this._mockedLikkleUoW.Object,
-                this._mockedConfigurationProvider.Object,
-                this._configurationWrapperMock.Object,
-                this._accelometerAlgorithmHelperService.Object,
-                this._subscriptionSettingsServiceMock.Object,
-                this._subscripionServiceMock.Object);
-
-            this._subscriptionService = new SubscriptionService(
-                this._mockedLikkleUoW.Object, 
-                this._mockedConfigurationProvider.Object, 
-                this._configurationWrapperMock.Object,
-                this._signalrServiceMock.Object,
-                this._areaServiceMock.Object);
+            _subscriptionService = new SubscriptionService(
+                _mockedLikkleUoW.Object, 
+                _mockedConfigurationProvider.Object, 
+                _configurationWrapperMock.Object,
+                _signalrServiceMock.Object);
         }
 
         [TestMethod]
-        public void We_Can_Create_New_User_Without_Groups_And_Languages()
+        public void InsertNewUser_We_Can_Create_New_User_Without_Groups_And_Languages()
         {
             // arrange
-            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+            var newUserStsId = DataGenerator.GetUniequeStsID();
 
             var newUserRequest = new NewUserRequestDto()
             {
-                About = "About",
-                Email = "some@body.com",
-                FirstName = "Stecho",
-                Gender = GenderEnum.Male,
-                IdsrvUniqueId = newUserStsId,
-                PhoneNumber = "+359886585549"
+                IdsrvUniqueId = newUserStsId
             };
 
             // act
-            var newUserId = this._userService.InsertNewUser(newUserRequest);
+            var newUserId = _userService.InsertNewUser(newUserRequest);
 
             // assert
-            var newUser = this._userService.GetUserById(newUserId);
+            var newUser = _userService.GetUserById(newUserId);
 
             Assert.IsNotNull(newUser);
             Assert.AreEqual(newUser.IdsrvUniqueId, newUserStsId);
             Assert.IsNotNull(newUser.AutomaticSubscriptionSettings);
             Assert.IsNotNull(newUser.BirthDate);
-            Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
+            Assert.AreEqual(newUser.BirthDate, DateTime.Parse(InitialDateString));
         }
 
         [TestMethod]
-        public void We_Can_Update_Initially_Created_User()
+        public void UpdateUserInfo_We_Can_Update_Initially_Created_User()
         {
             // arrange
-            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+            var newUserStsId = DataGenerator.GetUniequeStsID();
 
             var newUserRequest = new NewUserRequestDto()
             {
-                About = "About",
-                Email = "some@body.com",
-                FirstName = "Stecho",
-                LastName = "Stefchev",
-                Gender = GenderEnum.Male,
-                IdsrvUniqueId = newUserStsId,
-                PhoneNumber = "+359886585549",
-                LanguageIds = new List<Guid>() { Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb") }
+                IdsrvUniqueId = newUserStsId
             };
 
             // act
@@ -204,20 +183,14 @@ namespace Likkle.WebApi.Owin.Tets
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException), "User not available in Database")]
-        public void Updating_Non_Existing_User_Throws_ArgumentException()
+        public void UpdateUserInfo_Updating_Non_Existing_User_Throws_ArgumentException()
         {
             // arrange
-            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
-            // TODO: Extract this as a common part between this one and the one above
+            var newUserStsId = DataGenerator.GetUniequeStsID();
+
             var newUserRequest = new NewUserRequestDto()
             {
-                About = "About",
-                Email = "some@body.com",
-                FirstName = "Stecho",
-                LastName = "Stefchev",
-                Gender = GenderEnum.Male,
-                IdsrvUniqueId = newUserStsId,
-                PhoneNumber = "+359886585549"
+                IdsrvUniqueId = newUserStsId
             };
 
             // act
@@ -232,81 +205,30 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsNotNull(newUser.BirthDate);
             Assert.AreEqual(newUser.BirthDate, DateTime.Parse(this.InitialDateString));
 
-            var updatedBirthDate = DateTime.UtcNow;
-            var updatedAbout = "UpdatedAbout";
-            var updatedEmail = "Updatedsome@body.com";
-            var firstNameUpdated = "UpdatedStecho";
-            var lastNameUpdated = "UpdatedStefchev";
-            var firstLanguageId = Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb");
-            var secondLanguageId = Guid.Parse("05872235-365b-41f8-ab50-3913ffe9c601");
-
-            var updateData = new UpdateUserInfoRequestDto()
-            {
-                About = updatedAbout,
-                BirthDate = updatedBirthDate,
-                Email = updatedEmail,
-                FirstName = firstNameUpdated,
-                Gender = GenderEnum.Female,
-                LastName = lastNameUpdated,
-                LanguageIds = new List<Guid>()
-                {
-                    firstLanguageId,
-                    secondLanguageId
-                },
-                PhoneNumber = "Updated+359886585549"
-            };
-
+            var updateData = new UpdateUserInfoRequestDto(){};
             // act
-
             Guid notValidUserId = Guid.NewGuid();
 
             while (notValidUserId == newUserId)
                 notValidUserId = Guid.NewGuid();
 
-
             this._userService.UpdateUserInfo(notValidUserId, updateData);
         }
 
         [TestMethod]
-        public void We_Can_Insert_New_User()
+        public void InsertNewUser_We_Can_Insert_New_User()
         {
             // arrange
-            var firstLanguageId = Guid.Parse("e9260fb3-5183-4c3e-9bd2-c606d03b7bcb");
-            var secondLanguageId = Guid.Parse("05872235-365b-41f8-ab50-3913ffe9c601");
-            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+            var firstLanguageId = FakeLikkleDbContext.GetAllAvailableLanguages().ToArray()[0].Key;
+            var secondLanguageId = FakeLikkleDbContext.GetAllAvailableLanguages().ToArray()[1].Key;
+            var newUserStsId = DataGenerator.GetUniequeStsID();
 
             var groupOneId = Guid.NewGuid();
-            var groupOne = new Group() { Id = groupOneId, Name = "GroupOne", Users = new List<User>() };
-
-            var area = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne }
-            };
-
-            groupOne.Areas = new List<Area>() { area };
-
-            var populatedDatabase = new FakeLikkleDbContext()
-            {
-                Groups = new FakeDbSet<Group>() { groupOne },
-                Areas = new FakeDbSet<Area>() { area }
-            }
-            .Seed();
-
-            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
-            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            var groupOne = new Group() { Id = groupOneId, Users = new List<User>() };
 
             var newUserRequestDto = new NewUserRequestDto()
             {
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "stefcho@stefchev.com",
-                IdsrvUniqueId = newUserStsId,
-                LanguageIds = new List<Guid>() { firstLanguageId, secondLanguageId },
-                GroupIds = new List<Guid>() { groupOneId },
-                BirthDate = DateTime.Parse(this.InitialDateString)
+                LanguageIds = new List<Guid>() { firstLanguageId, secondLanguageId }
             };
 
             // act
@@ -325,20 +247,12 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_Notification_Settings_For_User()
+        public void GetAutomaticSubscriptionSettingsForUserWithId_We_Can_Get_Automatic_Subscription_Settings_For_User()
         {
             // arrange
-            var newUserStsId = "https://boongaloocompanysts/identity3025f46b-3070-4f75-809d-44b7ae5b8e6a";
+            var newUserStsId = DataGenerator.GetUniequeStsID();
 
-            var newUserRequest = new NewUserRequestDto()
-            {
-                About = "About",
-                Email = "some@body.com",
-                FirstName = "Stecho",
-                Gender = GenderEnum.Male,
-                IdsrvUniqueId = newUserStsId,
-                PhoneNumber = "+359886585549"
-            };
+            var newUserRequest = new NewUserRequestDto() { };
 
             // act
             var newUserId = this._userService.InsertNewUser(newUserRequest);
@@ -356,7 +270,8 @@ namespace Likkle.WebApi.Owin.Tets
                 AutomaticallySubscribeToAllGroupsWithTag = true,
                 SubscribedTagIds = new List<Guid>()
                 {
-                    Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"), Guid.Parse("bd456f08-f137-4382-8358-d52772c2dfc8")
+                    FakeLikkleDbContext.GetAllAvailableTags().ToArray()[0].Key,
+                    FakeLikkleDbContext.GetAllAvailableTags().ToArray()[1].Key
                 }
             };
 
@@ -364,16 +279,15 @@ namespace Likkle.WebApi.Owin.Tets
             this._userService.UpdateUserAutomaticSubscriptionSettings(newUserId, newUpdatedUserNotifications);
 
             // assert
-            var updatedNotificationSettings = this._userService.GetAutomaticSubscriptionSettingsForUserWithId(newUserId);
+            var updatedSubscriptionSettings = this._userService.GetAutomaticSubscriptionSettingsForUserWithId(newUserId);
 
-            Assert.IsNotNull(updatedNotificationSettings);
-            Assert.IsNotNull(updatedNotificationSettings.SubscribedTagIds);
-            // 1. Notificiation settings were updated and now we have tags
+            Assert.IsNotNull(updatedSubscriptionSettings);
+            Assert.IsNotNull(updatedSubscriptionSettings.SubscribedTagIds);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException), "There's no notification settings for the user")]
-        public void Exception_Is_Thrown_When_Trying_To_Update_Not_Existing_Notification()
+        public void UpdateUserAutomaticSubscriptionSettings_Exception_Is_Thrown_When_Trying_To_Update_Not_Existing_Notification()
         {
             // arrange
             var userId = Guid.NewGuid();
@@ -396,28 +310,11 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_All_Users()
+        public void GetAllUsers_We_Can_Get_All_Users()
         {
             // arrange
-            var firstUserId = Guid.NewGuid();
-            var firstUser = new User()
-            {
-                Id = firstUserId,
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
-            var secondUserId = Guid.NewGuid();
-            var secondUser = new User()
-            {
-                Id = secondUserId,
-                FirstName = "Other",
-                LastName = "Name",
-                Email = "null@null.bg",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
+            var firstUser = new User() { };
+            var secondUser = new User() { };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -436,16 +333,12 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Get_User_By_StsId()
+        public void GetUserByStsId_We_Can_Get_User_By_StsId()
         {
             // arrange
             var idsrvUniqueId = Guid.NewGuid().ToString();
             var firstUser = new User()
             {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
                 IdsrvUniqueId = idsrvUniqueId,
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
@@ -470,22 +363,19 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_User_Location_Is_Updated_Proper_ResponseDto_IsReturned()
+        public void RelateUserToGroups_When_User_Location_Is_Updated_Proper_ResponseDto_IsReturned()
         {
             // arrange
             var userId = Guid.NewGuid();
             var user = new User()
             {
                 Id = userId,
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
-                }
+                },
+                Groups = new List<Group>()
             };
 
             var groupOneId = Guid.NewGuid();
@@ -530,41 +420,35 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             this._subscriptionService.RelateUserToGroups(relateUserToGroupsDto);
+
+            // assert
             Assert.IsNotNull(user.Groups);
             Assert.IsNotNull(user.HistoryGroups);
 
             Assert.AreEqual(2, user.Groups.Count);
             Assert.AreEqual(2, user.HistoryGroups.Count);
 
-            this._areaServiceMock
-                .Verify(asm => asm.GetUsersFallingUnderSpecificAreas(It.IsAny<IEnumerable<Guid>>()), Times.Exactly(2));
-            this._signalrServiceMock
-                .Verify(ssm => ssm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Exactly(2));
-
             this._userService.UpdateUserLocation(userId, 20, 20);
-
+            
             Assert.AreEqual(0, user.Groups.Count);
             Assert.AreEqual(2, user.HistoryGroups.Count);
 
-            this._signalrServiceMock.Verify(srm => srm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Exactly(2));
+            this._signalrServiceMock.Verify(srm => srm.GroupWasJoinedByUser(It.IsAny<Guid>(), It.IsAny<List<string>>()), Times.Never);
 
             var updateResponse = this._userService.UpdateUserLocation(userId, 10.00009, 10.00009);
-
-            // TODO: When implemented double SecondsToClosestBoundary(double latitude, double longitude); update the assertions here
+            
             Assert.AreEqual(2, updateResponse.SubscribedGroupIds.Count());
+            Assert.AreEqual(32.5, updateResponse.SecodsToClosestBoundary);
         }
 
         [TestMethod]
-        public void HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllOption_TurnedOn()
+        public void UpdateUserLocation_HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllOption_TurnedOn()
         {
             // arrange
             var userId = Guid.NewGuid();
             var user = new User()
             {
                 Id = userId,
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
                 IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
@@ -578,7 +462,6 @@ namespace Likkle.WebApi.Owin.Tets
             var groupOne = new Group()
             {
                 Id = groupOneId,
-                Name = "Group one",
                 IsActive = true
             };
 
@@ -586,7 +469,6 @@ namespace Likkle.WebApi.Owin.Tets
             var groupThree = new Group()
             {
                 Id = groupThreeId,
-                Name = "Group three",
                 IsActive = true
             };
 
@@ -607,7 +489,6 @@ namespace Likkle.WebApi.Owin.Tets
             var groupSix = new Group()
             {
                 Id = groupSixId,
-                Name = "Group six",
                 IsActive = true
             };
 
@@ -703,15 +584,14 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllWithTagOption_TurnedOn()
+        public void UpdateUserLocation_HistoryGroups_And_RegularGroups_Are_Correct_When_Updating_Location_With_SubscribeToAllWithTagOption_TurnedOn()
         {
             var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
 
             // arrange
-            var userId = Guid.NewGuid();
             var user = new User()
             {
-                Id = userId,
+                Id = Guid.NewGuid(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
@@ -721,34 +601,29 @@ namespace Likkle.WebApi.Owin.Tets
             };
 
             // ================= Area1 (GR1, GR2) ========
-            var groupOneId = Guid.NewGuid();
             var groupOne = new Group()
             {
-                Id = groupOneId,
-                Name = "Group one",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
                     allTags.FirstOrDefault(t => t.Name == "Animals")
                 }
             };
-
-            var groupTwoId = Guid.NewGuid();
+            
             var groupTwo = new Group()
             {
-                Id = groupTwoId,
-                Name = "Group two",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
                     allTags.FirstOrDefault(t => t.Name == "Sport")
                 }
             };
-
-            var areaOneId = Guid.NewGuid();
+            
             var areaOne = new Area()
             {
-                Id = areaOneId,
+                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
                 Groups = new List<Group>() { groupOne, groupTwo },
@@ -761,11 +636,9 @@ namespace Likkle.WebApi.Owin.Tets
 
             // ================= Area1 (GR1, GR2) ========
             // ================= Area1 (GR3, GR4, GR5) ========
-            var groupThreeId = Guid.NewGuid();
             var groupThree = new Group()
             {
-                Id = groupThreeId,
-                Name = "Group three",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
@@ -774,23 +647,19 @@ namespace Likkle.WebApi.Owin.Tets
                 }
             };
 
-            var groupFourId = Guid.NewGuid();
             var groupFour = new Group()
             {
-                Id = groupFourId,
-                Name = "Group four",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
                     allTags.FirstOrDefault(t => t.Name == "University")
                 }
             };
-
-            var groupFiveId = Guid.NewGuid();
+            
             var groupFive = new Group()
             {
-                Id = groupFiveId,
-                Name = "Group five",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
@@ -798,11 +667,10 @@ namespace Likkle.WebApi.Owin.Tets
                     allTags.FirstOrDefault(t => t.Name == "Animals")
                 }
             };
-
-            var areaTwoId = Guid.NewGuid();
+            
             var areaTwo = new Area()
             {
-                Id = areaTwoId,
+                Id = Guid.NewGuid(),
                 Latitude = 20,
                 Longitude = 20,
                 Groups = new List<Group>() { groupThree, groupFour, groupFive },
@@ -828,11 +696,11 @@ namespace Likkle.WebApi.Owin.Tets
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            var groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+            var groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(user.Id, 10, 10);
 
             // assert
             Assert.AreEqual(1, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
-            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupTwoId));
+            Assert.IsTrue(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Contains(groupTwo.Id));
 
             Assert.IsTrue(user.Groups.Contains(groupTwo));
             Assert.AreEqual(1, user.Groups.Count());
@@ -843,18 +711,18 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Once);
 
             // act
-            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 15, 15);
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(user.Id, 15, 15);
 
             // assert 
             Assert.IsFalse(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Any());
             Assert.IsFalse(user.Groups.Any());
             Assert.AreEqual(1, user.HistoryGroups.Count());
-            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwoId));
+            Assert.IsTrue(user.HistoryGroups.Select(hgr => hgr.GroupId).Contains(groupTwo.Id));
 
             this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(2));
 
             // act
-            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 20, 20);
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(user.Id, 20, 20);
 
             // assert
             Assert.AreEqual(2, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
@@ -869,7 +737,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(4));
 
             // act
-            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 25, 25);
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(user.Id, 25, 25);
 
             // assert
             Assert.IsFalse(groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Any());
@@ -884,7 +752,7 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscripionServiceMock.Verify(ssm => ssm.AutoDecreaseUsersInGroups(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()), Times.Exactly(6));
 
             // act
-            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(userId, 10, 10);
+            groupsDependingOnUserSettingsAroundCoordinates = this._userService.UpdateUserLocation(user.Id, 10, 10);
 
             // assert
             Assert.AreEqual(1, groupsDependingOnUserSettingsAroundCoordinates.SubscribedGroupIds.Count());
@@ -901,22 +769,16 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_User_Disabled_All_His_Groups_Are_Not_Assiciated_With_Him_Anymore()
+        public void Disable_When_User_Disabled_All_His_Groups_Are_Not_Assiciated_With_Him_Anymore()
         {
             // arrange
             var allTags = this._mockedLikkleUoW.Object.TagRepository.GetAllTags().ToList();
 
-            var userId = Guid.NewGuid();
-            var user = new User()
-            {
-                Id = userId
-            };
+            var user = new User() { Id = Guid.NewGuid() };
 
-            var groupOneId = Guid.NewGuid();
             var groupOne = new Group()
             {
-                Id = groupOneId,
-                Name = "Group one",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
@@ -925,11 +787,9 @@ namespace Likkle.WebApi.Owin.Tets
                 Users = new List<User>() { user }
             };
 
-            var groupTwoId = Guid.NewGuid();
             var groupTwo = new Group()
             {
-                Id = groupTwoId,
-                Name = "Group two",
+                Id = Guid.NewGuid(),
                 IsActive = true,
                 Tags = new List<Tag>()
                 {
@@ -942,8 +802,6 @@ namespace Likkle.WebApi.Owin.Tets
             var areaOne = new Area()
             {
                 Id = areaOneId,
-                Latitude = 10,
-                Longitude = 10,
                 Groups = new List<Group>() { groupOne, groupTwo },
                 IsActive = true,
                 Radius = RadiusRangeEnum.FiftyMeters
@@ -971,7 +829,7 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(user.Groups.Contains(groupTwo));
 
             // act
-            this._userService.Disable(userId);
+            this._userService.Disable(user.Id);
 
             // assert
             Assert.AreEqual(0, user.Groups.Count);

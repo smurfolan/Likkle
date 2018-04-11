@@ -19,20 +19,17 @@ namespace Likkle.BusinessServices
         private readonly IMapper _mapper;
         private readonly IConfigurationWrapper _configuration;
         private readonly ISignalrService _signalrService;
-        private readonly IAreaService _areaService;
 
         public SubscriptionService(
             ILikkleUoW uow,
             IConfigurationProvider configurationProvider,
             IConfigurationWrapper config, 
-            ISignalrService signalrService,
-            IAreaService areaService)
+            ISignalrService signalrService)
         {
             this._unitOfWork = uow;
             _mapper = configurationProvider.CreateMapper();
             this._configuration = config;
             _signalrService = signalrService;
-            this._areaService = areaService;
         }
 
         public void RelateUserToGroups(RelateUserToGroupsDto newRelations)
@@ -167,6 +164,8 @@ namespace Likkle.BusinessServices
             if (!usersFallingUnderTheNewArea.Any())
                 return;
 
+            usersFallingUnderTheNewArea = usersFallingUnderTheNewArea.Distinct().ToList();
+
             // Subscribe users on the service
             var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
                 usersFallingUnderTheNewArea, 
@@ -179,7 +178,7 @@ namespace Likkle.BusinessServices
             var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subcr in subscriptionsResult)
+            foreach (var subcr in GetUsersToBePingedBySignalR(usersFallingUnderTheNewArea, subscriptionsResult))
             {
                 this._signalrService.GroupAsNewAreaWasCreatedAroundMe(
                     subcr.Key.ToString(), 
@@ -195,16 +194,10 @@ namespace Likkle.BusinessServices
             Guid invokedByUserId)
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
-
-            // Areas that need to be re-activated because they are now inactive.
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-
-            // Active and inactive areas this group was part of. We need them in order to find users falling under these area(s).
-            var areasWhichThisGroupWasPartOf = groupToSubscribe.Areas.ToList();
-
             var allUsers = new List<User>();
 
-            foreach (var area in areasWhichThisGroupWasPartOf)
+            foreach (var area in areas)
             {
                 var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
                 var usersToBeAdded = this._unitOfWork.UserRepository
@@ -213,24 +206,26 @@ namespace Likkle.BusinessServices
 
                 allUsers.AddRange(usersToBeAdded);
             }
-            
-            if (!allUsers.Any())
+
+            if (allUsers == null || !allUsers.Any())
                 return;
 
+            allUsers = allUsers.Distinct().ToList();
+
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers.Distinct(), groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
-            
+
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subscr in subscriptionsResult)
+            foreach (var subscr in GetUsersToBePingedBySignalR(allUsers, subscriptionsResult))
             {
                 this._signalrService.GroupAroundMeWasRecreated(
-                    subscr.Key.ToString(), 
-                    areaDtos, 
-                    groupDto, 
+                    subscr.Key.ToString(),
+                    areaDtos,
+                    groupDto,
                     subscr.Value);
             }
         }
@@ -239,9 +234,12 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
             Guid invokedByUserId)
         {
+            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
+
             UseSignalrToChangeGroupsParticipantsNumber(
                 groupsThatNeedToIncreaseTheNumberOfTheirUsers, 
                 invokedByUserId,
+                allAreas,
                 true);
         }
 
@@ -249,9 +247,12 @@ namespace Likkle.BusinessServices
             IEnumerable<Guid> groupsThatNeedToDecreaseTheNumberOfTheirUsers, 
             Guid invokedByUserId)
         {
+            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
+
             UseSignalrToChangeGroupsParticipantsNumber(
                 groupsThatNeedToDecreaseTheNumberOfTheirUsers,
                 invokedByUserId,
+                allAreas,
                 false);
         }
 
@@ -363,9 +364,9 @@ namespace Likkle.BusinessServices
         private void UseSignalrToChangeGroupsParticipantsNumber(
             IEnumerable<Guid> groupsThatNeedToChangeTheNumberOfTheirUsers,
             Guid invokedByUserId,
+            IEnumerable<Area> allAreas,
             bool isIncrementalOperation)
         {
-            var allAreas = this._unitOfWork.AreaRepository.GetAreas();
 
             foreach (var group in groupsThatNeedToChangeTheNumberOfTheirUsers)
             {
@@ -373,19 +374,95 @@ namespace Likkle.BusinessServices
                     .Where(a => a.Groups.Select(gr => gr.Id).Contains(group))
                     .ToList();
 
-                // 1. Find all users under these areas based on their last locaton and exclude invokedByUserId
-                var usersToBeNotified = this._areaService
-                    .GetUsersFallingUnderSpecificAreas(areasIncludingThisGroup.Select(a => a.Id))
-                    .Where(uid => uid != invokedByUserId)
-                    .Select(u => u.ToString())
-                    .Distinct()
-                    .ToList();
+                var groupsWhichAreOrWereConnectedToAreas = areasIncludingThisGroup
+                    .SelectMany(a => a.Groups).Select(gr => gr.Id);
+
+                var usersThatWereEverInThisArea = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .SelectMany(u => u.HistoryGroups)
+                    .Where(hgr => groupsWhichAreOrWereConnectedToAreas.Contains(hgr.GroupId))
+                    .Select(u => u.UserWhoSubscribedGroup);
+
+                var usersToBeNotified = this.GetFilteredUsersInArea(
+                    areasIncludingThisGroup, 
+                    usersThatWereEverInThisArea)
+                    .Where(uId => uId!= invokedByUserId.ToString())
+                    .Distinct();
+
+                if (usersToBeNotified == null || !usersToBeNotified.Any())
+                    return;
 
                 if (isIncrementalOperation)
-                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasJoinedByUser(group, usersToBeNotified.ToList());
                 else
-                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified);
+                    this._signalrService.GroupWasLeftByUser(group, usersToBeNotified.ToList());
             }
+        }
+
+        /// <summary>
+        /// With this method we try to filter somehow only the users who are currently in some of the observed areas
+        /// We don't want to disturb the ones who are not available here.
+        /// </summary>
+        /// <param name="areasIncludingThisGroup"></param>
+        /// <param name="usersThatWereEverInThisArea"></param>
+        /// <returns></returns>
+        private IEnumerable<string> GetFilteredUsersInArea(
+            List<Area> areasIncludingThisGroup, 
+            IEnumerable<User> usersThatWereEverInThisArea)
+        {
+            var result = new List<string>();
+
+            foreach (var user in usersThatWereEverInThisArea)
+            {
+                var currentUserLocation = new GeoCoordinate(user.Latitude, user.Longitude);
+
+                var inReach =
+                    areasIncludingThisGroup.Any(
+                        area =>
+                            currentUserLocation.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                                (int)area.Radius);
+
+                if (inReach)
+                    result.Add(user.Id.ToString());
+            }
+
+            // Include also users that have never subscribed the groups there but are currently in the area
+            var usersWhoNeverSubscribeGroupsHere = this._unitOfWork.UserRepository
+                .GetAllUsers()
+                .Where(user => areasIncludingThisGroup.Any(
+                        area =>
+                            (new GeoCoordinate(user.Latitude, user.Longitude)).GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <=
+                                (int)area.Radius))
+                .ToList()
+                .Select(u => u.Id.ToString());
+
+            result.AddRange(usersWhoNeverSubscribeGroupsHere);
+
+            return result;
+        }
+        
+
+        private Dictionary<Guid, bool> GetUsersToBePingedBySignalR(
+            IEnumerable<User> usersFallingUnderTheNewArea, 
+            Dictionary<Guid, bool> usersThatWereAutomaticallySubscribed)
+        {
+            var automaticallySubscribedUsers = usersThatWereAutomaticallySubscribed.Select(u => u.Key);
+
+            Dictionary<Guid, bool> result = new Dictionary<Guid, bool>();
+
+            foreach (var user in usersFallingUnderTheNewArea)
+            {
+                if (automaticallySubscribedUsers.Contains(user.Id))
+                {
+                    result.Add(user.Id, true);
+                }
+                else
+                {
+                    result.Add(user.Id, false);
+                }
+            }
+
+            return result;
         }
         #endregion
     }

@@ -5,14 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Likkle.DataModel
 {
-    public class Group
+    public class Group : BaseEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-
         public string Name { get; set; }
-
         public bool IsActive { get; set; }
 
         // Navigation properties

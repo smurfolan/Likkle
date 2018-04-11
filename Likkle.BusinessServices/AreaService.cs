@@ -103,13 +103,11 @@ namespace Likkle.BusinessServices
 
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<AreaDto>>(areaEntities);
 
-            var areaEntitiesAsMetadataList =
+            return
                 areaDtos.Select(
                     a =>
                         GetAreaMetadata(new GeoCoordinate(areas.Latitude, areas.Longitude),
                             new GeoCoordinate(a.Latitude, a.Longitude), a));
-
-            return areaEntitiesAsMetadataList;
         }
 
         public Guid InsertNewArea(NewAreaRequest newArea)
@@ -160,7 +158,10 @@ namespace Likkle.BusinessServices
                 : pointToAreaCenterDistance;
 
             // 2. Get total number of people in the area (all groups people)
-            var totalNumberOfParticipants = clickedArea.Groups.SelectMany(gr => gr.Users).Count();
+            var totalNumberOfParticipants = clickedArea.Groups
+                .SelectMany(gr => gr.Users)
+                .Distinct()
+                .Count();
 
             // 3. Gather all the uniqe group tags from all the groups
             var allTags = clickedArea.Groups.SelectMany(gr => gr.Tags).Select(t => t.Id).Distinct();

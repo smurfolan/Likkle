@@ -91,6 +91,7 @@
     <Compile Include="DataGenerator.cs" />
     <Compile Include="GroupControllerTests.cs" />
     <Compile Include="GroupServiceTests.cs" />
+    <Compile Include="LikkleApiLoggerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubscriptionServiceTests.cs" />
     <Compile Include="SubscriptionSettingsServiceTests.cs" />

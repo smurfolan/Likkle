@@ -27,9 +27,7 @@ namespace Likkle.WebApi.Owin.DI
 
         private static void RegisterServices(KernelBase kernel)
         {
-            // TODO - put in registrations here...
-
-            
+            // TODO - put in registrations here...           
             kernel.Bind<ILikkleApiLogger>().To<LikkleApiLogger>().InSingletonScope();
 
             kernel.Bind<ILikkleDbContext>().To<LikkleDbContext>();
@@ -46,6 +44,7 @@ namespace Likkle.WebApi.Owin.DI
             kernel.Bind<IGeoCodingManager>().To<GeoCodingManager>();
             kernel.Bind<IPhoneValidationManager>().To<PhoneValidationManager>();
             kernel.Bind<ISignalrService>().To<SignalrService>();
+            kernel.Bind<IMailService>().To<MailService>();
 
             var mapperConfiguration = new MapperConfiguration(cfg => {
                 cfg.AddProfile<EntitiesMappingProfile>();
