@@ -108,10 +108,16 @@ namespace Likkle.BusinessServices
             Guid invokedByUserId)
         {
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-            var users = areas.SelectMany(ar => ar.Groups)
+            var usersConnectedToActiveGroups = areas.SelectMany(ar => ar.Groups)
                         .Where(gr => gr.IsActive == true)
-                        .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
+                        .SelectMany(gr => gr.Users)
                         .Distinct();
+
+            var usersNotConnectedToAGroupButAvailableInTheRadius = UsersFallingUnderSpecificAreasRange(areas);
+
+            var users = usersConnectedToActiveGroups
+                .Union(usersNotConnectedToAGroupButAvailableInTheRadius)
+                .Where(u => u.Id != invokedByUserId);
 
             if (users == null || !users.Any())
                 return;
@@ -187,17 +193,7 @@ namespace Likkle.BusinessServices
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-            var allUsers = new List<User>();
-
-            foreach (var area in areas)
-            {
-                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
-                var usersToBeAdded = this._unitOfWork.UserRepository
-                    .GetAllUsers()
-                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius && (u.Id != invokedByUserId));
-
-                allUsers.AddRange(usersToBeAdded);
-            }
+            var allUsers = UsersFallingUnderSpecificAreasRange(areas).Where(u => u.Id != invokedByUserId);
 
             if (allUsers == null || !allUsers.Any())
                 return;
@@ -251,8 +247,21 @@ namespace Likkle.BusinessServices
         #region Private methods
         private IEnumerable<User> UsersFallingUnderSpecificAreasRange(IEnumerable<Area> areas)
         {
-            throw new NotImplementedException();
+            var allUsers = new List<User>();
+
+            foreach (var area in areas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+
+                allUsers.AddRange(usersToBeAdded);
+            }
+
+            return allUsers.Distinct();
         }
+
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
             var userToBeRemoved = this._unitOfWork.UserRepository.GetUserById(userId);

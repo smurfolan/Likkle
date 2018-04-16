@@ -1251,5 +1251,60 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             this._signalrServiceMock.Verify(srs => srs.GroupWasJoinedByUser(groupOne.Id, new List<string>() { userTwo.Id.ToString()}), Times.Once);
         }
+
+        [TestMethod]
+        public void AutoSubscribeUsersFromExistingAreas_Users_Falling_Under_The_Area_Not_Part_Of_Active_Groups_Are_Considered()
+        {
+            // arrange
+            var userOne = new User() {
+                Id = Guid.NewGuid(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting() {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false,
+                    Tags = null
+                },
+                Groups = new List<Group>()
+            };
+            var group = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userOne }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { group },
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var userTwo = new User() {
+                Id = Guid.NewGuid(),
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false,
+                    Tags = null
+                },
+                Groups = new List<Group>()
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { group },
+                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            _subscriptionService.AutoSubscribeUsersFromExistingAreas(
+                new List<Guid>() { area.Id }, new StandaloneGroupRequestDto(), Guid.NewGuid(), Guid.NewGuid());
+
+            // assert
+            _signalrServiceMock.Verify(
+                srsm => srsm.GroupAttachedToExistingAreasWasCreatedAroundMe(It.Is<string>(uid => uid == userTwo.Id.ToString()), It.IsAny<IEnumerable<Guid>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
+        }
     }
 }
