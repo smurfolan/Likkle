@@ -249,6 +249,10 @@ namespace Likkle.BusinessServices
         }
 
         #region Private methods
+        private IEnumerable<User> UsersFallingUnderSpecificAreasRange(IEnumerable<Area> areas)
+        {
+            throw new NotImplementedException();
+        }
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
             var userToBeRemoved = this._unitOfWork.UserRepository.GetUserById(userId);
