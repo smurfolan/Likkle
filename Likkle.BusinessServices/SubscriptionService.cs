@@ -108,10 +108,16 @@ namespace Likkle.BusinessServices
             Guid invokedByUserId)
         {
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-            var users = areas.SelectMany(ar => ar.Groups)
+            var usersConnectedToActiveGroups = areas.SelectMany(ar => ar.Groups)
                         .Where(gr => gr.IsActive == true)
-                        .SelectMany(gr => gr.Users).Where(u => u.Id != invokedByUserId)
+                        .SelectMany(gr => gr.Users)
                         .Distinct();
+
+            var usersNotConnectedToAGroupButAvailableInTheRadius = UsersFallingUnderSpecificAreasRange(areas);
+
+            var users = usersConnectedToActiveGroups
+                .Union(usersNotConnectedToAGroupButAvailableInTheRadius)
+                .Where(u => u.Id != invokedByUserId);
 
             if (users == null || !users.Any())
                 return;
@@ -119,7 +125,7 @@ namespace Likkle.BusinessServices
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(
                 users,
                 groupToSubscribe,
                 newGroupMetadata.TagIds);
@@ -159,7 +165,7 @@ namespace Likkle.BusinessServices
             usersFallingUnderTheNewArea = usersFallingUnderTheNewArea.Distinct().ToList();
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(
                 usersFallingUnderTheNewArea, 
                 groupToSubscribe, 
                 groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
@@ -187,17 +193,7 @@ namespace Likkle.BusinessServices
         {
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
             var areas = this._unitOfWork.AreaRepository.GetAreas().Where(a => areaIds.Contains(a.Id)).ToList();
-            var allUsers = new List<User>();
-
-            foreach (var area in areas)
-            {
-                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
-                var usersToBeAdded = this._unitOfWork.UserRepository
-                    .GetAllUsers()
-                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius && (u.Id != invokedByUserId));
-
-                allUsers.AddRange(usersToBeAdded);
-            }
+            var allUsers = UsersFallingUnderSpecificAreasRange(areas).Where(u => u.Id != invokedByUserId);
 
             if (allUsers == null || !allUsers.Any())
                 return;
@@ -205,7 +201,7 @@ namespace Likkle.BusinessServices
             allUsers = allUsers.Distinct().ToList();
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
@@ -249,6 +245,23 @@ namespace Likkle.BusinessServices
         }
 
         #region Private methods
+        private IEnumerable<User> UsersFallingUnderSpecificAreasRange(IEnumerable<Area> areas)
+        {
+            var allUsers = new List<User>();
+
+            foreach (var area in areas)
+            {
+                var areaCenter = new GeoCoordinate(area.Latitude, area.Longitude);
+                var usersToBeAdded = this._unitOfWork.UserRepository
+                    .GetAllUsers()
+                    .Where(u => areaCenter.GetDistanceTo(new GeoCoordinate(u.Latitude, u.Longitude)) <= (int)area.Radius);
+
+                allUsers.AddRange(usersToBeAdded);
+            }
+
+            return allUsers.Distinct();
+        }
+
         private void DeactivateGroupsWithNoUsersInsideOfThem(IEnumerable<Group> unsubscribedGroups, Guid userId)
         {
             var userToBeRemoved = this._unitOfWork.UserRepository.GetUserById(userId);
@@ -309,7 +322,7 @@ namespace Likkle.BusinessServices
                 this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
-        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
         {
             var result = new Dictionary<Guid, bool>() { };
 
@@ -340,6 +353,12 @@ namespace Likkle.BusinessServices
                         result.Add(user.Id, false);
                         continue;
                     }
+                }
+
+                else if(!autoSubscrSetings.AutomaticallySubscribeToAllGroups && !autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    result.Add(user.Id, false);
+                    continue;
                 }
             }
 
