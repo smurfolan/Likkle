@@ -125,7 +125,7 @@ namespace Likkle.BusinessServices
             var groupToSubscribe = this._unitOfWork.GroupRepository.GetGroupById(newGroupId);
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(
                 users,
                 groupToSubscribe,
                 newGroupMetadata.TagIds);
@@ -165,7 +165,7 @@ namespace Likkle.BusinessServices
             usersFallingUnderTheNewArea = usersFallingUnderTheNewArea.Distinct().ToList();
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(
                 usersFallingUnderTheNewArea, 
                 groupToSubscribe, 
                 groupToSubscribe.Tags.Select(gr => gr.Id).ToList());
@@ -201,7 +201,7 @@ namespace Likkle.BusinessServices
             allUsers = allUsers.Distinct().ToList();
 
             // Subscribe users on the service
-            var subscriptionsResult = this.SubscribeUsersNearbyNewGroup(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
+            var subscriptionsResult = this.SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(allUsers, groupToSubscribe, groupToSubscribe.Tags.Select(gr => gr.Id));
             this._unitOfWork.Save();
 
             // Use SignalR to notify all the clients that need to receive information about the recreated group.
@@ -322,7 +322,7 @@ namespace Likkle.BusinessServices
                 this.AutoIncreaseUsersInGroups(newlySubscribedGroups.Select(gr => gr.Id).ToList(), user.Id);
         }
 
-        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroup(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
+        private Dictionary<Guid, bool> SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(IEnumerable<User> users, Group groupToSubscribe, IEnumerable<Guid> tagIds)
         {
             var result = new Dictionary<Guid, bool>() { };
 
@@ -353,6 +353,12 @@ namespace Likkle.BusinessServices
                         result.Add(user.Id, false);
                         continue;
                     }
+                }
+
+                else if(!autoSubscrSetings.AutomaticallySubscribeToAllGroups && !autoSubscrSetings.AutomaticallySubscribeToAllGroupsWithTag)
+                {
+                    result.Add(user.Id, false);
+                    continue;
                 }
             }
 
