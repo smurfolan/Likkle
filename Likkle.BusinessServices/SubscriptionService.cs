@@ -176,7 +176,7 @@ namespace Likkle.BusinessServices
             var areaDto = this._mapper.Map<Area, SRAreaDto>(areaEntity);
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subcr in GetUsersToBePingedBySignalR(usersFallingUnderTheNewArea, subscriptionsResult))
+            foreach (var subcr in subscriptionsResult)
             {
                 this._signalrService.GroupAsNewAreaWasCreatedAroundMe(
                     subcr.Key.ToString(), 
@@ -208,7 +208,7 @@ namespace Likkle.BusinessServices
             var areaDtos = this._mapper.Map<IEnumerable<Area>, IEnumerable<SRAreaDto>>(areas).ToList();
             var groupDto = this._mapper.Map<Group, SRGroupDto>(groupToSubscribe);
 
-            foreach (var subscr in GetUsersToBePingedBySignalR(allUsers, subscriptionsResult))
+            foreach (var subscr in subscriptionsResult)
             {
                 this._signalrService.GroupAroundMeWasRecreated(
                     subscr.Key.ToString(), 
@@ -440,30 +440,6 @@ namespace Likkle.BusinessServices
                 .Select(u => u.Id.ToString());
 
             result.AddRange(usersWhoNeverSubscribeGroupsHere);
-
-            return result;
-        }
-        
-
-        private Dictionary<Guid, bool> GetUsersToBePingedBySignalR(
-            IEnumerable<User> usersFallingUnderTheNewArea, 
-            Dictionary<Guid, bool> usersThatWereAutomaticallySubscribed)
-        {
-            var automaticallySubscribedUsers = usersThatWereAutomaticallySubscribed.Select(u => u.Key);
-
-            Dictionary<Guid, bool> result = new Dictionary<Guid, bool>();
-
-            foreach (var user in usersFallingUnderTheNewArea)
-            {
-                if (automaticallySubscribedUsers.Contains(user.Id))
-                {
-                    result.Add(user.Id, true);
-                }
-                else
-                {
-                    result.Add(user.Id, false);
-                }
-            }
 
             return result;
         }
