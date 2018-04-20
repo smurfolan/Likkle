@@ -200,9 +200,7 @@ namespace Likkle.BusinessServices
             var affectedGroup = this._unitOfWork.GroupRepository.GetGroupById(groupId);
 
             var inactiveAreasThisGroupBelongsTo = affectedGroup.Areas.Where(a => a.IsActive == false);
-
-            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id, userId);
-
+            
             foreach (var inactiveArea in inactiveAreasThisGroupBelongsTo)
             {
                 inactiveArea.IsActive = true;
@@ -215,6 +213,8 @@ namespace Likkle.BusinessServices
             user.Groups.Add(affectedGroup);
 
             this._unitOfWork.Save();
+
+            this._subscriptionService.AutoSubscribeUsersForRecreatedGroup(inactiveAreasThisGroupBelongsTo.Select(ia => ia.Id), affectedGroup.Id, userId);
         }
 
         #region Private area
