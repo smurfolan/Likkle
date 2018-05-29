@@ -17,15 +17,18 @@ namespace Likkle.WebApi.Owin.Controllers
         private readonly IAreaService _areaService;
         private readonly ILikkleApiLogger _apiLogger;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IConfigurationWrapper _configurationWrapper;
 
         public AreaController(
             IAreaService areaService, 
             ILikkleApiLogger logger, 
-            ISubscriptionService subscriptionService)
+            ISubscriptionService subscriptionService,
+            IConfigurationWrapper configurationWrapper)
         {
             this._areaService = areaService;
             this._apiLogger = logger;
             _subscriptionService = subscriptionService;
+            _configurationWrapper = configurationWrapper;
         }
 
         /// <summary>
@@ -199,7 +202,7 @@ namespace Likkle.WebApi.Owin.Controllers
         [Route("")]
         public IHttpActionResult Post([FromBody]NewAreaRequest area)
         {
-            var validator = new NewAreaRequestValidator(this._areaService);
+            var validator = new NewAreaRequestValidator(this._areaService, _configurationWrapper);
             var results = validator.Validate(area);
 
             var detailedError = new StringBuilder();

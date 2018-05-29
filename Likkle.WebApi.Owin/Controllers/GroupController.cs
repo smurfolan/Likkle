@@ -8,10 +8,11 @@ using System.Web;
 using Likkle.BusinessServices.Validators;
 using System.Text;
 using System.Linq;
+using Ninject;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {
@@ -19,17 +20,20 @@ namespace Likkle.WebApi.Owin.Controllers
         private readonly IGroupService _groupService;
         private readonly ILikkleApiLogger _apiLogger;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IConfigurationWrapper _configurationWrapper;
 
         public GroupController(
             IGroupService groupService,
             ILikkleApiLogger logger, 
             ISubscriptionService subscriptionService,
-            IAreaService areaService)
+            IAreaService areaService,
+            IConfigurationWrapper configurationWrapper)
         {
             this._areaService = areaService;
             this._groupService = groupService;
             this._apiLogger = logger;
             _subscriptionService = subscriptionService;
+            _configurationWrapper = configurationWrapper;
         }
 
         /// <summary>
@@ -174,7 +178,8 @@ namespace Likkle.WebApi.Owin.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var validator = new NewAreaRequestValidator(this._areaService);
+            var validator = new NewAreaRequestValidator(this._areaService, _configurationWrapper);
+
             var results = validator.Validate(
                 new NewAreaRequest()
                 {

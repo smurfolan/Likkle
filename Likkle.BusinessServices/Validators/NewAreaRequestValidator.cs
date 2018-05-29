@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Device.Location;
 using System.Linq;
 using FluentValidation;
 using Likkle.BusinessEntities.Requests;
@@ -8,23 +8,30 @@ namespace Likkle.BusinessServices.Validators
     public class NewAreaRequestValidator : AbstractValidator<NewAreaRequest>
     {
         private readonly IAreaService _areaService;
+        private int _minimalDistanceBetweenTwoAreaCentersWithSameRadius;
 
-        public NewAreaRequestValidator(IAreaService areaService)
+        public NewAreaRequestValidator(
+            IAreaService areaService,
+            IConfigurationWrapper configurationWrapper)
         {
             _areaService = areaService;
+            _minimalDistanceBetweenTwoAreaCentersWithSameRadius = configurationWrapper
+                .MinimalDistanceBetweenTwoAreaCentersWithSameRadius;
 
             RuleFor(request => request.Latitude)
                 .Must((request, latitude) => BeNonExistingAreaRequest(request))
-                .WithMessage("There's a previous request with these coordinates and radius");
+                .WithMessage("There's a previous request close coordinates and radius");
         }
 
         private bool BeNonExistingAreaRequest(NewAreaRequest request)
         {
             var allAreas = _areaService.GetAllAreas();
+            
+            var requestCenter = new GeoCoordinate(request.Latitude, request.Longitude);
 
             return !allAreas.Any(area =>
-                Math.Round(area.Latitude, 6) == Math.Round(request.Latitude, 6) &&
-                Math.Round(area.Longitude, 6) == Math.Round(request.Longitude, 6) &&
+                requestCenter.GetDistanceTo(new GeoCoordinate(area.Latitude, area.Longitude)) <= _minimalDistanceBetweenTwoAreaCentersWithSameRadius 
+                &&
                 area.Radius == request.Radius);
         }
     }
