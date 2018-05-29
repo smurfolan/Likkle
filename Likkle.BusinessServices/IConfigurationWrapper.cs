@@ -13,5 +13,6 @@
         string SmtpClientHost { get; }
         string SupportEmailPassword { get; }
         string HostingEnvironment { get; }
+        int MinimalDistanceBetweenTwoAreaCentersWithSameRadius { get; }
     }
 }

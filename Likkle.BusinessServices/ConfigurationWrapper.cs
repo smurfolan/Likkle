@@ -15,6 +15,7 @@ namespace Likkle.BusinessServices
         public string SupportEmail => ConfigurationManager.AppSettings["supportEmail"];
         public string SmtpClientHost => ConfigurationManager.AppSettings["smtpClientHost"];
         public string SupportEmailPassword => ConfigurationManager.AppSettings["supportEmailPassword"];
-        public string HostingEnvironment => ConfigurationManager.AppSettings["hostingEnvironment"]; 
+        public string HostingEnvironment => ConfigurationManager.AppSettings["hostingEnvironment"];
+        public int MinimalDistanceBetweenTwoAreaCentersWithSameRadius => Convert.ToInt16(ConfigurationManager.AppSettings["minimalDistanceBetweenTwoAreaCentersWithSameRadius"]);
     }
 }

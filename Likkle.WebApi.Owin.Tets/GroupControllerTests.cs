@@ -42,7 +42,9 @@ namespace Likkle.WebApi.Owin.Tets
             var groupController = new GroupController(
                 mockedDataService.Object,
                 _apiLogger.Object,
-                null, null);
+                null, 
+                null,
+                null);
 
             // act
             var actionResult = groupController.Get(Guid.NewGuid());
@@ -66,6 +68,7 @@ namespace Likkle.WebApi.Owin.Tets
                 mockedDataService.Object,
                 _apiLogger.Object,
                 null, 
+                null,
                 null);
 
             // act
@@ -95,6 +98,7 @@ namespace Likkle.WebApi.Owin.Tets
             var groupController = new GroupController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null,
                 null);
 
@@ -130,6 +134,7 @@ namespace Likkle.WebApi.Owin.Tets
                 mockedDataService.Object,
                 _apiLogger.Object,
                 null, 
+                null,
                 null);
 
             // act
@@ -157,6 +162,7 @@ namespace Likkle.WebApi.Owin.Tets
                 mockedDataService.Object,
                 _apiLogger.Object,
                 null,
+                null,
                 null);
 
             var actionResult = groupController.Post(new StandaloneGroupRequestDto());
@@ -175,6 +181,7 @@ namespace Likkle.WebApi.Owin.Tets
             var mockedDataService = new Mock<IGroupService>();
             var mockedSubscriptionService = new Mock<ISubscriptionService>();
             var mockedAreaService = new Mock<IAreaService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
 
             var newGroupId = Guid.NewGuid();
 
@@ -182,13 +189,16 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
             mockedDataService.Setup(x => x.InserGroupAsNewArea(It.IsAny<GroupAsNewAreaRequestDto>())).Returns(newGroupId);
+            mockedConfigurationWrapper.Setup(cwm => cwm.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
 
             // act
             var groupController = new GroupController(
                 mockedDataService.Object,
                 _apiLogger.Object,
                 mockedSubscriptionService.Object,
-                mockedAreaService.Object);
+                mockedAreaService.Object,
+                mockedConfigurationWrapper.Object);
 
             var actionResult = await groupController.Post(new GroupAsNewAreaRequestDto());
 
@@ -208,6 +218,7 @@ namespace Likkle.WebApi.Owin.Tets
             var groupController = new GroupController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null,
                 null);
 
@@ -231,6 +242,7 @@ namespace Likkle.WebApi.Owin.Tets
                 mockedDataService.Object,
                 _apiLogger.Object,
                 null,
+                null,
                 null);
 
             // act
@@ -244,7 +256,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void User_Latest_Coordinates_Are_Updated_When_Getting_GroupCreationType()
+        public void GroupController_GetGroupCreationType_User_Latest_Coordinates_Are_Updated_When_Getting_GroupCreationType()
         {
             // arrange
             var subscriptionServiceMock = new Mock<ISubscriptionService>();
@@ -262,7 +274,8 @@ namespace Likkle.WebApi.Owin.Tets
                 groupServiceMock.Object, 
                 null, 
                 subscriptionServiceMock.Object,
-                mockedAreaService.Object);
+                mockedAreaService.Object,
+                null);
 
             // act
             var actionResult = groupController.GetGroupCreationType(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<Guid>());
@@ -275,12 +288,13 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void User_Latest_Coordinates_Are_Updated_When_Posting_Group_As_New_Area()
+        public void GroupController_POST_User_Latest_Coordinates_Are_Updated_When_Posting_Group_As_New_Area()
         {
             // arrange
             var subscriptionServiceMock = new Mock<ISubscriptionService>();
             var groupServiceMock = new Mock<IGroupService>();
             var mockedAreaService = new Mock<IAreaService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
 
             groupServiceMock.Setup(
                 gs => gs.InserGroupAsNewArea(It.IsAny<GroupAsNewAreaRequestDto>())).Returns(Guid.NewGuid);
@@ -289,11 +303,15 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
 
+            mockedConfigurationWrapper.Setup(mcw => mcw.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
+
             var groupController = new GroupController(
                 groupServiceMock.Object, 
                 null, 
                 subscriptionServiceMock.Object,
-                mockedAreaService.Object);
+                mockedAreaService.Object,
+                mockedConfigurationWrapper.Object);
 
             // act
             var actionResult = groupController.Post(new GroupAsNewAreaRequestDto() {});
@@ -306,12 +324,13 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void GroupAsNewAre_Can_Not_Be_Posted_Twice_With_Same_Coordinates()
+        public void GroupController_POST_GroupAsNewArea_Can_Not_Be_Posted_Twice_With_Same_Coordinates()
         {
             // arrange
             var subscriptionServiceMock = new Mock<ISubscriptionService>();
             var groupServiceMock = new Mock<IGroupService>();
             var mockedAreaService = new Mock<IAreaService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
 
             mockedAreaService.Setup(ars => ars.GetAllAreas()).Returns(new List<AreaDto>() {
                 new AreaDto()
@@ -319,6 +338,8 @@ namespace Likkle.WebApi.Owin.Tets
                     Longitude = 10, Latitude = 10, Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
                 }
             });
+            mockedConfigurationWrapper.Setup(cwm => cwm.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
 
             var request = new GroupAsNewAreaRequestDto()
             {
@@ -331,7 +352,8 @@ namespace Likkle.WebApi.Owin.Tets
                 groupServiceMock.Object,
                 null,
                 subscriptionServiceMock.Object,
-                mockedAreaService.Object);
+                mockedAreaService.Object,
+                mockedConfigurationWrapper.Object);
 
             // act
             var actionResult = groupController.Post(request).Result;
@@ -339,7 +361,51 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
+            Assert.AreEqual("There's a previous request close coordinates and radius; ", contentResult.Message);
+        }
+
+        [TestMethod]
+        public void GroupController_POST_AsNewArea_Can_Not_Create_Group_Close_To_Another_With_Same_Radius()
+        {
+            // arrange
+            var mockedDataService = new Mock<IGroupService>();
+            var mockedSubscriptionService = new Mock<ISubscriptionService>();
+            var mockedAreaService = new Mock<IAreaService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
+
+            mockedAreaService.Setup(mas => mas.GetAllAreas())
+                .Returns(new List<AreaDto>()
+                {
+                    new AreaDto()
+                    {
+                        Latitude = 10,
+                        Longitude = 10,
+                        Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+                    }
+                });
+
+            mockedConfigurationWrapper.Setup(mcw => mcw.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
+
+            // act
+            var groupController = new GroupController(
+                mockedDataService.Object,
+                _apiLogger.Object,
+                mockedSubscriptionService.Object,
+                mockedAreaService.Object,
+                mockedConfigurationWrapper.Object);
+
+            var actionResult = groupController.Post(new GroupAsNewAreaRequestDto()
+            {
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            }).Result;
+
+            // assert
+            var contentResult = actionResult as BadRequestErrorMessageResult;
+            Assert.IsNotNull(contentResult);
+            Assert.AreEqual("There's a previous request close coordinates and radius; ", contentResult.Message);
         }
     }
 }
