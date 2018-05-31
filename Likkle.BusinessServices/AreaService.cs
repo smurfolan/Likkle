@@ -144,13 +144,19 @@ namespace Likkle.BusinessServices
             // 3. Gather all the uniqe group tags from all the groups
             var allTags = clickedArea.Groups.SelectMany(gr => gr.Tags).Select(t => t.Id).Distinct();
 
+            // 4. Gather all the groups that shuld be visible to the public
+            var allGroupsVisibleToThePublic = clickedArea
+                .Groups
+                .Where(gr => gr.VisibleToThePublic == true)
+                .Count();
+
             return new AreaMetadataResponseDto()
             {
                 DistanceTo = distance,
                 NumberOfParticipants = totalNumberOfParticipants,
                 TagIds = allTags,
-                ApproximateAddress = clickedArea.ApproximateAddress
-
+                ApproximateAddress = clickedArea.ApproximateAddress,
+                NumberOfGroupsVisibleToThePublic = allGroupsVisibleToThePublic
             };
         }
         #endregion

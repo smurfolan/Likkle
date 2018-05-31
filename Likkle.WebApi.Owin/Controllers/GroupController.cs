@@ -142,7 +142,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: POST /api/v1/groups
         /// </summary>
-        /// <param name="newGroup">Body sample:{'name':'Second floor cooks', 'tagIds':['0c53eeff-06a1-4104-a86e-1bd3c8028a00', 'afc3c12f-b884-40e2-b356-2c863fd0b86c'], 'areaIds':['c6f22434-fbc1-47f5-8149-2dd57f78a29e'],'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b'}</param>
+        /// <param name="newGroup">Body sample:{'name':'Second floor cooks', 'tagIds':['0c53eeff-06a1-4104-a86e-1bd3c8028a00', 'afc3c12f-b884-40e2-b356-2c863fd0b86c'], 'areaIds':['c6f22434-fbc1-47f5-8149-2dd57f78a29e'],'userId':'9fa631dd-7d0d-4235-b330-baf23862d90b', 'visibleToThePublic' : 'true'}</param>
         /// <returns>HTTP Code 201 if successfuly created and 500 if not.</returns>
         [HttpPost]
         [Route("")]
@@ -166,7 +166,7 @@ namespace Likkle.WebApi.Owin.Controllers
         /// <summary>
         /// Example: POST /api/v1/groups/AsNewArea
         /// </summary>
-        /// <param name="newGroup">Body sample:{'name':'Second floor cooks', 'tagIds':['fd463953-118b-434a-9c76-d11d4366d742', '92b93aac-97b4-461b-80f7-ddd6c6b8ed7f'], 'userId':'92b93aac-97b4-461b-80f7-ddd6c6b8ed22', 'latitude':42.657064, 'longitude':23.28539, 'radius':50}</param>
+        /// <param name="newGroup">Body sample:{'name':'Second floor cooks', 'tagIds':['fd463953-118b-434a-9c76-d11d4366d742', '92b93aac-97b4-461b-80f7-ddd6c6b8ed7f'], 'userId':'92b93aac-97b4-461b-80f7-ddd6c6b8ed22', 'latitude':42.657064, 'longitude':23.28539, 'radius':50, 'visibleToThePublic' : 'false'}</param>
         /// <param name="AreaIdsNote">NOTE: 'AreaIds':[1] -> NOT Required. This is not the Id of the newly created area. This is all the other area ids if we were in the range of other areas but no matter of that we decided to create new area.</param>
         /// <param name="UserIdNote">NOTE: 'userId':1 -> Supposed to be the id of the user. If you pass it, you automatically get subscribed to the group you created. Otherwise, you just create it without following it.</param>
         /// <returns>Uniqe identifier of the newly created group entity</returns>

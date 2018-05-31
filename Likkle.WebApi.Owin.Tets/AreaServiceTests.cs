@@ -156,6 +156,50 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
+        public void GetMetadataForArea_When_We_Get_Area_Metadata_We_Get_Correct_Number_Of_Groups_Visible_To_The_Public()
+        {
+            var workingTag = new Tag()
+            {
+                Id = Guid.Parse("caf77dee-a94f-49cb-b51f-e0c0e1067541"),
+                Name = "Help"
+            };
+
+            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>(), Tags = new List<Tag>() { workingTag }, VisibleToThePublic = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), Tags = new List<Tag>() { workingTag }, VisibleToThePublic = false };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { groupOne, groupTwo }
+            };
+
+            groupTwo.Areas = new List<Area>() { area };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { groupTwo },
+                Areas = new FakeDbSet<Area>() { area },
+                Users = new FakeDbSet<User>() { new User() }
+            }
+            .Seed();
+
+            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
+            this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
+
+            // act
+            var areaMetadata = this._areaService.GetMetadataForArea(10, 10, area.Id);
+
+            // assert
+            Assert.IsNotNull(areaMetadata);
+            Assert.AreEqual(areaMetadata.TagIds.Count(), 1);
+            Assert.AreEqual(areaMetadata.DistanceTo, 0);
+            Assert.AreEqual(1, areaMetadata.NumberOfGroupsVisibleToThePublic);
+        }
+
+        [TestMethod]
         public void GetMultipleAreasMetadata_We_Can_Get_Metadata_For_Multiple_Areas()
         {
             // arrange
