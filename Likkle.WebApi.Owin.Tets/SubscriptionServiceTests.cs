@@ -109,51 +109,34 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_Relate_User_To_Groups()
+        public void RelateUserToGroups_We_Can_Relate_User_To_Groups()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>(), IsActive = true };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), IsActive = true };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
 
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                IsActive = true
+                Groups = new List<Group>() { groupOne, groupTwo }
             };
 
             groupOne.Areas = new List<Area>() { area };
             groupTwo.Areas = new List<Area>() { area };
 
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
+            var user = new User() { };
 
             var firstHistoryGroup = new HistoryGroup()
             {
-                DateTimeGroupWasSubscribed = DateTime.UtcNow,
                 GroupId = groupOne.Id,
-                GroupThatWasPreviouslySubscribed = groupOne,
-                UserId = user.Id,
-                UserWhoSubscribedGroup = user,
-                Id = Guid.NewGuid()
+                UserWhoSubscribedGroup = user
             };
 
             var secondHistoryGroup = new HistoryGroup()
             {
-                DateTimeGroupWasSubscribed = DateTime.UtcNow,
                 GroupId = groupTwo.Id,
-                GroupThatWasPreviouslySubscribed = groupTwo,
-                UserId = user.Id,
-                UserWhoSubscribedGroup = user,
-                Id = Guid.NewGuid()
+                UserWhoSubscribedGroup = user
             };
 
             var populatedDatabase = new FakeLikkleDbContext()
@@ -219,8 +202,8 @@ namespace Likkle.WebApi.Owin.Tets
             Assert.IsTrue(this._mockedLikkleUoW.Object.HistoryGroupRepository.AllHistoryGroups().Count() == 2);
 
             // arrange
-            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>(), IsActive = true };
-            var groupFour = new Group() { Id = Guid.NewGuid(), Name = "GroupFour", Users = new List<User>(), IsActive = true };
+            var groupThree = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
+            var groupFour = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
 
             groupThree.Areas = new List<Area>() { area };
             groupFour.Areas = new List<Area>() { area };
@@ -254,46 +237,24 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Empty_List_Is_Returned_When_No_Available_Groups_For_The_User_Are_Present_When_Getting_Subscriptions()
+        public void GetUserSubscriptions_Empty_List_Is_Returned_When_No_Available_Groups_For_The_User_Are_Present_When_Getting_Subscriptions()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>(), IsActive = true };
-
-            var area = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne },
-                IsActive = true
-            };
-
-            groupOne.Areas = new List<Area>() { area };
-
-            var userId = Guid.NewGuid();
-            var user = new User()
-            {
-                Id = userId,
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
+            var user = new User() { Id = Guid.NewGuid() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Groups = new FakeDbSet<Group>() { groupOne },
-                Areas = new FakeDbSet<Area>() { area },
                 Users = new FakeDbSet<User>() { user }
             }
             .Seed();
 
-            this._mockedLikkleUoW.Setup(uow => uow.AreaRepository).Returns(new AreaRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.GroupRepository).Returns(new GroupRepository(populatedDatabase));
             this._mockedLikkleUoW.Setup(uow => uow.UserRepository).Returns(new UserRepository(populatedDatabase));
 
             // act
-            var userSubscribtionsAroundCoordintes = this._groupService.GetUserSubscriptions(userId, 10, 10);
+            var userSubscribtionsAroundCoordintes = this._groupService.GetUserSubscriptions(user.Id, 10, 10);
 
             // assert
             Assert.IsNotNull(userSubscribtionsAroundCoordintes);
@@ -301,31 +262,21 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_User_Location_Is_Changed_Group_Is_Removed_But_HistoryGroup_Stays()
+        public void UpdateUserLocation_When_User_Location_Is_Changed_Group_Is_Removed_But_HistoryGroup_Stays()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() };
 
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
                 Groups = new List<Group>() { groupOne, groupTwo }
             };
 
             groupOne.Areas = new List<Area>() { area };
             groupTwo.Areas = new List<Area>() { area };
 
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
+            var user = new User() { };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -341,9 +292,6 @@ namespace Likkle.WebApi.Owin.Tets
 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
-                UserId = user.Id,
-                Latitude = 10,
-                Longitude = 10,
                 GroupsUserSubscribes = new List<Guid>() { groupOne.Id, groupTwo.Id }
             };
 
@@ -363,30 +311,20 @@ namespace Likkle.WebApi.Owin.Tets
 
         // TODO: Extract common parts from this method and the one below
         [TestMethod]
-        public void Group_Gets_Inactive_When_No_Users_Belong_To_It()
+        public void RelateUserToGroups_Group_Gets_Inactive_When_No_Users_Belong_To_It()
         {
             // arrange
             this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
+            var user = new User() { };
 
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { user }, IsActive = true };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), IsActive = true };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { user }, IsActive = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = true };
 
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                IsActive = true
+                Groups = new List<Group>() { groupOne, groupTwo }
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -404,7 +342,6 @@ namespace Likkle.WebApi.Owin.Tets
             // act 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
-                UserId = user.Id,
                 Latitude = 10,
                 Longitude = 10,
                 GroupsUserSubscribes = new List<Guid>() { groupTwo.Id }
@@ -419,30 +356,20 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Area_Gets_Inactive_When_No_Active_Groups_Belong_To_It()
+        public void RelateUserToGroups_Area_Gets_Inactive_When_No_Active_Groups_Belong_To_It()
         {
             // arrange
             this._configurationWrapperMock.Setup(config => config.AutomaticallyCleanupGroupsAndAreas).Returns(true);
+            var user = new User() { };
 
-            var user = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString()
-            };
-
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { user }, IsActive = true };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>(), IsActive = false };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { user }, IsActive = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>(), IsActive = false };
 
             var area = new Area()
             {
-                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                IsActive = true
+                Groups = new List<Group>() { groupOne, groupTwo }
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -460,7 +387,6 @@ namespace Likkle.WebApi.Owin.Tets
             // act 
             var relateUserToGroupsRequest = new RelateUserToGroupsDto()
             {
-                UserId = user.Id,
                 Latitude = 10,
                 Longitude = 10,
                 GroupsUserSubscribes = new List<Guid>() { groupTwo.Id }
@@ -478,16 +404,11 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_AutoSubscribe_UsersFromExistingAreas()
+        public void AutoSubscribeUsersFromExistingAreas_We_Can_AutoSubscribe_UsersFromExistingAreas()
         {
             // arrange
             var userOne = new User()
             {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true, AutomaticallySubscribeToAllGroupsWithTag = false
@@ -497,10 +418,6 @@ namespace Likkle.WebApi.Owin.Tets
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Ralph",
-                LastName = "Lauren",
-                Email = "rlauren@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
@@ -509,9 +426,9 @@ namespace Likkle.WebApi.Owin.Tets
                 }
             };
 
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { userOne, userTwo }, IsActive = true };
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() { userTwo }, IsActive = true };
-            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() { }, IsActive = true };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userOne, userTwo }, IsActive = true };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userTwo }, IsActive = true };
+            var groupThree = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true };
 
             userOne.Groups = new List<Group>() { groupOne };
             userTwo.Groups = new List<Group>() { groupOne, groupTwo };
@@ -519,10 +436,7 @@ namespace Likkle.WebApi.Owin.Tets
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne, groupTwo },
-                IsActive = true
+                Groups = new List<Group>() { groupOne, groupTwo }
             };
 
             groupOne.Areas = new List<Area>() { area };
@@ -554,16 +468,12 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_AutoSubscribe_UsersForGroupAsNewArea()
+        public void AutoSubscribeUsersForGroupAsNewArea_We_Can_AutoSubscribe_UsersForGroupAsNewArea()
         {
             // arrange
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
@@ -573,14 +483,10 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Ralph",
-                LastName = "Lauren",
-                Email = "rlauren@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
@@ -591,14 +497,10 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000002,
                 Groups = new List<Group>() { }
             };
-            
+
             var userThree = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Rudolf",
-                LastName = "Raindeer",
-                Email = "rsdsdsen@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
@@ -609,8 +511,8 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 120.000002,
                 Groups = new List<Group>() { }
             };
-            
-            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var groupThree = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
 
             var populatedDatabase = new FakeLikkleDbContext()
             {
@@ -621,7 +523,13 @@ namespace Likkle.WebApi.Owin.Tets
             DataGenerator.SetupUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
 
             // act
-            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(Guid.NewGuid(), 10.000000, 10.000000, BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters, groupThree.Id, Guid.NewGuid());
+            this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(
+                Guid.NewGuid(),
+                10.000000,
+                10.000000,
+                BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters,
+                groupThree.Id,
+                Guid.NewGuid());
 
             // assert
             Assert.IsTrue(userOne.Groups.Contains(groupThree));
@@ -630,7 +538,7 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void We_Can_AutoSubscribe_UsersForGroupRecreated_And_Ping_Correct_Set_Of_Users_Via_SignalR()
+        public void AutoSubscribeUsersForRecreatedGroup_We_Can_AutoSubscribe_UsersForGroupRecreated_And_Ping_Correct_Set_Of_Users_Via_SignalR()
         {
             // arrange
             var userOne = new User()
@@ -645,7 +553,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
@@ -658,7 +566,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000002,
                 Groups = new List<Group>() { }
             };
-            
+
             var userThree = new User()
             {
                 Id = Guid.NewGuid(),
@@ -672,7 +580,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000003,
                 Groups = new List<Group>() { }
             };
-            
+
             var userFour = new User()
             {
                 Id = Guid.NewGuid(),
@@ -685,7 +593,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000004,
                 Groups = new List<Group>() { }
             };
-            
+
             var group = new Group()
             {
                 Id = Guid.NewGuid(),
@@ -693,7 +601,7 @@ namespace Likkle.WebApi.Owin.Tets
                 IsActive = true,
                 Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
             };
-            
+
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -718,15 +626,15 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             _signalrServiceMock.Verify(m => m.GroupAroundMeWasRecreated(
-                It.IsIn<string>(new string[] { userTwo.Id.ToString(), userThree.Id.ToString(), userFour.Id.ToString() }), 
-                It.Is<List<SRAreaDto>>(a => a.Count() == 1), 
-                It.Is<SRGroupDto>(g => g.Id == group.Id), 
+                It.IsIn<string>(new string[] { userTwo.Id.ToString(), userThree.Id.ToString(), userFour.Id.ToString() }),
+                It.Is<List<SRAreaDto>>(a => a.Count() == 1),
+                It.Is<SRGroupDto>(g => g.Id == group.Id),
                 It.IsAny<bool>()),
                 Times.Exactly(3));
         }
 
         [TestMethod]
-        public void We_Can_AutoSubscribe_UsersForGroupAsNewArea_And_Ping_Correct_Set_Of_Users_Via_SignalR()
+        public void AutoSubscribeUsersForGroupAsNewArea_We_Can_AutoSubscribe_UsersForGroupAsNewArea_And_Ping_Correct_Set_Of_Users_Via_SignalR()
         {
             // arrange
             var userOne = new User()
@@ -741,7 +649,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
@@ -754,7 +662,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000002,
                 Groups = new List<Group>() { }
             };
-            
+
             var userThree = new User()
             {
                 Id = Guid.NewGuid(),
@@ -768,7 +676,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000003,
                 Groups = new List<Group>() { }
             };
-            
+
             var userFour = new User()
             {
                 Id = Guid.NewGuid(),
@@ -781,14 +689,14 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000004,
                 Groups = new List<Group>() { }
             };
-            
+
             var group = new Group() {
                 Id = Guid.NewGuid(),
                 Users = new List<User>() { },
                 IsActive = true,
                 Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList()
             };
-            
+
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -810,33 +718,29 @@ namespace Likkle.WebApi.Owin.Tets
 
             // act
             this._subscriptionService.AutoSubscribeUsersForGroupAsNewArea(
-                area.Id, 
-                area.Latitude, 
-                area.Longitude, 
-                area.Radius, 
-                group.Id, 
+                area.Id,
+                area.Latitude,
+                area.Longitude,
+                area.Radius,
+                group.Id,
                 userOne.Id);
 
             // assert
             _signalrServiceMock.Verify(m => m.GroupAsNewAreaWasCreatedAroundMe(
                 It.IsIn<string>(new string[] { userTwo.Id.ToString(), userThree.Id.ToString(), userFour.Id.ToString() }),
-                It.IsAny<SRAreaDto>(), 
-                It.IsAny<SRGroupDto>(), 
-                It.IsAny<bool>()), 
+                It.IsAny<SRAreaDto>(),
+                It.IsAny<SRGroupDto>(),
+                It.IsAny<bool>()),
                 Times.Exactly(3));
         }
 
         [TestMethod]
-        public void We_Can_AutoSubscribe_UsersForRecreatedGroup()
+        public void AutoSubscribeUsersForRecreatedGroup_We_Can_AutoSubscribe_UsersForRecreatedGroup()
         {
             // arrange
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
@@ -846,9 +750,9 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = false, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
+
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = false, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -878,78 +782,49 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_AutoSubscribe_UsersFromExistingAreas_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        public void AutoSubscribeUsersFromExistingAreas_When_AutoSubscribe_UsersFromExistingAreas_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
             // arrange
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Latitude = 10.000001,
-                Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Fires",
-                LastName = "Fires",
-                Email = "mal@maigtgtl.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
                 },
-                Latitude = 10.000001,
-                Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var userThree = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Three",
-                LastName = "Three",
-                Email = "masl@maigtgtsl.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
                     AutomaticallySubscribeToAllGroupsWithTag = false
                 },
-                Latitude = 10.000001,
-                Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { userOne, userTwo, userThree }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userOne, userTwo, userThree }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
 
             userOne.Groups.Add(groupOne);
             userTwo.Groups.Add(groupOne);
             userThree.Groups.Add(groupOne);
-            
+
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne },
-                IsActive = false,
-                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+                Groups = new List<Group>() { groupOne }
             };
-
             groupOne.Areas = new List<Area>() { area };
 
             var populatedDatabase = new FakeLikkleDbContext()
@@ -969,33 +844,14 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_AutoSubscribe_UsersForGroupAsNewArea_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        public void AutoSubscribeUsersForGroupAsNewArea_When_AutoSubscribe_UsersForGroupAsNewArea_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
             // arrange
-            var userOne = new User()
-            {
-                Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Latitude = 10.000001,
-                Longitude = 10.000001,
-                Groups = new List<Group>() { }
-            };
-            
+            var userOne = new User() { Id = Guid.NewGuid() };
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Ralph",
-                LastName = "Lauren",
-                Email = "Rasss@ta.fari",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = false,
@@ -1006,9 +862,9 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000002,
                 Groups = new List<Group>() { }
             };
-            
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { userOne }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
+
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userOne }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
             var area = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -1036,40 +892,25 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_AutoSubscribe_UsersForRecreatedGroup_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        public void AutoSubscribeUsersForRecreatedGroup_When_AutoSubscribe_UsersForRecreatedGroup_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var areaOne = new Area()
-            {
-                Id = Guid.NewGuid(),
-                Latitude = 10,
-                Longitude = 10,
-                Groups = new List<Group>() { groupOne },
-                IsActive = true,
-                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
-            };
-            
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var areaOne = new Area() { Id = Guid.NewGuid() };
+
             var areaTwo = new Area()
             {
                 Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne },
-                IsActive = true,
                 Radius = BusinessEntities.Enums.RadiusRangeEnum.HunderdAndFiftyMeters
             };
 
             groupOne.Areas = new List<Area>() { areaOne, areaTwo };
-            
+
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
                 AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
                 {
                     AutomaticallySubscribeToAllGroups = true,
@@ -1079,7 +920,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Longitude = 10.000001,
                 Groups = new List<Group>() { }
             };
-            
+
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Groups = new FakeDbSet<Group>() { groupOne },
@@ -1094,49 +935,36 @@ namespace Likkle.WebApi.Owin.Tets
 
             // assert
             this._signalrServiceMock.Verify(
-                srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(), 
-                It.IsAny<IEnumerable<SRAreaDto>>(), 
-                It.IsAny<SRGroupDto>(), 
-                It.IsAny<bool>()), 
+                srs => srs.GroupAroundMeWasRecreated(It.IsAny<string>(),
+                It.IsAny<IEnumerable<SRAreaDto>>(),
+                It.IsAny<SRGroupDto>(),
+                It.IsAny<bool>()),
                 Times.Once);
         }
 
         [TestMethod]
-        public void When_AutoIncreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        public void AutoIncreaseUsersInGroups_When_AutoIncreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var groupThree = new Group() { Id = Guid.NewGuid(), Name = "GroupThree", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupThree = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
             var areaOne = new Area()
             {
                 Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
                 Groups = new List<Group>() { groupOne, groupTwo, groupThree },
-                IsActive = true,
                 Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
             };
 
             groupOne.Areas = new List<Area>() { areaOne };
             groupTwo.Areas = new List<Area>() { areaOne };
-            
+
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { groupOne, groupTwo },
                 HistoryGroups = new List<HistoryGroup>()
             };
             userOne.HistoryGroups.Add(new HistoryGroup { GroupId = groupOne.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
@@ -1144,22 +972,12 @@ namespace Likkle.WebApi.Owin.Tets
 
             groupOne.Users.Add(userOne);
             groupTwo.Users.Add(userOne);
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Ralph",
-                LastName = "Lauren",
-                Email = "mailss@ssmail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
                 Latitude = 10.000001,
                 Longitude = 10.000001,
-                Groups = new List<Group>() { groupOne },
                 HistoryGroups = new List<HistoryGroup>()
             };
             userOne.HistoryGroups.Add(new HistoryGroup { GroupId = groupOne.Id, UserId = userTwo.Id, UserWhoSubscribedGroup = userTwo });
@@ -1182,13 +1000,12 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_AutoDecreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
+        public void AutoDecreaseUsersInGroups_When_AutoDecreaseUsersInGroups_Is_Called_User_Who_Fired_The_Action_Does_Not_Get_Notified()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
             var areaOne = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -1201,42 +1018,23 @@ namespace Likkle.WebApi.Owin.Tets
 
             groupOne.Areas = new List<Area>() { areaOne };
             groupTwo.Areas = new List<Area>() { areaOne };
-            
+
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { groupOne, groupTwo },
                 HistoryGroups = new List<HistoryGroup>()
             };
+
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupOne.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupTwo.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
             groupOne.Users.Add(userOne);
             groupTwo.Users.Add(userOne);
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Ralph",
-                LastName = "Lauren",
-                Email = "mailss@ssmail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
                 Latitude = 10.000001,
                 Longitude = 10.000001,
-                Groups = new List<Group>() { groupOne },
                 HistoryGroups = new List<HistoryGroup>()
             };
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupOne.Id, UserId = userTwo.Id, UserWhoSubscribedGroup = userTwo });
@@ -1259,42 +1057,30 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void When_AutoDecreaseUsersInGroup_Is_Called_HistoryGroups_Are_AlsoConsidered()
+        public void AutoDecreaseUsersInGroups_When_AutoDecreaseUsersInGroup_Is_Called_HistoryGroups_Are_AlsoConsidered()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
-            var groupTwo = new Group() { Id = Guid.NewGuid(), Name = "GroupTwo", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
-            
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupTwo = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                FirstName = "Stefcho",
-                LastName = "Stefchev",
-                Email = "mail@mail.ma",
-                IdsrvUniqueId = Guid.NewGuid().ToString(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { groupOne, groupTwo },
                 HistoryGroups = new List<HistoryGroup>() { }
             };
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupOne.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupTwo.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
             groupOne.Users.Add(userOne);
             groupTwo.Users.Add(userOne);
-            
+
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                Groups = new List<Group>() { },
                 Latitude = 10.000001,
                 Longitude = 10.000001,
                 HistoryGroups = new List<HistoryGroup>() { }
             };
-            
+
             var areaOne = new Area()
             {
                 Id = Guid.NewGuid(),
@@ -1329,7 +1115,7 @@ namespace Likkle.WebApi.Owin.Tets
                 UserWhoSubscribedGroup = userOne
             };
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupTwo.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
-            
+
             var historyGroupThree = new HistoryGroup()
             {
                 GroupId = groupTwo.Id,
@@ -1355,26 +1141,24 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService.AutoDecreaseUsersInGroups(new List<Guid>() { groupTwo.Id }, userOne.Id);
 
             // assert
-            this._signalrServiceMock.Verify(srs => srs. GroupWasLeftByUser(groupTwo.Id, new List<string>() { userTwo.Id.ToString() }), Times.Once);
+            this._signalrServiceMock.Verify(srs => srs.GroupWasLeftByUser(groupTwo.Id, new List<string>() { userTwo.Id.ToString() }), Times.Once);
         }
 
         [TestMethod]
-        public void When_SignalR_Has_To_Ping_People_For_UserLeftOrJoinedArea_If_User_Outside_Of_Area_Range_Doesnt_Get_Notified()
+        public void AutoDecreaseUsersInGroups_When_SignalR_Has_To_Ping_People_For_UserLeftOrJoinedArea_If_User_Outside_Of_Area_Range_Doesnt_Get_Notified()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
 
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                Groups = new List<Group>() { groupOne },
                 HistoryGroups = new List<HistoryGroup>() { }
             };
             userOne.HistoryGroups.Add(new HistoryGroup() { GroupId = groupOne.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
 
             var userTwo = new User()
             {
-                Id = Guid.NewGuid(),
                 HistoryGroups = new List<HistoryGroup>() { },
                 Latitude = 10.000001,
                 Longitude = 10.000001
@@ -1383,7 +1167,6 @@ namespace Likkle.WebApi.Owin.Tets
 
             var userThree = new User()
             {
-                Id = Guid.NewGuid(),
                 HistoryGroups = new List<HistoryGroup>(),
                 Latitude = 42.123456,
                 Longitude = 21.123456
@@ -1392,7 +1175,6 @@ namespace Likkle.WebApi.Owin.Tets
 
             var areaOne = new Area()
             {
-                Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
                 Groups = new List<Group>() { groupOne },
@@ -1417,34 +1199,21 @@ namespace Likkle.WebApi.Owin.Tets
         }
 
         [TestMethod]
-        public void Users_Who_Came_For_The_First_Time_In_The_Area_And_Never_Subscribed_Groups_There_Also_Gets_UserLeftJoined_Events()
+        public void AutoIncreaseUsersInGroups_Users_Who_Came_For_The_First_Time_In_The_Area_And_Never_Subscribed_Groups_There_Also_Gets_UserLeftJoined_Events()
         {
             // arrange
-            var groupOne = new Group() { Id = Guid.NewGuid(), Name = "GroupOne", Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+            var groupOne = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
             var userOne = new User()
             {
                 Id = Guid.NewGuid(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { groupOne },
-                HistoryGroups = new List<HistoryGroup>(),
-                Latitude = 10.000001,
-                Longitude = 10.000001
+                HistoryGroups = new List<HistoryGroup>()
             };
+
             userOne.HistoryGroups.Add(new HistoryGroup { GroupId = groupOne.Id, UserId = userOne.Id, UserWhoSubscribedGroup = userOne });
 
             var userTwo = new User()
             {
                 Id = Guid.NewGuid(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { },
                 HistoryGroups = new List<HistoryGroup>(),
                 Latitude = 10.000002,
                 Longitude = 10.000002
@@ -1453,15 +1222,7 @@ namespace Likkle.WebApi.Owin.Tets
             var userThree = new User()
             {
                 Id = Guid.NewGuid(),
-                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
-                {
-                    AutomaticallySubscribeToAllGroups = true,
-                    AutomaticallySubscribeToAllGroupsWithTag = false
-                },
-                Groups = new List<Group>() { },
-                HistoryGroups = new List<HistoryGroup>(),
-                Latitude = 20.000002,
-                Longitude = 20.000002
+                HistoryGroups = new List<HistoryGroup>()
             };
             userOne.HistoryGroups.Add(new HistoryGroup { GroupId = groupOne.Id, UserId = userThree.Id, UserWhoSubscribedGroup = userThree });
 
@@ -1470,8 +1231,7 @@ namespace Likkle.WebApi.Owin.Tets
                 Id = Guid.NewGuid(),
                 Latitude = 10,
                 Longitude = 10,
-                Groups = new List<Group>() { groupOne},
-                IsActive = true,
+                Groups = new List<Group>() { groupOne },
                 Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
             };
             groupOne.Areas = new List<Area>() { areaOne };
@@ -1479,7 +1239,7 @@ namespace Likkle.WebApi.Owin.Tets
             var populatedDatabase = new FakeLikkleDbContext()
             {
                 Groups = new FakeDbSet<Group>() { groupOne },
-                Users = new FakeDbSet<User>() { userOne, userTwo,userThree },
+                Users = new FakeDbSet<User>() { userOne, userTwo, userThree },
                 Areas = new FakeDbSet<Area>() { areaOne }
             }
             .Seed();
@@ -1489,7 +1249,119 @@ namespace Likkle.WebApi.Owin.Tets
             this._subscriptionService.AutoIncreaseUsersInGroups(new List<Guid>() { groupOne.Id }, userOne.Id);
 
             // assert
-            this._signalrServiceMock.Verify(srs => srs.GroupWasJoinedByUser(groupOne.Id, new List<string>() { userTwo.Id.ToString()}), Times.Once);
+            this._signalrServiceMock.Verify(srs => srs.GroupWasJoinedByUser(groupOne.Id, new List<string>() { userTwo.Id.ToString() }), Times.Once);
+        }
+
+        [TestMethod]
+        public void AutoSubscribeUsersFromExistingAreas_Users_Falling_Under_The_Area_Not_Part_Of_Active_Groups_Are_Considered()
+        {
+            // arrange
+            var userOne = new User() {
+                Id = Guid.NewGuid(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting() {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false,
+                    Tags = null
+                },
+                Groups = new List<Group>()
+            };
+            var group = new Group() { Id = Guid.NewGuid(), Users = new List<User>() { userOne }, IsActive = true, Tags = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList() };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { group },
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var userTwo = new User() {
+                Id = Guid.NewGuid(),
+                Latitude = 10.000001,
+                Longitude = 10.000001,
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = true,
+                    AutomaticallySubscribeToAllGroupsWithTag = false,
+                    Tags = null
+                },
+                Groups = new List<Group>()
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Groups = new FakeDbSet<Group>() { group },
+                Users = new FakeDbSet<User>() { userOne, userTwo },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            _subscriptionService.AutoSubscribeUsersFromExistingAreas(
+                new List<Guid>() { area.Id }, new StandaloneGroupRequestDto(), Guid.NewGuid(), Guid.NewGuid());
+
+            // assert
+            _signalrServiceMock.Verify(
+                srsm => srsm.GroupAttachedToExistingAreasWasCreatedAroundMe(It.Is<string>(uid => uid == userTwo.Id.ToString()), It.IsAny<IEnumerable<Guid>>(), It.IsAny<SRGroupDto>(), It.IsAny<bool>()), Times.Once);
+        }
+
+        [TestMethod]
+        [DataRow(false, false, 1)]
+        [DataRow(true, false, 1)]
+        [DataRow(false, true, 1)]
+        public void AutoSubscribeUsersFromExistingAreas_SubscribeUsersNearbyNewGroupBasedOnTheirAutomaticSubscrSetttings(
+            bool userSubscribesAllAvailableGroups,
+            bool userSubscribesAllGroupsWithTag,
+            int numberOfCallsToSignalR)
+        {
+            // arrange
+            var tagsSample = _allTags.Where(t => t.Name == "Sport" || t.Name == "Help").ToList();
+
+            var user = new User()
+            {
+                Id = Guid.NewGuid(),
+                AutomaticSubscriptionSettings = new AutomaticSubscriptionSetting()
+                {
+                    AutomaticallySubscribeToAllGroups = userSubscribesAllAvailableGroups,
+                    AutomaticallySubscribeToAllGroupsWithTag = userSubscribesAllGroupsWithTag,
+                    Tags = userSubscribesAllGroupsWithTag ? tagsSample : null
+                },
+                Groups = new List<Group>(),
+                Latitude = 10.000001,
+                Longitude = 10.000001
+            };
+
+            var area = new Area()
+            {
+                Id = Guid.NewGuid(),
+                Latitude = 10,
+                Longitude = 10,
+                Groups = new List<Group>() { },
+                Radius = BusinessEntities.Enums.RadiusRangeEnum.FiftyMeters
+            };
+
+            var populatedDatabase = new FakeLikkleDbContext()
+            {
+                Users = new FakeDbSet<User>() { user },
+                Areas = new FakeDbSet<Area>() { area }
+            }
+            .Seed();
+            DataGenerator.SetupAreaUserAndGroupRepositories(this._mockedLikkleUoW, populatedDatabase);
+
+            // act
+            _subscriptionService.AutoSubscribeUsersFromExistingAreas(
+                new List<Guid>() { area.Id }, new StandaloneGroupRequestDto() { TagIds = tagsSample.Select(t => t.Id) }, Guid.NewGuid(), Guid.NewGuid());
+
+            // assert
+            _signalrServiceMock.Verify(
+                srsm => srsm
+                .GroupAttachedToExistingAreasWasCreatedAroundMe(
+                    It.Is<string>(uid => uid == user.Id.ToString()), 
+                    It.IsAny<IEnumerable<Guid>>(), 
+                    It.IsAny<SRGroupDto>(), 
+                    It.IsAny<bool>()), Times.Exactly(numberOfCallsToSignalR));
         }
     }
 }

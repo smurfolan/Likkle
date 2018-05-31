@@ -42,6 +42,7 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object, 
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -65,6 +66,7 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object, 
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -98,7 +100,8 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
-                mockedSubscriptionService.Object);
+                mockedSubscriptionService.Object,
+                null);
 
             //
             var actionResult = areaController.Get(23, 23);
@@ -115,6 +118,7 @@ namespace Likkle.WebApi.Owin.Tets
             // arrange
             var mockedDataService = new Mock<IAreaService>();
             var mockedSubscriptionService = new Mock<ISubscriptionService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
 
             var newAreaId = Guid.NewGuid();
 
@@ -122,12 +126,15 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
             mockedDataService.Setup(x => x.InsertNewArea(It.IsAny<NewAreaRequest>())).Returns(newAreaId);
+            mockedConfigurationWrapper.Setup(mcw => mcw.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
 
             // act
             var areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
-                mockedSubscriptionService.Object);
+                mockedSubscriptionService.Object,
+                mockedConfigurationWrapper.Object);
 
             var actionResult = areaController.Post(new NewAreaRequest()
             {
@@ -154,6 +161,7 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -179,6 +187,7 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -211,6 +220,7 @@ namespace Likkle.WebApi.Owin.Tets
             var areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -227,6 +237,7 @@ namespace Likkle.WebApi.Owin.Tets
             areaController = new AreaController(
                 mockedDataService.Object,
                 _apiLogger.Object,
+                null,
                 null);
 
             // act
@@ -242,6 +253,7 @@ namespace Likkle.WebApi.Owin.Tets
         {
             // arrange
             var mockedAreaService = new Mock<IAreaService>();
+            var mockedConfigurationWrapper = new Mock<IConfigurationWrapper>();
 
             mockedAreaService.Setup(a => a.GetAllAreas()).Returns(new List<AreaDto>()
             {
@@ -254,10 +266,14 @@ namespace Likkle.WebApi.Owin.Tets
                 }
             });
 
+            mockedConfigurationWrapper.Setup(mcw => mcw.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
+
             var areaController = new AreaController(
                 mockedAreaService.Object,
                 _apiLogger.Object,
-                null);
+                null,
+                mockedConfigurationWrapper.Object);
 
             // act
             var actionResult = areaController.Post(new NewAreaRequest()
@@ -270,7 +286,7 @@ namespace Likkle.WebApi.Owin.Tets
             // assert
             var contentResult = actionResult as BadRequestErrorMessageResult;
             Assert.IsNotNull(contentResult);
-            Assert.AreEqual("There's a previous request with these coordinates and radius; ", contentResult.Message);
+            Assert.AreEqual("There's a previous request close coordinates and radius; ", contentResult.Message);
         }
 
         [TestMethod]
@@ -288,7 +304,11 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
 
-            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+            var areaController = new AreaController(
+                areaServiceMock.Object, 
+                null, 
+                subscriptionServiceMock.Object,
+                null);
 
             // act
             var actionResult = areaController.GetAreaMetadata(22, 33, Guid.NewGuid());
@@ -314,7 +334,11 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
 
-            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+            var areaController = new AreaController(
+                areaServiceMock.Object, 
+                null, 
+                subscriptionServiceMock.Object,
+                null);
 
             // act
             var actionResult = areaController.Get(22, 33);
@@ -332,6 +356,7 @@ namespace Likkle.WebApi.Owin.Tets
             // arrange
             var subscriptionServiceMock = new Mock<ISubscriptionService>();
             var areaServiceMock = new Mock<IAreaService>();
+            var configurationWrapperMock = new Mock<IConfigurationWrapper>();
 
             areaServiceMock.Setup(
                 aser => aser.InsertNewArea(It.IsAny<NewAreaRequest>())).Returns(Guid.NewGuid);
@@ -340,7 +365,14 @@ namespace Likkle.WebApi.Owin.Tets
                 ss =>
                     ss.UpdateLatestWellKnownUserLocation(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<IPrincipal>()));
 
-            var areaController = new AreaController(areaServiceMock.Object, null, subscriptionServiceMock.Object);
+            configurationWrapperMock.Setup(cwm => cwm.MinimalDistanceBetweenTwoAreaCentersWithSameRadius)
+                .Returns(10);
+
+            var areaController = new AreaController(
+                areaServiceMock.Object, 
+                null, 
+                subscriptionServiceMock.Object,
+                configurationWrapperMock.Object);
 
             // act
             var actionResult = areaController.Post(new NewAreaRequest());
