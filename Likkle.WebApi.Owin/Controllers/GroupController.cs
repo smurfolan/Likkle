@@ -12,7 +12,7 @@ using Ninject;
 
 namespace Likkle.WebApi.Owin.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/v1/groups")]
     public class GroupController : ApiController
     {

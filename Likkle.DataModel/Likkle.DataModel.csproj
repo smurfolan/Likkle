@@ -86,6 +86,10 @@
     <Compile Include="Migrations\201711011430551_VisibleToThePublic_NewFieldForGroup.Designer.cs">
       <DependentUpon>201711011430551_VisibleToThePublic_NewFieldForGroup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201805312110221_IgnoreUpcomingAutomaticMigration.cs" />
+    <Compile Include="Migrations\201805312110221_IgnoreUpcomingAutomaticMigration.Designer.cs">
+      <DependentUpon>201805312110221_IgnoreUpcomingAutomaticMigration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Repositories\HistoryGroupRepository.cs" />
     <Compile Include="Repositories\IHistoryGroupRepository.cs" />
     <Compile Include="TestingPurposes\FakeDbSet.cs" />
@@ -189,6 +193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711011430551_VisibleToThePublic_NewFieldForGroup.resx">
       <DependentUpon>201711011430551_VisibleToThePublic_NewFieldForGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805312110221_IgnoreUpcomingAutomaticMigration.resx">
+      <DependentUpon>201805312110221_IgnoreUpcomingAutomaticMigration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
