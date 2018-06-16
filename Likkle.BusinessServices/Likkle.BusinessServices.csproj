@@ -85,6 +85,7 @@
     <Compile Include="EntitiesMappingProfile.cs" />
     <Compile Include="GroupService.cs" />
     <Compile Include="Hubs\BoongalooGroupsActivityHub.cs" />
+    <Compile Include="Hubs\PeepneeHub.cs" />
     <Compile Include="IAccelometerAlgorithmHelperService.cs" />
     <Compile Include="IAreaService.cs" />
     <Compile Include="IConfigurationWrapper.cs" />
